@@ -85,9 +85,17 @@ bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort )
 
 }
 
-void SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _reg, uint8_t _mask, uint8_t _bits, uint8_t _startPosition)
+void SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _familyByte, uint8_t _mask, uint8_t _bits, uint8_t _indexByte)
 {
-  _i2cPort->     
+  _i2cPort->beginTransmission();     
+  _i2cPort->write(WRITE_ADDRESS); 
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(0x00);    
+  _i2cPort->(_bits); 
+  _i2cPort->endTransmission(); 
+  _i2cPort->
+  
 }
 
 
