@@ -21,6 +21,7 @@ SparkFun_Bio_Sensor_HUB::SparkFun_Bio_Sensor_HUB(i2cAddress address, uint8_t res
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
   pinMode(_resetPin, OUTPUT); // Set these pins as output
+  // May also receive information over this line in which case it should be set as input: 
   pinMode(_mfioPin, OUTPUT); 
 
 }
@@ -42,7 +43,7 @@ bool SparkFun_Bio_Sensor_HUB::begin( TwoWire &wirePort )
   digitalWrite(_mfioPin, HIGH); 
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
-  delay(50); 
+  delay(50); //Application mode is enabled when this ends 
   pinMode(_resetPin, OUTPUT); 
   pinMode(_mfioPin, OUTPUT); 
 
@@ -71,7 +72,7 @@ bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort )
   digitalWrite(_mfioPin, LOW); 
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
-  delay(50); 
+  delay(50);  //Bootloader mode is enabled when this ends.  
   pinMode(_resetPin, OUTPUT); 
   pinMode(_mfioPin, OUTPUT); 
 
@@ -85,22 +86,38 @@ bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort )
 
 }
 
-void SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _familyByte, uint8_t _mask, uint8_t _bits, uint8_t _indexByte)
+uint8_t SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _familyByte, uint8_t _mask, uint8_t _bits, uint8_t _indexByte)
 {
-  _i2cPort->beginTransmission();     
-  _i2cPort->write(WRITE_ADDRESS); 
+  _i2cPort->beginTransmission(WRITE_ADDRESS);     
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->write(0x00);    
   _i2cPort->(_bits); 
   _i2cPort->endTransmission(); 
-  _i2cPort->
+  delay(); //Not sure of this yet
+  uint8_t statusByte = readRegister();  
+  // Do I want this byte to be 
+  return statusByte; 
   
 }
 
 
-void SparkFun_Bio_Sensor_HUB::readRegister(uint8_t _reg, uint8_t _len)
+uint8_t SparkFun_Bio_Sensor_HUB::readRegister(uint8_t _familyByte, uint8_t indexByte)
 {
-  _i2cPort->beginTransmission(_address)
+  _i2cPort->beginTransmission(WRITE_ADDRESS);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->endTransmission();
+  _i2cPort->beginTransmission(READ_ADDRESS);
+  uint8_t statusByte = _i2cPort->read(); //Status byte is alwasy sent before read occurs
+  if(!statusByte){ // The status byte is zero upon success
+    uint8_t someVal = _i2cPort->read(); //How many of these, how will these sepcified. 
+    _i2cPort->endTransmission();
+    return someVal; 
+  }
+  if(statusByte){ //Upon error return the error. 
+    _i2cPort->endTransmission();
+    return statusByte; 
+  }
 }
 
