@@ -1,10 +1,25 @@
+/* 
+  This is an Arduino Library written for the MAXIM 32664 Biometric Sensor Hub 
+  The MAX32664 Biometric Sensor Hub is in actuality a small Cortex M4 microcontroller
+  with pre-loaded firmware and algorithms used to interact with the a number of MAXIM
+  sensors; specifically the MAX30101 Pulse Oximter and Heart Rate Monitor and
+  the KX122 Accelerometer. With that in mind, this library is built to
+  communicate with a middle-person and so has a unique method of communication
+  (family, index, and write bytes). 
+
+  SparkFun Electronics
+  March, 2019
+  Author: Elias Santistevan
+ */
 #ifndef _SPARKFUN_BIO_SENSOR_HUB_H
 #define _SPARKFUN_BIO_SENSOR_HUB_H
 
 #include <Wire.h>
 #include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
 
-enum SF_POX_HRMON_FAMILY_REGISTERS {
+enum _FAMILY_REGISTERS {
   
   HUB_STATUS               = 0x00,
   DEVICE_MODE,
@@ -149,17 +164,96 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
   SET_BPT_EST_DATE         = 0x04,
   SET_BPT_REST             = 0x04,
   SET_BPT_SPO2             = 0x04,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
-  SET_BPT_SPO2             = 0x05,
+  SET_WSPO2_COEF           = 0x05,
+  SET_WSP02_SRATE          = 0x05,
+  SET_WSP02_RUN            = 0x05,
+  SET_WSP02_AGC            = 0x05,
+  SET_WSP02_MOT_DETECT     = 0x05,
+  SET_WSP02_DTCT_PER       = 0x05,
+  SET_WSP02_THRESH         = 0x05,
+  SET_WSP02_AGC_TOUT       = 0x05,
+  SET_WSP02_ALG_TOUT       = 0x05,
+  SET_WSP02_PPG_SIG        = 0x05,
 
+};
+
+// 0x51
+enum READ_ALGORITHM_INDEX_BYTE {
+
+  READ_AGC_PERCENTAGE      = 0x00,
+  READ_AGC_STEP_SIZE       = 0x00,
+  READ_AGC_SENSITIVITY     = 0x00,
+  READ_AGC_NUM_SAMPLES     = 0x00,
+  READ_WHRM_SAMPLE_RATE    = 0x02,
+  READ_WHRM_MAX_HEIGHT     = 0x02,
+  READ_WHRM_MAX_WEIGHT     = 0x02,
+  READ_WHRM_MAX_AGE        = 0x02,
+  READ_WHRM_MIN_HEIGHT     = 0x02,
+  READ_WHRM_MIN_WEIGHT     = 0x02,
+  READ_WHRM_MIN_AGE        = 0x02,
+  READ_WHRM_DEF_HEIGHT     = 0x02,
+  READ_WHRM_DEF_WEIGHT     = 0x02,
+  READ_WHRM_DEF_AGE        = 0x02,
+  READ_WHRM_INIT_HR        = 0x02,
+  READ_MAX_FAST_COEF       = 0x02,
+  READ_WHRM_AEC_EN         = 0x02,
+  READ_WHRM_SCD_EN         = 0x02,
+  READ_WHRM_PD_PRD         = 0x02,
+  READ_WHRM_SCD_DEB        = 0x02,
+  READ_WHRM_MOT_MAG        = 0x02,
+  READ_WHRM_PD_MIN         = 0x02,
+  READ_WHRM_PD_PPG         = 0x02,
+  READ_WHRM_BPT_RESULTS    = 0x04,
+  READ_WSP02_COEF          = 0x05,
+  READ_WSP02_SAMP_RATE     = 0x05,
+  READ_WSP02_RUN_MODE      = 0x05,
+  READ_WSP02_AGC_STAT      = 0x05,
+  READ_WSP02_MD_STAT       = 0x05,
+  READ_WSP02_MD_PRD        = 0x05,
+  READ_WSP02_MOT_THRESH    = 0x05,
+  READ_WSP02_AGC_TO        = 0x05,
+  READ_WSP02_ALGTHM_TO     = 0x05,
+  READ_WSP02_PD_PPG        = 0x05
+
+};
+
+// 0x52
+enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
+
+  ENABLE_AGC_ALM           = 0x00;
+  ENABLE_AEC_ALM,
+  ENABLE_WHRM_ALM,
+  ENABLE_ECG_ALM,
+  ENABLE_BPT_ALM,
+  ENABLE_WSP02_ALM
+
+};
+
+// 0x80
+enum BOOTLOADER_FLASH_INDEX_BYTE {
+
+  SET_INIT_VECTOR_BYTES    = 0x00;
+  SET_AUTH_BYTES,
+  SET_NUM_PAGES,
+  ERASE_FLASH,
+  SEND_PAGE_VALUE
+
+};
+
+// 0x81
+enum BOOTLOADER_INFO_INDEX_BYTE {
+
+  BOOTLOADER_VERS          = 0x00,
+  PAGE_SIZE
+
+};
+
+// 0xFF
+enum IDENTITY_INDEX_BYTES {
+
+  READ_MCU_TYPE            = 0x00,
+  READ_SENSOR_HUB_VERS     = 0x03,
+  READ_ALM_VERS            = 0x07
 };
 
 typdef enum {
