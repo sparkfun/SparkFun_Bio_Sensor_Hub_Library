@@ -1,16 +1,20 @@
 /* 
+
   This is an Arduino Library written for the MAXIM 32664 Biometric Sensor Hub 
   The MAX32664 Biometric Sensor Hub is in actuality a small Cortex M4 microcontroller
   with pre-loaded firmware and algorithms used to interact with the a number of MAXIM
   sensors; specifically the MAX30101 Pulse Oximter and Heart Rate Monitor and
   the KX122 Accelerometer. With that in mind, this library is built to
   communicate with a middle-person and so has a unique method of communication
-  (family, index, and write bytes). 
+  (family, index, and write bytes) that is more simplistic than writing and reading to 
+  registers, but includes a larger set of definable values.  
 
   SparkFun Electronics
   March, 2019
   Author: Elias Santistevan
+
  */
+
 #ifndef _SPARKFUN_BIO_SENSOR_HUB_H
 #define _SPARKFUN_BIO_SENSOR_HUB_H
 
@@ -19,7 +23,16 @@
 #include <Wire.h>
 #include <SPI.h>
 
-enum _FAMILY_REGISTERS {
+// Read and write I-squared-C addresses
+typdef enum {
+
+  WRITE_ADDRESS           = 0xAA,
+  READ_ADDRESS            = 0xAB
+
+}i2cAddress;
+
+// The family registers are the largest 
+enum FAMILY_REGISTER_BYTES {
   
   HUB_STATUS               = 0x00,
   DEVICE_MODE,
@@ -42,6 +55,7 @@ enum _FAMILY_REGISTERS {
 
 };
 
+// Status Bytes are communicated back after every I-squared-C transmission.
 enum READ_STATUS_BYTE_VALUE {
 
   SUCCESS                  = 0x00,
@@ -58,6 +72,21 @@ enum READ_STATUS_BYTE_VALUE {
 
 };
 
+
+// All the defines below are 1. Index Bytes nestled in the larger category of the
+// family registry bytes listed above and 2. The Write Bytes associated with
+// their Index Bytes.
+
+// Family Registry Byte 0x01, Index Bye 0x00
+enum DEVICE_MODE_WRITE_BYTES {
+
+  EXIT_BOOTLOADER          = 0x00,
+  RESET                    = 0x02,
+  ENTER_BOOTLOADER         = 0x08
+
+};
+
+// Index Byte associated with Family Registry 0x10
 enum OUTPUT_MODE_INDEX_BYTE {
 
   SET_FORMAT,
@@ -65,6 +94,21 @@ enum OUTPUT_MODE_INDEX_BYTE {
 
 };
 
+// Write Bytes associated with OUTPUT_MODE_INDEX_BYTE: SET_FORMAT
+// 0x00. 
+enum OUTPUT_MODE_WRITE_BYTE {
+  PAUSE                    = 0x00,
+  SENSOR_DATA,
+  ALM_DATA,
+  SENSOR_AND_ALGORITHM,
+  PAUSE_TWO,
+  SENSOR_COUNTER_BYTE,
+  ALM_COUNTER_BYTE,
+  SENSOR_ALM_COUNTER,
+
+};
+
+// Index Byte associated with Family Registry Byte 0x12
 enum FIFO_OUTPUT_INDEX_BYTE {
 
   NUM_SAMPLES,
@@ -72,6 +116,8 @@ enum FIFO_OUTPUT_INDEX_BYTE {
 
 };
 
+
+// Index Byte associated with Family Registry Byte 0x13
 enum FIFO_EXTERNAL_INDEX_BYTE {
 
   SAMPLE_SIZE,
@@ -82,6 +128,14 @@ enum FIFO_EXTERNAL_INDEX_BYTE {
 
 };
 
+// Write Byte associated with FIFO_EXTERNAL_INDEX_BYTE:
+// SAMPLE_SIZE, READ_SENSOR_DATA, and READ_NUM_SAMPLES_INPUT. 
+enum FIFO_OUTPUT_WRITE_BYTE {
+
+  ACCELEROMETER = 0x04; 
+
+};
+// Index Byte associated with Family Registry Byte 0x40
 enum WRITE_REGISTER_INDEX_BYTE {
 
   WRITE_MAX86140,
@@ -92,6 +146,7 @@ enum WRITE_REGISTER_INDEX_BYTE {
 
 };
 
+// Index Byte associated with Family Registry Byte 0x41
 enum READ_REGISTER_INDEX_BYTE {
 
   READ_MAX86140,
@@ -102,6 +157,7 @@ enum READ_REGISTER_INDEX_BYTE {
 
 };
 
+// Index Byte associated with Family Registry Byte 0x42
 enum GET_AFE_INDEX_BYTE {
   
   RETRIEVE_AFE_MAX86140,
@@ -112,6 +168,7 @@ enum GET_AFE_INDEX_BYTE {
 
 };
 
+// Index Byte associated with Family Registry Byte 0x43
 enum DUMP_REGISTER_INDEX_BYTE {
   
   DUMP_REGISTER_MAX86140,
@@ -122,6 +179,7 @@ enum DUMP_REGISTER_INDEX_BYTE {
 
 };
 
+// Index Byte associated with Family Registry Byte 0x44
 enum SENSOR_ENABLE_INDEX_BYTE {
   
   ENABLE_MAX86140,
@@ -132,6 +190,7 @@ enum SENSOR_ENABLE_INDEX_BYTE {
 
 };
 
+// Index Byte associated with Family Registry Byte 0x50
 enum ALGORITHM_CONFIG_INDEX_BYTE {
 
   SET_TARG_PERC,
@@ -177,7 +236,69 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
 
 };
 
-// 0x51
+// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: SET_TARG_PERC
+// BYTE
+enum ALM_AGC_WRITE_BYTE {
+  
+  AGC_GAIN_ID              = 0x00, 
+  AGC_SENSITIVITY_ID,
+  AGC_NUM_SAMP_ID,
+
+};
+
+// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WHRM Bytes
+// specifically.
+enum ALM_WHRM_WRITE_BYTE {
+
+  WHRM_SAMP_RATE_ID        = 0x00,
+  WHRM_MAX_HEIGHT_ID,
+  WHRM_MAX_WEIGHT_ID,
+  WHRM_MAX_AGE_ID,
+  WHRM_MIN_HEIGHT_ID,
+  WHRM_MIN_WEIGHT_ID,
+  WHRM_MIN_AGE_ID,
+  WHRM_DEF_HEIGHT_ID,
+  WHRM_DEF_WEIGHT_ID,
+  WHRM_DEF_AGE_ID,
+  MAXIMFAST_COEF_ID        = 0x0A,
+  WHRM_AEC_ID,                       // Automatic Exposure Control
+  WHRM_SCD_ID,                       // Skin Contact Detect
+  WHRM_PD_ID,                        // Photo Detector
+  WHRM_SCD_DEBOUNCE_ID,
+  WHRM_MOTION_ID,
+  WHRM_MIN_PD_ID           = 0x10,
+  WHRM_PPG_PD_ID           = 0x11
+
+};
+
+// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WHRM Bytes
+enum ALM_BPT_WRITE_BYTE {
+
+  BPT_BLOOD_PRESSURE_ID    = 0x00,
+  BPT_DIASTOLIC_ID,
+  BPT_SYSTOLIC_ID,
+  BPT_CALIBRATE_ID,
+  BPT_DATE_ID,
+  BPT_RESTING_ID,
+  BPT_SP02_COEF_ID
+
+};
+
+// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WSPO2 Bytes
+enum ALM_WSP02_WRITE_BYTE {
+
+  WSP02_COEF_ID         = 0x00,
+  WSP02_SAMPLE_RATE_ID,
+  WSP02_RUN_MODE_ID,
+  WSP02_MOT_DTCT_ID,
+  WSP02_MOT_DTCT_PER_ID,
+  WSP02_MOT_THRESH_ID,
+  WSP02_AGC_TO_ID,
+  WSP02_PD_CONFIG,
+
+};
+
+// Index Byte associated with Family Registry Byte 0x51
 enum READ_ALGORITHM_INDEX_BYTE {
 
   READ_AGC_PERCENTAGE      = 0x00,
@@ -217,7 +338,62 @@ enum READ_ALGORITHM_INDEX_BYTE {
 
 };
 
-// 0x52
+// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, AGC
+// bytes.
+enum READ_AGC_ALM_WRITE_BYTE {
+  
+  READ_AGC_ID              = 0x00,
+  READ_AGC_STEP_SIZE_ID,
+  READ_AGC_SENSITIVITY_ID,
+  READ_AGC_NUM_SAMPLES_ID,
+
+};
+
+// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, WHRM
+// bytes
+enum READ_WHRM_ALM_WRITE_BYTE {
+
+  READ_WHRM_SAMPLE_RATE_ID = 0x00,
+  READ_WHRM_MAX_HEIGHT_ID,
+  READ_WHRM_MAX_WEIGHT_ID,
+  READ_WHRM_MAX_AGE_ID,
+  READ_WHRM_MIN_HEIGHT_ID,
+  READ_WHRM_MIN_WEIGHT_ID,
+  READ_WHRM_MIN_AGE_ID,
+  READ_WHRM_DEF_HEIGHT_ID,
+  READ_WHRM_DEF_WEIGHT_ID,
+  READ_WHRM_DEF_AGE_ID,
+  READ_WHRM_INIT_HR_ID     = 0x0A,
+  READ_MAX_FAST_COEF_ID,
+  READ_WHRM_AEC_EN_ID,
+  READ_WHRM_SCD_EN_ID,
+  READ_WHRM_PD_PRD_ID,
+  READ_WHRM_SCD_DEB_ID,
+  READ_WHRM_MOT_MAG_ID,
+  READ_WHRM_PD_MIN         = 0x10,
+  READ_WHRM_PD_PPG
+  // READ_WHRM_BPT_RESULTS = 0x03,
+ 
+};
+
+// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, WSP02
+// bytes
+enum READ_WSP02_ALM_WRITE_BYTE {
+
+  READ_WSP02_COEF_ID       = 0x00,
+  READ_WSP02_SAMP_RATE_ID,
+  READ_WSP02_RUN_MODE_ID,
+  READ_WSP02_AGC_STAT_ID,
+  READ_WSP02_MD_STAT_ID,
+  READ_WSP02_MD_PRD_ID,
+  READ_WSP02_MOT_THRESH_ID,
+  READ_WSP02_AGC_TO_ID,
+  READ_WSP02_ALGTHM_TO_ID,
+  READ_WSP02_PD_PPG_ID
+
+};
+
+// Index Byte associated with Family Registry Byte 0x52
 enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
   ENABLE_AGC_ALM           = 0x00;
@@ -229,7 +405,7 @@ enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
 };
 
-// 0x80
+// Index Byte associated with Family Registry Byte 0x80
 enum BOOTLOADER_FLASH_INDEX_BYTE {
 
   SET_INIT_VECTOR_BYTES    = 0x00;
@@ -240,7 +416,7 @@ enum BOOTLOADER_FLASH_INDEX_BYTE {
 
 };
 
-// 0x81
+// Index Byte associated with Family Registry Byte 0x81
 enum BOOTLOADER_INFO_INDEX_BYTE {
 
   BOOTLOADER_VERS          = 0x00,
@@ -248,7 +424,7 @@ enum BOOTLOADER_INFO_INDEX_BYTE {
 
 };
 
-// 0xFF
+// Index Byte associated with Family Registry Byte 0xFF
 enum IDENTITY_INDEX_BYTES {
 
   READ_MCU_TYPE            = 0x00,
@@ -256,14 +432,9 @@ enum IDENTITY_INDEX_BYTES {
   READ_ALM_VERS            = 0x07
 };
 
-typdef enum {
-
-  WRITE_ADDRESS           = 0xAA,
-  READ_ADDRESS            = 0xAB
-
-}i2cAddress;
-
 #define WRITE_FIFO_INPUT_BYTE 0x04
+#define DISABLE 0x00
+#define ENABLE 0x01
 
 class SparkFun_Bio_Sensor_HUB
 {
