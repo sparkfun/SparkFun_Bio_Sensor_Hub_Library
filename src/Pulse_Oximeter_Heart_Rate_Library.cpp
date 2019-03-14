@@ -1,8 +1,17 @@
 /*
-  This is a library for the SparkFun Pulse Oximeter and Heart Rate Monitor
-  By: Elias Santistevan
+  This is an Arduino Library written for the MAXIM 32664 Biometric Sensor Hub 
+  The MAX32664 Biometric Sensor Hub is in actuality a small Cortex M4 microcontroller
+  with pre-loaded firmware and algorithms used to interact with the a number of MAXIM
+  sensors; specifically the MAX30101 Pulse Oximter and Heart Rate Monitor and
+  the KX122 Accelerometer. With that in mind, this library is built to
+  communicate with a middle-person and so has a unique method of communication
+  (family, index, and write bytes) that is more simplistic than writing and reading to 
+  registers, but includes a larger set of definable values.  
+
   SparkFun Electronics
   Date: March, 2019
+  Author: Elias Santistevan
+
   License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
 
   Feel like supporting our work? Buy a board from SparkFun!
@@ -36,7 +45,8 @@ bool SparkFun_Bio_Sensor_HUB::begin( TwoWire &wirePort )
   // reset pin low while we set the MFIO pin high. After 10ms the reset pin
   // then needs to be pushed high. After 50ms the MAX32664 will be in
   // Application mode. I then set the pins back to output so that they are not
-  // held uneccesarily in some strange state. 
+  // held uneccesarily in these states but are instead pulled high by their
+  // internal resistors. 
   digitalWrite(_mfioPin, LOW); 
   delay(1); // Just want to ensure the pin is LOW before we continue
   digitalWrite(_resetPin, LOW); 
