@@ -6,6 +6,14 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#define WRITE_FIFO_INPUT_BYTE 0x04
+#define DISABLE 0x00
+#define ENABLE 0x01
+#define APP_MODE 0x00
+#define BOOTLOADER_MODE 0x08
+#define CMD_DELAY 60 //microseconds
+#define NO_WRITE 0x00 
+
 // Read and write I-squared-C addresses
 typdef enum {
 
@@ -80,6 +88,7 @@ enum OUTPUT_MODE_INDEX_BYTE {
 // Write Bytes associated with OUTPUT_MODE_INDEX_BYTE: SET_FORMAT
 // 0x00. 
 enum OUTPUT_MODE_WRITE_BYTE {
+
   PAUSE                    = 0x00,
   SENSOR_DATA,
   ALM_DATA,
@@ -129,6 +138,17 @@ enum WRITE_REGISTER_INDEX_BYTE {
 
 };
 
+// Write Bytes associated with Index Byte WRITE_REGISTER_INDEX_BYTE
+enum WRITE_REGISTER_WRITE_BYTE {
+
+  WRITE_MAX86140_ID,
+  WRITE_MAX30205_ID,
+  WRITE_MAX30001_ID,
+  WRITE_MAX30101_ID,
+  WRITE_ACCELEROMETER_ID
+
+};
+
 // Index Byte associated with Family Registry Byte 0x41
 enum READ_REGISTER_INDEX_BYTE {
 
@@ -140,6 +160,16 @@ enum READ_REGISTER_INDEX_BYTE {
 
 };
 
+// Write Bytes associated with Index Byte READ_REGISTER_INDEX_BYTE
+enum READ_REGISTER_WRITE_BYTE {
+
+  READ_MAX86140_ID,
+  READ_MAX30205_ID,
+  READ_MAX30001_ID,
+  READ_MAX30101_ID,
+  READ_ACCELEROMETER_ID
+
+};
 // Index Byte associated with Family Registry Byte 0x42
 enum GET_AFE_INDEX_BYTE {
   
@@ -415,10 +445,6 @@ enum IDENTITY_INDEX_BYTES {
   READ_ALM_VERS            = 0x07
 };
 
-#define WRITE_FIFO_INPUT_BYTE 0x04
-#define DISABLE 0x00
-#define ENABLE 0x01
-
 class SparkFun_Bio_Sensor_HUB
 {
   Public:  
@@ -431,4 +457,4 @@ class SparkFun_Bio_Sensor_HUB
   byte _mfioPin;
 };
 #endif
-
+Gk
