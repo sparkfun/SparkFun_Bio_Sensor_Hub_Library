@@ -1,5 +1,5 @@
-#ifndef _SPARKFUN_BIO_SENSOR_HUB_H
-#define _SPARKFUN_BIO_SENSOR_HUB_H
+#ifndef _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H
+#define _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H
 
 #include <Wire.h>
 #include <Arduino.h>
@@ -15,7 +15,7 @@
 #define NO_WRITE 0x00 
 
 // Read and write I-squared-C addresses
-typdef enum {
+typedef enum {
 
   WRITE_ADDRESS           = 0xAA,
   READ_ADDRESS            = 0xAB
@@ -96,7 +96,7 @@ enum OUTPUT_MODE_WRITE_BYTE {
   PAUSE_TWO,
   SENSOR_COUNTER_BYTE,
   ALM_COUNTER_BYTE,
-  SENSOR_ALM_COUNTER,
+  SENSOR_ALM_COUNTER
 
 };
 
@@ -124,7 +124,7 @@ enum FIFO_EXTERNAL_INDEX_BYTE {
 // SAMPLE_SIZE, READ_SENSOR_DATA, and READ_NUM_SAMPLES_INPUT. 
 enum FIFO_OUTPUT_WRITE_BYTE {
 
-  ACCELEROMETER = 0x04; 
+  ACCELEROMETER = 0x04 
 
 };
 // Index Byte associated with Family Registry Byte 0x40
@@ -160,16 +160,6 @@ enum READ_REGISTER_INDEX_BYTE {
 
 };
 
-// Write Bytes associated with Index Byte READ_REGISTER_INDEX_BYTE
-enum READ_REGISTER_WRITE_BYTE {
-
-  READ_MAX86140_ID,
-  READ_MAX30205_ID,
-  READ_MAX30001_ID,
-  READ_MAX30101_ID,
-  READ_ACCELEROMETER_ID
-
-};
 // Index Byte associated with Family Registry Byte 0x42
 enum GET_AFE_INDEX_BYTE {
   
@@ -245,7 +235,7 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
   SET_WSP02_THRESH         = 0x05,
   SET_WSP02_AGC_TOUT       = 0x05,
   SET_WSP02_ALG_TOUT       = 0x05,
-  SET_WSP02_PPG_SIG        = 0x05,
+  SET_WSP02_PPG_SIG        = 0x05
 
 };
 
@@ -255,7 +245,7 @@ enum ALM_AGC_WRITE_BYTE {
   
   AGC_GAIN_ID              = 0x00, 
   AGC_SENSITIVITY_ID,
-  AGC_NUM_SAMP_ID,
+  AGC_NUM_SAMP_ID
 
 };
 
@@ -307,7 +297,7 @@ enum ALM_WSP02_WRITE_BYTE {
   WSP02_MOT_DTCT_PER_ID,
   WSP02_MOT_THRESH_ID,
   WSP02_AGC_TO_ID,
-  WSP02_PD_CONFIG,
+  WSP02_PD_CONFIG
 
 };
 
@@ -358,7 +348,7 @@ enum READ_AGC_ALM_WRITE_BYTE {
   READ_AGC_ID              = 0x00,
   READ_AGC_STEP_SIZE_ID,
   READ_AGC_SENSITIVITY_ID,
-  READ_AGC_NUM_SAMPLES_ID,
+  READ_AGC_NUM_SAMPLES_ID
 
 };
 
@@ -383,8 +373,8 @@ enum READ_WHRM_ALM_WRITE_BYTE {
   READ_WHRM_PD_PRD_ID,
   READ_WHRM_SCD_DEB_ID,
   READ_WHRM_MOT_MAG_ID,
-  READ_WHRM_PD_MIN         = 0x10,
-  READ_WHRM_PD_PPG
+  READ_WHRM_PD_MIN_ID         = 0x10,
+  READ_WHRM_PD_PPG_ID
   // READ_WHRM_BPT_RESULTS = 0x03,
  
 };
@@ -409,7 +399,7 @@ enum READ_WSP02_ALM_WRITE_BYTE {
 // Index Byte associated with Family Registry Byte 0x52
 enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
-  ENABLE_AGC_ALM           = 0x00;
+  ENABLE_AGC_ALM           = 0x00,
   ENABLE_AEC_ALM,
   ENABLE_WHRM_ALM,
   ENABLE_ECG_ALM,
@@ -421,7 +411,7 @@ enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 // Index Byte associated with Family Registry Byte 0x80
 enum BOOTLOADER_FLASH_INDEX_BYTE {
 
-  SET_INIT_VECTOR_BYTES    = 0x00;
+  SET_INIT_VECTOR_BYTES    = 0x00,
   SET_AUTH_BYTES,
   SET_NUM_PAGES,
   ERASE_FLASH,
@@ -445,16 +435,45 @@ enum IDENTITY_INDEX_BYTES {
   READ_ALM_VERS            = 0x07
 };
 
-class SparkFun_Bio_Sensor_HUB
+class SparkFun_Bio_Sensor_Hub
 {
-  Public:  
+  public:  
   // Variables
+ 
+  // Constructor 
+  SparkFun_Bio_Sensor_Hub( uint8_t resetPin, uint8_t mfioPin ); 
 
-  Private:   
+  // Functions
+  bool begin( TwoWire &wirePort = Wire);
+  bool beginBootloader( TwoWire &wirePort = Wire); 
+  bool setDeviceMode( uint8_t boot_mode ); 
+  bool setOutputMode(uint8_t outputType);
+  bool setFIFOThreshold(uint8_t intThresh);   
+  uint8_t numSamplesOutFIFO();
+  uint8_t getDataOutFIFO();
+  uint8_t numSamplesExternalSensor();
+  bool writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
+  bool writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
+  bool writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
+  bool writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
+  bool writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
+  uint8_t readRegisterMAX8614X(uint8_t regAddr);
+  uint8_t readRegisterMAX30205(uint8_t regAddr);
+  uint8_t readRegisterMAX30001(uint8_t regAddr);
+  uint8_t readRegisterMAX30101(uint8_t regAddr);
+  uint8_t readRegisterAccel(uint8_t regAddr);
+
+  private:   
   // Variables 
-  byte _address;
   byte _resetPin;
   byte _mfioPin;
+  
+  // I-squared-C Class
+  TwoWire *_i2cPort;
+
+  // Functions
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte,uint8_t _writeByte, uint8_t numOfReads ); 
+  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _regAddr, uint8_t _regVal);
+  uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
 };
 #endif
-Gk

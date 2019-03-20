@@ -18,24 +18,22 @@
 */
 
 
-#include "SparkFun_Bio_Sensor_HUB.h"
+#include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-// As far as I know the constructor does not need an I-squared-C address
-// because there is only two, one for reading and another for writing, and they
-// are not configureable. The reset and MFIO pin are required to set the board
-// into application and bootloader mode. 
-SparkFun_Bio_Sensor_HUB::SparkFun_Bio_Sensor_HUB(i2cAddress address, uint8_t resetPin, uint8_t mfioPin) 
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub( uint8_t resetPin, uint8_t mfioPin ) 
 { 
-  _address = address; 
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
   pinMode(_resetPin, OUTPUT); // Set these pins as output
   // May also receive information over this line in which case it should be set as input: 
   pinMode(_mfioPin, OUTPUT); 
-
 }
 
-bool SparkFun_Bio_Sensor_HUB::begin( TwoWire &wirePort )
+// Begin does not need an  I-squared-C address
+// because there is only two, one for reading and another for writing, and they
+// are not configureable. The reset and MFIO pin are required to set the board
+// into application and bootloader mode. 
+bool SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort )
 {
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
@@ -58,7 +56,7 @@ bool SparkFun_Bio_Sensor_HUB::begin( TwoWire &wirePort )
   pinMode(_mfioPin, OUTPUT); 
 
   // Let's check to see if the device made it into application mode.  
-  uint8_t responseByte = readRegister(READ_DEVICE_MODE, 0x00); 
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 1); 
   if(responseByte != APP_MODE)
     return true;
   else
@@ -68,9 +66,9 @@ bool SparkFun_Bio_Sensor_HUB::begin( TwoWire &wirePort )
 // This funcation allows the Bio-sensor HUB to enter into bootloader mode which
 // allows the user to program it. This is achieved by toggling the reset and
 // MFIO pin in a different order than what is used for application mode. 
-bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort ) 
+bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) 
 {
-  _i2cport = &wirePort; 
+  _i2cPort = &wirePort; 
 
   // Bootloader mode is selected by writing the MFIO pin LOW while the reset pin
   // is low, and then after 10ms writing the resetPin high. After 50ms the bio
@@ -86,7 +84,7 @@ bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort )
   pinMode(_mfioPin, OUTPUT); 
   
   // Let's check to see if the device made it into bootloader mode.  
-  uint8_t responseByte = readRegister(READ_DEVICE_MODE, 0x00); 
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 1); 
   if(responseByte != BOOTLOADER_MODE)
     return true; 
   else
@@ -96,18 +94,18 @@ bool SparkFun_Bio_Sensor_HUB:: beginBootloader( TwoWire &wirePort )
 
 // Skipping this for now. How does this differ from starting the device in
 // bootloader or application mode?
-bool SparkFun_Bio_Sensor_HUB::setDeviceMode(uint8_t boot_mode) 
+bool SparkFun_Bio_Sensor_Hub::setDeviceMode(uint8_t boot_mode) 
 {
 
 }
 
-bool SparkFun_Bio_Sensor_HUB::setOutputMode(uint8_t outputType)
+bool SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType)
 {
   if (outputType < 0x00 || outputType > 0x07) // Bytes between PAUSE and SENSOR_ALM_COUNTER
     return false; 
 
   //
-  uint8_t responseByte = writeRegister(OUTPUT_FORMAT, SET_FORMAT, outputType);  
+  uint8_t responseByte = writeByte(OUTPUT_FORMAT, SET_FORMAT, outputType);  
 
   if( responseByte != SUCCESS)
     return false; 
@@ -116,11 +114,11 @@ bool SparkFun_Bio_Sensor_HUB::setOutputMode(uint8_t outputType)
 }
 
 // Takes value between 0-255
-bool SparkFun_Bio_Sensor_HUB::setFIFOThreshold(uint8_t intThresh) {
+bool SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
   if( intThresh < 0 || intThresh > 255)
     return false; 
 
-  uint8_t responseByte = writeRegister(OUTPUT_FORMAT, SET_THRESHOLD, intThresh); 
+  uint8_t responseByte = writeByte(OUTPUT_FORMAT, SET_THRESHOLD, intThresh); 
   if( responseByte != SUCCESS)
     return false; 
   else
@@ -128,31 +126,31 @@ bool SparkFun_Bio_Sensor_HUB::setFIFOThreshold(uint8_t intThresh) {
 
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::numSamplesOutFIFO(){
+uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO(){
 
-  uint8_t sampAvail = readRegister(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
+  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
   return sampAvail;
 
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::getDataOutFIFO(){
+uint8_t SparkFun_Bio_Sensor_Hub::getDataOutFIFO(){
 
-  uint8_t sampAvail = readRegister(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
-  uint8_t dataAvail = readRegister(READ_DATA_OUTPUT, READ_DATA, NO_WRITE, sampAvail); 
+  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
+  uint8_t dataAvail = readByte(READ_DATA_OUTPUT, READ_DATA, NO_WRITE, sampAvail); 
   return dataAvail; //pointer instead?
 
 }
 
 // This function adds support for the acceleromter that is NOT included on
 // SparkFun's product, The Family Registery of 0x13 and 0x14 is skipped for now. 
-uint8_t SparkFun_Bio_Sensor_HUB::numSamplesExternalSensor(){
+uint8_t SparkFun_Bio_Sensor_Hub::numSamplesExternalSensor(){
 
-  uint8_t sampAvail = readRegister(READ_DATA_INPUT, SAMPLE_SIZE, ACCELEROMETER, ); 
+  uint8_t sampAvail = readByte(READ_DATA_INPUT, SAMPLE_SIZE, ACCELEROMETER, 1); 
   return sampAvail;
 
 }
 
-bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal)
+bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal)
 {
   // Multiple writes, adjust writeRegister function
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX86140, WRITE_MAX86140_ID, regAddr, regVal);
@@ -162,7 +160,7 @@ bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX861X(uint8_t regAddr, uint8_t regV
     return false; 
 }
 
-bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal)
+bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal)
 {
   // Multiple writes, adjust writeRegister function
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30205, WRITE_MAX30205_ID, regAddr, regVal);
@@ -172,7 +170,7 @@ bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30205(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
-bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal)
+bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal)
 {
   // Multiple writes, adjust writeRegister function
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30001, WRITE_MAX30001_ID, regAddr, regVal);
@@ -182,7 +180,7 @@ bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30001(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
-bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal)
+bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal)
 {
   // Multiple writes, adjust writeRegister function
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30101, WRITE_MAX30101_ID, regAddr, regVal);
@@ -192,7 +190,7 @@ bool SparkFun_Bio_Sensor_HUB::writeRegisterMAX30101(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
-bool SparkFun_Bio_Sensor_HUB::writeRegisterAccel(uint8_t regAddr, uint8_t regVal)
+bool SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal)
 {
   // Multiple writes, adjust writeRegister function
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_ACCELEROMETER, WRITE_ACCELEROMETER_ID, regAddr, regVal);
@@ -202,38 +200,38 @@ bool SparkFun_Bio_Sensor_HUB::writeRegisterAccel(uint8_t regAddr, uint8_t regVal
     return false; 
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::readRegisterMAX8614X(uint8_t regAddr, uint8_t regVal){
+uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX8614X(uint8_t regAddr){
 
-  uint8_t regCont = readRegister(READ_REGISTER, READ_MAX86140, READ_MAX86140_ID, regAddr, 1); 
+  uint8_t regCont = readByte(READ_REGISTER, READ_MAX86140, regAddr, 1); 
   return regCont;
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::readRegisterMAX30205(uint8_t regAddr, uint8_t regVal){
+uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30205(uint8_t regAddr){
 
-  uint8_t regCont = readRegister(READ_REGISTER, READ_MAX30205, READ_MAX30205_ID, regAddr, 1); 
+  uint8_t regCont = readByte(READ_REGISTER, READ_MAX30205, regAddr, 1); 
   return regCont;
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::readRegisterMAX30001(uint8_t regAddr, uint8_t regVal){
+uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30001(uint8_t regAddr){
 
-  uint8_t regCont = readRegister(READ_REGISTER, READ_MAX30001, READ_MAX30001_ID, regAddr, 1); 
+  uint8_t regCont = readByte(READ_REGISTER, READ_MAX30001, regAddr, 1); 
   return regCont;
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::readRegisterMAX30101(uint8_t regAddr, uint8_t regVal){
+uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30101(uint8_t regAddr){
 
-  uint8_t regCont = readRegister(READ_REGISTER, READ_MAX30101, READ_MAX30101_ID, regAddr, 1); 
+  uint8_t regCont = readByte(READ_REGISTER, READ_MAX30101, regAddr, 1); 
   return regCont;
 }
 
-uint8_t SparkFun_Bio_Sensor_HUB::readRegisterAccel(uint8_t regAddr, uint8_t regVal){
+uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr){
 
-  uint8_t regCont = readRegister(READ_REGISTER, READ_ACCELEROMETER, READ_ACCELEROMETER_ID, regAddr, 1); 
+  uint8_t regCont = readByte(READ_REGISTER, READ_ACCELEROMETER, regAddr, 1); 
   return regCont;
 }
 
 
-uint8_t SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
 {
   _i2cPort->beginTransmission(WRITE_ADDRESS);     
   _i2cPort->write(_familyByte);    
@@ -249,9 +247,25 @@ uint8_t SparkFun_Bio_Sensor_HUB::writeRegister(uint8_t _familyByte, uint8_t _ind
   return statusByte; 
 }
 
+uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal)
+{
+  _i2cPort->beginTransmission(WRITE_ADDRESS);     
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(0x00);    
+  _i2cPort->write(_regAddr);    
+  _i2cPort->write(_regVal);    
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(READ_ADDRESS, 1); //Status Byte
+  uint8_t statusByte = _i2cPort->read(); 
+  _i2cPort->endTransmission();
+  return statusByte; 
+}
+
 // Some reads requre a writeByte
-uint8_t SparkFun_Bio_Sensor_HUB::readRegister(uint8_t _familyByte, uint8_t _indexByte, 
-                                              uint8_t _writeByte, uint8_t numOfReads )
+uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
   _i2cPort->beginTransmission(WRITE_ADDRESS);
   _i2cPort->write(_familyByte);    
