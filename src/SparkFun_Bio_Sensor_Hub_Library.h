@@ -5,7 +5,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-
 #define WRITE_FIFO_INPUT_BYTE 0x04
 #define DISABLE 0x00
 #define ENABLE 0x01
@@ -14,13 +13,8 @@
 #define CMD_DELAY 60 //microseconds
 #define NO_WRITE 0x00 
 
-// Read and write I-squared-C addresses
-typedef enum {
+#define BIO_ADDRESS 0x55
 
-  WRITE_ADDRESS           = 0xAA,
-  READ_ADDRESS            = 0xAB
-
-}i2cAddress;
 
 // The family registers are the largest 
 enum FAMILY_REGISTER_BYTES {
@@ -135,17 +129,6 @@ enum WRITE_REGISTER_INDEX_BYTE {
   WRITE_MAX30001,
   WRITE_MAX30101,
   WRITE_ACCELEROMETER
-
-};
-
-// Write Bytes associated with Index Byte WRITE_REGISTER_INDEX_BYTE
-enum WRITE_REGISTER_WRITE_BYTE {
-
-  WRITE_MAX86140_ID,
-  WRITE_MAX30205_ID,
-  WRITE_MAX30001_ID,
-  WRITE_MAX30101_ID,
-  WRITE_ACCELEROMETER_ID
 
 };
 
@@ -444,7 +427,7 @@ class SparkFun_Bio_Sensor_Hub
   SparkFun_Bio_Sensor_Hub( uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions
-  bool begin( TwoWire &wirePort = Wire);
+  uint8_t begin( TwoWire &wirePort = Wire);
   bool beginBootloader( TwoWire &wirePort = Wire); 
   bool setDeviceMode( uint8_t boot_mode ); 
   bool setOutputMode(uint8_t outputType);
@@ -472,8 +455,8 @@ class SparkFun_Bio_Sensor_Hub
   TwoWire *_i2cPort;
 
   // Functions
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte,uint8_t _writeByte, uint8_t numOfReads ); 
-  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _regAddr, uint8_t _regVal);
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
+  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal);
   uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
 };
 #endif
