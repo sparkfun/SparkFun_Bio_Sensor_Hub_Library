@@ -13,8 +13,8 @@
 #define CMD_DELAY 60 //microseconds
 #define NO_WRITE 0x00 
 
-#define BIO_ADDRESS 0x55
 
+typedef enum SF_BIO_I2C_ADDRESS { BIO_ADDRESS = 0x55 } bioI2CAddress; 
 
 // The family registers are the largest 
 enum FAMILY_REGISTER_BYTES {
@@ -168,7 +168,7 @@ enum DUMP_REGISTER_INDEX_BYTE {
 // Index Byte associated with Family Registry Byte 0x44
 enum SENSOR_ENABLE_INDEX_BYTE {
   
-  ENABLE_MAX86140,
+  ENABLE_MAX86140 = 0x00,
   ENABLE_MAX30205,
   ENABLE_MAX30001,
   ENABLE_MAX30101,
@@ -424,22 +424,32 @@ class SparkFun_Bio_Sensor_Hub
   // Variables
  
   // Constructor 
-  SparkFun_Bio_Sensor_Hub( uint8_t resetPin, uint8_t mfioPin ); 
+  SparkFun_Bio_Sensor_Hub(bioI2CAddress address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions
   uint8_t begin( TwoWire &wirePort = Wire);
   bool beginBootloader( TwoWire &wirePort = Wire); 
+
+  bool enableSensorMAX86140(uint8_t enable);
+  bool enableSensorMAX30205(uint8_t enable); 
+  bool enableSensorMAX30001(uint8_t enable);
+  bool enableSensorMAX30101(uint8_t enable);
+  bool enableSensorAccel(uint8_t enable);
+
   bool setDeviceMode( uint8_t boot_mode ); 
   bool setOutputMode(uint8_t outputType);
   bool setFIFOThreshold(uint8_t intThresh);   
+
   uint8_t numSamplesOutFIFO();
   uint8_t getDataOutFIFO();
   uint8_t numSamplesExternalSensor();
+
   bool writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
   bool writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
   bool writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
   bool writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
   bool writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
+
   uint8_t readRegisterMAX8614X(uint8_t regAddr);
   uint8_t readRegisterMAX30205(uint8_t regAddr);
   uint8_t readRegisterMAX30001(uint8_t regAddr);
@@ -448,15 +458,16 @@ class SparkFun_Bio_Sensor_Hub
 
   private:   
   // Variables 
-  byte _resetPin;
-  byte _mfioPin;
+  uint8_t _resetPin;
+  uint8_t _mfioPin;
+  uint8_t _address; 
   
   // I-squared-C Class
   TwoWire *_i2cPort;
 
   // Functions
   uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
-  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal);
   uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
+  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal);
 };
 #endif
