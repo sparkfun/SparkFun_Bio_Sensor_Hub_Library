@@ -12,9 +12,7 @@
 #define BOOTLOADER_MODE 0x08
 #define CMD_DELAY 60 //microseconds
 #define NO_WRITE 0x00 
-
-
-typedef enum SF_BIO_I2C_ADDRESS { BIO_ADDRESS = 0x55 } bioI2CAddress; 
+const int BIO_ADDRESS = 0x55;
 
 // The family registers are the largest 
 enum FAMILY_REGISTER_BYTES {
@@ -424,7 +422,7 @@ class SparkFun_Bio_Sensor_Hub
   // Variables
  
   // Constructor 
-  SparkFun_Bio_Sensor_Hub(bioI2CAddress address, uint8_t resetPin, uint8_t mfioPin ); 
+  SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions
   uint8_t begin( TwoWire &wirePort = Wire);
@@ -460,13 +458,13 @@ class SparkFun_Bio_Sensor_Hub
   // Variables 
   uint8_t _resetPin;
   uint8_t _mfioPin;
-  uint8_t _address; 
+  int _address; 
   
   // I-squared-C Class
   TwoWire *_i2cPort;
 
   // Functions
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
+  uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
   uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
   uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal);
 };

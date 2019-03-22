@@ -20,7 +20,7 @@ kk
 
 #include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(bioI2CAddress address, uint8_t resetPin, uint8_t mfioPin ) 
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ) 
 { 
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
@@ -313,7 +313,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _ind
 }
 
 // Some reads requre a writeByte
-uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
+uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
 {
   uint8_t statusByte; 
   _i2cPort->beginTransmission(_address);
