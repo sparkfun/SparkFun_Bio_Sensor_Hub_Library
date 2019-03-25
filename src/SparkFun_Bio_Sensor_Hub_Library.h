@@ -18,7 +18,7 @@ const int BIO_ADDRESS = 0x55;
 enum FAMILY_REGISTER_BYTES {
   
   HUB_STATUS               = 0x00,
-  DEVICE_MODE,
+  SET_DEVICE_MODE,
   READ_DEVICE_MODE,
   OUTPUT_FORMAT            = 0x10,  
   READ_DATA_OUTPUT         = 0x12,
@@ -425,13 +425,15 @@ class SparkFun_Bio_Sensor_Hub
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions
-  uint8_t begin( TwoWire &wirePort = Wire);
+  uint8_t * begin( TwoWire &wirePort = Wire);
   bool beginBootloader( TwoWire &wirePort = Wire); 
+  uint8_t getMCUtype(); 
+  uint8_t setOperatingMode(uint8_t selection); 
 
   bool enableSensorMAX86140(uint8_t enable);
   bool enableSensorMAX30205(uint8_t enable); 
   bool enableSensorMAX30001(uint8_t enable);
-  bool enableSensorMAX30101(uint8_t enable);
+  uint8_t enableSensorMAX30101(uint8_t enable);
   bool enableSensorAccel(uint8_t enable);
 
   bool setDeviceMode( uint8_t boot_mode ); 

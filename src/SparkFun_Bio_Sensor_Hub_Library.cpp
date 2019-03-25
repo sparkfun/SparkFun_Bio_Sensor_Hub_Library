@@ -25,8 +25,8 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, 
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
   _address = address; 
-  pinMode(_resetPin, OUTPUT); // Set these pins as output
   pinMode(_mfioPin, OUTPUT); 
+  pinMode(_resetPin, OUTPUT); // Set these pins as output
   
 }
 
@@ -44,18 +44,15 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort )
   // Application mode. I then set the pins back to output so that they are not
   // held uneccesarily in these states but are instead pulled high by their
   // internal resistors. 
-  digitalWrite(_mfioPin, LOW); 
-  delay(1); // Just want to ensure the pin is LOW before we continue
   digitalWrite(_resetPin, LOW); 
   digitalWrite(_mfioPin, HIGH); 
-  delay(9); 
+  delay(10); 
   digitalWrite(_resetPin, HIGH); 
   delay(50); //Application mode is enabled when this ends 
   pinMode(_resetPin, OUTPUT); 
-  pinMode(_mfioPin, OUTPUT); 
+  pinMode(_mfioPin, INPUT); 
 
-  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 1);//no Write byte here 
-  // Returns 0x00 upon success!
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2);
   return responseByte;
 }
 
@@ -69,10 +66,8 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort )
   // Bootloader mode is selected by writing the MFIO pin LOW while the reset pin
   // is low, and then after 10ms writing the resetPin high. After 50ms the bio
   // will be in 'bootloader' mode. 
-  digitalWrite(_mfioPin, HIGH);
-  delay(1); // Just want to ensure the pin is HIGH before we continue
-  digitalWrite(_resetPin, LOW); 
   digitalWrite(_mfioPin, LOW); 
+  digitalWrite(_resetPin, LOW); 
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
   delay(50);  //Bootloader mode is enabled when this ends.  
@@ -82,11 +77,18 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort )
   // Let's check to see if the device made it into bootloader mode.  
   uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2); 
   return responseByte;
-  //if(responseByte != BOOTLOADER_MODE)
-  //  return true; 
-  //else
-  //  return false; 
 
+}
+
+
+uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection){
+    uint8_t statusByte = writeByte(SET_DEVICE_MODE, 0x00, selection);
+    return statusByte; 
+}
+uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype()
+{ 
+  uint8_t mcu = readByte(IDENTITY, READ_MCU_TYPE, 0x00, 2);  
+  return mcu; 
 }
 
 bool SparkFun_Bio_Sensor_Hub::enableSensorMAX86140(uint8_t enable) {
@@ -119,13 +121,13 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
 
 }
 
-bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
+uint8_t SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 
-  if(enable != 0 || enable != 1)
-    return false; 
+  //if(enable != 0 || enable != 1)
+  //  return false; 
 
-  writeByte(ENABLE_SENSOR, ENABLE_MAX30101, enable);
-  return true; 
+  uint8_t responseByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, enable);
+  return responseByte; 
 
 }
 
@@ -284,14 +286,12 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
-  _i2cPort->write(0x00);    
   _i2cPort->write(_writeByte); //multiple writes?
   _i2cPort->endTransmission(); 
   delayMicroseconds(CMD_DELAY); 
 
   _i2cPort->requestFrom(_address, 1); //Status Byte
   uint8_t statusByte = _i2cPort->read(); 
-  _i2cPort->endTransmission();
   return statusByte; 
 }
 
@@ -312,30 +312,22 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _ind
   return statusByte; 
 }
 
-// Some reads requre a writeByte
+// Some reads require a writeByte
 uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
 {
-  uint8_t statusByte; 
+  uint8_t returnByte[_numOfReads]; 
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->endTransmission();
   delayMicroseconds(CMD_DELAY); 
+
   _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
-  if(_numOfReads == 1){
-    statusByte = _i2cPort->read(); //Status byte is alwasy sent before read value
-    return(statusByte); 
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte[i] = _i2cPort->read(); //Status byte is alwasy sent before read value
   }
-  else if (!statusByte) { // The status byte is zero upon success
-    //_i2cPort->available();
-    // How many of these, how will these sepcified, let's see if any function
-    // requires multiples read bytes.  
-    uint8_t someVal = _i2cPort->read();
-    return someVal; 
-  }
-  else {
-    return statusByte; 
-  }
+
+  return returnByte; 
 
 }
 
