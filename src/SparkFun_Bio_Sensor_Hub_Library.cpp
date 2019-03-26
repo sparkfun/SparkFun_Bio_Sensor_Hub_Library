@@ -30,43 +30,45 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, 
   
 }
 
-// The reset and MFIO pin are required to set the board
-// into application and bootloader mode. 
+// Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
+// The following function initializes the sensor. To place the MAX32664 into
+// application mode, the MFIO pin must be pulled HIGH while the board is held
+// in reset for 10ms. After 50 addtional ms have elapsed the board should be 
+// in application mode and will return two bytes, the first 0x00 is a 
+// successful communcation byte, followed by 0x00 which is the byte indicating 
+// which mode the IC is in. 
 uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
 
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
   //  to avoid multiple begins with other sketches.
 
-  // To enter the bio-sensor hub into 'application' mode we need to hold the
-  // reset pin low while we set the MFIO pin high. After 10ms the reset pin
-  // then needs to be pushed high. After 50ms the MAX32664 will be in
-  // Application mode. I then set the pins back to output so that they are not
-  // held uneccesarily in these states but are instead pulled high by their
-  // internal resistors. 
   digitalWrite(_resetPin, LOW); 
   digitalWrite(_mfioPin, HIGH); 
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
   delay(50); //Application mode is enabled when this ends 
   pinMode(_resetPin, OUTPUT); 
-  pinMode(_mfioPin, INPUT); 
+  pinMode(_mfioPin, INPUT); // Input so that it may be used
 
   uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2);
   return responseByte;
 
 }
 
-// This funcation allows the Bio-sensor HUB to enter into bootloader mode which
-// allows the user to program it. This is achieved by toggling the reset and
-// MFIO pin in a different order than what is used for application mode. 
+// Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
+// The following function puts the MAX32664 into bootloader mode. To place the MAX32664 into
+// bootloader mode, the MFIO pin must be pulled LOW while the board is held
+// in reset for 10ms. After 50 addtional ms have elapsed the board should be 
+// in bootloader mode and will return two bytes, the first 0x00 is a 
+// successful communcation byte, followed by 0x08 which is the byte indicating 
+// that the board is in bootloader mode. 
 bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 
   _i2cPort = &wirePort; 
-
-  // Bootloader mode is selected by writing the MFIO pin LOW while the reset pin
-  // is low, and then after 10ms writing the resetPin high. After 50ms the bio
-  // will be in 'bootloader' mode. 
+  //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
+  //  to avoid multiple begins with other sketches.
+  
   digitalWrite(_mfioPin, LOW); 
   digitalWrite(_resetPin, LOW); 
   delay(10); 
@@ -81,113 +83,191 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 
 }
 
-
+// Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
+// The following function is an alternate way to set the mode of the of
+// MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
+// well as reset. 
+// INCOMPLETE
 uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
+   
+    // Must be one of the three....
+    if (selection != EXIT_BOOTLOADER || selection != RESET || selection != ENTER_BOOTLOADER)
+      return INCORR_PARAM;
 
     uint8_t statusByte = writeByte(SET_DEVICE_MODE, 0x00, selection);
-    return statusByte; 
+    if (statusByte != SUCCESS ) 
+      return statusByte; 
+
+    // Here we'll check if the board made it into Bootloader mode...
+    uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2); 
+    return responseByte; // This is in fact the status byte, need second returned byte - bootloader mode
 
 }
 
+// Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
+// The following function returns a byte that signifies the microcontoller that
+// is in communcation with your host microcontroller. Returns 0x00 for the
+// MAX32625 and 0x01 for the MAX32660/MAX32664. 
+// INCOMPLETE
 uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype() { 
 
-  uint8_t mcu = readByte(IDENTITY, READ_MCU_TYPE, 0x00, 2);  
-  return mcu; 
+  uint8_t mcu = readByte(IDENTITY, READ_MCU_TYPE, NO_WRITE, 2);  
+  return mcu; // Needs the second byte returned, not the first. 
 
 }
 
+// Family Byte: BOOTLOADER_INFO (0x80), Index Byte: BOOTLOADER_VERS (0x00) 
+// This function checks the version number of the bootloader on the chip and
+// returns a four bytes: Major Revision Byte, Minor Revision Byte, Space Byte,
+// and the Revision Byte. 
+// INCOMPLETE
+long  SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
+
+  long revNum = readByte(BOOTLOADiER_INFO, BOOTLOADER_VERS, 0x00, 3);   
+  return revNum
+
+}
+
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
+// Byte: enable (parameter - 0x00 or 0x01). 
+// This function enables the MAX86140. 
 bool SparkFun_Bio_Sensor_Hub::enableSensorMAX86140(uint8_t enable) {
 
   if(enable != 0 || enable != 1)
     return false; 
 
-  writeByte(ENABLE_SENSOR, ENABLE_MAX86140, enable);
-  return true; 
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX86140, enable);
+  if( statusByte == SUCCESS )
+    return true; 
+  else
+    return false; 
 
 }
 
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
+// Byte: enable (parameter - 0x00 or 0x01). 
+// This function enables the MAX30205. 
 bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30205(uint8_t enable) {
 
   if(enable != 0 || enable != 1)
     return false; 
   
-  writeByte(ENABLE_SENSOR, ENABLE_MAX30205, enable);
-  return true; 
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30205, enable);
+  if( statusByte == SUCCESS ) 
+    return true; 
+  else
+    return false; 
 
 }
 
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
+// Byte: enable (parameter - 0x00 or 0x01). 
+// This function enables the MAX30001. 
 bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
 
   if(enable != 0 || enable != 1)
     return false; 
 
-  writeByte(ENABLE_SENSOR, ENABLE_MAX30001, enable);
-  return true; 
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30001, enable);
+  if( statusByte == SUCCESS ) 
+    return true; 
+  else
+    return false;
 
 }
 
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
+// Byte: enable (parameter - 0x00 or 0x01).
+// This function enables the MAX30101. 
 uint8_t SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 
-  //if(enable != 0 || enable != 1)
-  //  return false; 
+  if(enable != 0 || enable != 1)
+    return false; 
 
+  // Check that communication was successful, not that the sensor is enabled.
   uint8_t responseByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, enable);
-  return responseByte; 
+  if( responseByte == SUCCESS ) 
+    return true; 
+  else
+    return false; 
 
 }
 
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
+// Byte: enable (parameter - 0x00 or 0x01). 
+// This function enables the ACCELEROMETER. 
 bool SparkFun_Bio_Sensor_Hub::enableSensorAccel(uint8_t enable) {
 
   if(enable != 0 || enable != 1)
     return false; 
   
-  writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, enable);
-  return true; 
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, enable);
+  if( statusByte == SUCCESS ) 
+    return true; 
+  else
+    return false; 
 
 }
 
-// Skipping this for now. How does this differ from starting the device in
-// bootloader or application mode?
-bool SparkFun_Bio_Sensor_Hub::setDeviceMode(uint8_t boot_mode) {
-
-}
-
+// Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
+// Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
 bool SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 
-  if (outputType < 0x00 || outputType > 0x07) // Bytes between PAUSE and SENSOR_ALM_COUNTER
+  if (outputType < PAUSE || outputType > SENSOR_ALM_COUNTER) // Bytes between 0x00 and 0x07
     return false; 
 
-  //
-  uint8_t responseByte = writeByte(OUTPUT_FORMAT, SET_FORMAT, outputType);  
-
-  if( responseByte != SUCCESS)
-    return false; 
-  else
+  // Check that communication was successful, not that the IC is outputting
+  // correct format. 
+  uint8_t statusByte = writeByte(OUTPUT_FORMAT, SET_FORMAT, outputType);  
+  if( statusByte == SUCCESS)
     return true; 
+  else
+    return false; 
 
 }
 
-// Takes value between 0-255
+// Family Byte: OUTPUT_FORMAT, Index Byte: SET_THRESHOLD, Write byte: intThres
+// (parameter - value betwen 0 and 0xFF).
+// This function changes the threshold for the FIFO interrupt bit/pin. The
+// interrupt pin is the MFIO pin which is set to INPUT after IC initialization
+// (begin). 
 bool SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
 
   if( intThresh < 0 || intThresh > 255)
     return false; 
-
-  uint8_t responseByte = writeByte(OUTPUT_FORMAT, SET_THRESHOLD, intThresh); 
-  if( responseByte != SUCCESS)
-    return false; 
-  else
+ 
+  // Checks that there was succesful communcation, not that the threshold was
+  // set correctly. 
+  uint8_t statusByte = writeByte(OUTPUT_FORMAT, SET_THRESHOLD, intThresh); 
+  if( statusByte == SUCCESS)
     return true; 
+  else
+    return false; 
 
 }
 
+// Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
+// Byte: NONE
+// This function returns the number of samples available in the FIFO. 
+// INCOMPLETE
 uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
 
-  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
-  return sampAvail;
+  uint8_t sampAvail;
+
+  // Checks the status byte but not the number of samples....
+  uint8_t statusByte = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
+  if( statusByte == SUCCESS )
+    return sampAvail;
 
 }
 
+// Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+// Byte: NONE
+// This function 
 uint8_t SparkFun_Bio_Sensor_Hub::getDataOutFIFO() {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 

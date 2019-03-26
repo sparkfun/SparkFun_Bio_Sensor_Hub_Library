@@ -12,6 +12,7 @@
 #define BOOTLOADER_MODE 0x08
 #define CMD_DELAY 60 //microseconds
 #define NO_WRITE 0x00 
+#define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
 
 // The family registers are the largest 
@@ -414,6 +415,7 @@ enum IDENTITY_INDEX_BYTES {
   READ_MCU_TYPE            = 0x00,
   READ_SENSOR_HUB_VERS     = 0x03,
   READ_ALM_VERS            = 0x07
+
 };
 
 class SparkFun_Bio_Sensor_Hub
@@ -425,7 +427,7 @@ class SparkFun_Bio_Sensor_Hub
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions
-  uint8_t * begin( TwoWire &wirePort = Wire);
+  uint8_t begin( TwoWire &wirePort = Wire);
   bool beginBootloader( TwoWire &wirePort = Wire); 
   uint8_t getMCUtype(); 
   uint8_t setOperatingMode(uint8_t selection); 
