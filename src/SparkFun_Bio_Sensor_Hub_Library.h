@@ -2,9 +2,8 @@
 #define _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H
 
 #include <Wire.h>
-#include <Arduino.h>
-#include <Wire.h>
 #include <SPI.h>
+#include <Arduino.h>
 #define WRITE_FIFO_INPUT_BYTE 0x04
 #define DISABLE 0x00
 #define ENABLE 0x01
@@ -430,6 +429,7 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t begin( TwoWire &wirePort = Wire);
   bool beginBootloader( TwoWire &wirePort = Wire); 
   uint8_t getMCUtype(); 
+  long getBootloaderInf();
   uint8_t setOperatingMode(uint8_t selection); 
 
   bool enableSensorMAX86140(uint8_t enable);

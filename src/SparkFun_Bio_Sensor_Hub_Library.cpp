@@ -39,6 +39,7 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, 
 // which mode the IC is in. 
 uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
 
+  uint8_t * responseByte;
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
   //  to avoid multiple begins with other sketches.
@@ -51,8 +52,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   pinMode(_resetPin, OUTPUT); 
   pinMode(_mfioPin, INPUT); // Input so that it may be used
 
-  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2);
-  return responseByte;
+  responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2);
+  return responseByte[1];
 
 }
 
@@ -118,13 +119,21 @@ uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype() {
 
 // Family Byte: BOOTLOADER_INFO (0x80), Index Byte: BOOTLOADER_VERS (0x00) 
 // This function checks the version number of the bootloader on the chip and
-// returns a four bytes: Major Revision Byte, Minor Revision Byte, Space Byte,
+// returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
 // and the Revision Byte. 
 // INCOMPLETE
-long  SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
+long SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 
-  long revNum = readByte(BOOTLOADiER_INFO, BOOTLOADER_VERS, 0x00, 3);   
-  return revNum
+  long bootVers = 0;
+  uint8_t * revNum = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4);   
+  if( revNum[1] != SUCCESS )
+    return ERR_UNKNOWN; 
+  else {
+    bootVers |= (revNum[1] << 16);
+    bootVers |= (revNum[2] << 8); 
+    bootVers |= revNum[3]; 
+    return bootVers;
+  }
 
 }
 
@@ -267,7 +276,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
 
 // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
 // Byte: NONE
-// This function 
+// This function returns the data in the FIFO. 
+// INCOMPLETE
 uint8_t SparkFun_Bio_Sensor_Hub::getDataOutFIFO() {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
@@ -276,6 +286,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::getDataOutFIFO() {
 
 }
 
+// Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+// Byte: NONE
 // This function adds support for the acceleromter that is NOT included on
 // SparkFun's product, The Family Registery of 0x13 and 0x14 is skipped for now. 
 uint8_t SparkFun_Bio_Sensor_Hub::numSamplesExternalSensor() {
@@ -285,8 +297,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesExternalSensor() {
 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX86140 (0x00), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
+// or non-successful write.  
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal) {
-  // Multiple writes, adjust writeRegister function
+
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX86140, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
@@ -294,8 +311,13 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regV
     return false; 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAX30205 sensor and returns a boolean indicating a successful or
+// non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal) {
-  // Multiple writes, adjust writeRegister function
+ 
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30205, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
@@ -303,8 +325,13 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAX30001 sensor and returns a boolean indicating a successful or
+// non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal) {
-  // Multiple writes, adjust writeRegister function
+  
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
@@ -312,8 +339,13 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAX30101 sensor and returns a boolean indicating a successful or
+// non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal) {
-  // Multiple writes, adjust writeRegister function
+
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
@@ -321,8 +353,13 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t reg
     return false; 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the Accelerometer and returns a boolean indicating a successful or
+// non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal) {
-  // Multiple writes, adjust writeRegister function
+
   uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
@@ -330,6 +367,10 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal
     return false; 
 }
 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX86140 and MAX8641
+// Sensors and returns the values at that register. 
 uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX8614X(uint8_t regAddr) {
 
   uint8_t regCont = readByte(READ_REGISTER, READ_MAX86140, regAddr, 1); 
@@ -337,6 +378,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX8614X(uint8_t regAddr) {
 
 }
 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30205 (0x01), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30205 Sensor and
+// returns the values at that register. 
 uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30205(uint8_t regAddr) {
 
   uint8_t regCont = readByte(READ_REGISTER, READ_MAX30205, regAddr, 1); 
@@ -344,6 +389,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30205(uint8_t regAddr) {
 
 }
 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30001 (0x02), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30001 Sensor and
+// returns the values at that register. 
 uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30001(uint8_t regAddr) {
 
   uint8_t regCont = readByte(READ_REGISTER, READ_MAX30001, regAddr, 1); 
@@ -351,6 +400,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30001(uint8_t regAddr) {
 
 }
 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30101 Sensor and
+// returns the values at that register. 
 uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30101(uint8_t regAddr) {
 
   uint8_t regCont = readByte(READ_REGISTER, READ_MAX30101, regAddr, 1); 
@@ -358,6 +411,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30101(uint8_t regAddr) {
 
 }
 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30101 Sensor and
+// returns the values at that register. 
 uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 
   uint8_t regCont = readByte(READ_REGISTER, READ_ACCELEROMETER, regAddr, 1); 
@@ -365,7 +422,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 
 }
 
-
+// This function uses the given family, index, and write byte to communicate
+// with the MAX32664. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte) {
 
   _i2cPort->beginTransmission(_address);     
@@ -403,7 +461,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _ind
 uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
 {
 
-  uint8_t returnByte[_numOfReads]; 
+   uint8_t returnByte[_numOfReads]; 
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
