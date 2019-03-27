@@ -207,7 +207,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
 // Byte: enable (parameter - 0x00 or 0x01). 
-// This function enables the ACCELEROMETER. 
+// This function enables the Accelerometer. 
 bool SparkFun_Bio_Sensor_Hub::enableSensorAccel(uint8_t enable) {
 
   if(enable != 0 || enable != 1)
@@ -422,8 +422,224 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 
 }
 
-// Family Byte 
-uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140(){
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX86140 (0x00)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// MAX8640/1 sensors. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+// INCOMPLETE - must check datasheet of individual sensor to know how many
+// registers are returned. 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
+
+  uint8_t = statusByte readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX86140, 20);// Fake read amount  
+  if( statusByte == SUCCESS ){
+    // Get attributes here
+  }
+    
+}
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30205 (0x01)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// MAX30205 sensor. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+// INCOMPLETE - must check datasheet of individual sensor to know how many
+// registers are returned. 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
+
+  uint8_t = statusByte readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30205, 20);// Fake read amount  
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+    
+}
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30001 (0x02)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// MAX30001 sensor. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+// INCOMPLETE - must check datasheet of individual sensor to know how many
+// registers are returned. 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
+
+  uint8_t = statusByte readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30001, 20);// Fake read amount  
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+    
+}
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// MAX30101 sensor. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+// INCOMPLETE - must check datasheet of individual sensor to know how many
+// registers are returned. 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
+
+  uint8_t = statusByte readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 20);// Fake read amount  
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+    
+}
+
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
+// RETRIEVE_AFE_ACCELEROMETER (0x04)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// Accelerometer. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+// INCOMPLETE - must check datasheet of individual sensor to know how many
+// registers are returned. 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
+
+  uint8_t = statusByte readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 20);// Fake read amount  
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+    
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX86140 (0x00)
+// This function returns all registers and register values sequentially of the
+// MAX86140/1 Sensors: register zero and register value zero to register n and 
+// register value n.
+// INCOMPLETE: Need to read datasheets to get exact amount of registers.
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX86140(){
+  
+  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX86140, 20); //Fake read amount
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30205 (0x01)
+// This function returns all registers and register values sequentially of the
+// MAX30205 sensor: register zero and register value zero to register n and 
+// register value n.
+// INCOMPLETE: Need to read datasheets to get exact amount of registers.
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30205() {
+  
+  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30205, 20); //Fake read amount
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30001 (0x02)
+// This function returns all registers and register values sequentially of the
+// MAX30001 sensor: register zero and register value zero to register n and 
+// register value n.
+// INCOMPLETE: Need to read datasheets to get exact amount of registers.
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
+  
+  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30001, 20); //Fake read amount
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
+// This function returns all registers and register values sequentially of the
+// MAX30101 sensor: register zero and register value zero to register n and 
+// register value n.
+// INCOMPLETE: Need to read datasheets to get exact amount of registers.
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
+  
+  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 20); //Fake read amount
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
+// This function returns all registers and register values sequentially of the
+// Accelerometer: register zero and register value zero to register n and 
+// register value n.
+// INCOMPLETE: Need to read datasheets to get exact amount of registers.
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer() {
+  
+  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_ACCELEROMETER, 20); //Fake read amount
+  if( statusByte == SUCCESS ){
+    // return attributes here
+  }
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
+// This function sets the target percentage of the full-scale ADC range that
+// the automatic gain control algorithm uses. It takes a paramater of zero to 
+// 100 percent. 
+bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc){
+
+  if( perc < 0 || perc > 100)
+    return; 
+
+  // Successful communication or no?
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_GAIN_ID, perc); 
+  if( statusByte == SUCCESS )
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
+// This function chnages the step size toward the target for the AGC algorithm. 
+// It takes a paramater of zero to 100 percent. 
+bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step){
+
+  if( perc < 0 || perc > 100)
+    return false; 
+
+  // Successful communication or no?
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_STEP_SIZE_ID, step); 
+  if( statusByte == SUCCESS )
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
+// This function chnages the step size toward the target for the AGC algorithm. 
+// It takes a paramater of zero to 100 percent. 
+bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense){
+
+  if( perc < 0 || perc > 100)
+    return false; 
+
+  // Successful communication or no?
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_SENSITIVITY_ID, sense); 
+  if( statusByte == SUCCESS )
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
+// This function changes the number of samples that are averaged. 
+// It takes a paramater of zero to 255. 
+bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t avg){
+
+  if( perc < 0 || perc > 100)
+    return false; 
+
+  // Successful communication or no?
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_SENSITIVITY_ID, avg); 
+  if( statusByte == SUCCESS )
+    return true; 
+  else 
+    return false; 
+
 }
 
 // This function uses the given family, index, and write byte to communicate
@@ -437,6 +653,29 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte); 
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
+  uint8_t statusByte = _i2cPort->read(); 
+  return statusByte; 
+
+}
+
+// This function is the same as the function above and uses the given family, 
+// index, and write byte, but also takes a 16 bit integer as a paramter to communicate
+// with the MAX32664 which in turn communicates with downward sensors. There
+// are two steps demonstrated in this function. First a write to the MCU
+// indicating what you want to do, a delay, and then a read to confirm positive
+// transmission. 
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _val) {
+
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte); 
+  _i2cPort->write((_val >> 8)); // MSB
+  _i2cPort->write(_val);  // LSB
   _i2cPort->endTransmission(); 
   delayMicroseconds(CMD_DELAY); 
 

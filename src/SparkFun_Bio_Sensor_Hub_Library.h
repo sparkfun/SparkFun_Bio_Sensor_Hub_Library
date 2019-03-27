@@ -14,7 +14,27 @@
 #define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
 
-// The family registers are the largest 
+// Status Bytes are communicated back after every I-squared-C transmission and
+// are indicators of success or failure of the previous transmission.
+enum READ_STATUS_BYTE_VALUE {
+
+  SUCCESS                  = 0x00,
+  ERR_UNAVAIL_CMD,
+  ERR_UNAVAIL_FUNC,
+  ERR_DATA_FORMAT,
+  ERR_INPUT_VALUE,
+  ERR_TRY_AGAIN,
+  ERR_BTLDR_GENERAL        = 0x80,
+  ERR_BTLDR_CHECKSUM       = 0x81,
+  ERR_BTLDR_AUTH           = 0x82,
+  ERR_BTLDR_INVALID_APP    = 0x83,
+  ERR_UNKNOWN              = 0xFF
+
+};
+
+// The family register bytes are the larger umbrella for all the Index and
+// Write Bytes listed below. You can not reference a nestled byte without first
+// referencing it's larger category: Family Register Byte.
 enum FAMILY_REGISTER_BYTES {
   
   HUB_STATUS               = 0x00,
@@ -38,27 +58,9 @@ enum FAMILY_REGISTER_BYTES {
 
 };
 
-// Status Bytes are communicated back after every I-squared-C transmission.
-enum READ_STATUS_BYTE_VALUE {
-
-  SUCCESS                  = 0x00,
-  ERR_UNAVAIL_CMD,
-  ERR_UNAVAIL_FUNC,
-  ERR_DATA_FORMAT,
-  ERR_INPUT_VALUE,
-  ERR_TRY_AGAIN,
-  ERR_BTLDR_GENERAL        = 0x80,
-  ERR_BTLDR_CHECKSUM       = 0x81,
-  ERR_BTLDR_AUTH           = 0x82,
-  ERR_BTLDR_INVALID_APP    = 0x83,
-  ERR_UNKNOWN              = 0xFF
-
-};
-
-
 // All the defines below are: 1. Index Bytes nestled in the larger category of the
-// family registry bytes listed above and 2. The Write Bytes associated with
-// their Index Bytes.
+// family registry bytes listed above and 2. The Write Bytes nestled even
+// farther under their Index Bytes.
 
 // Write Bytes under Family Byte: SET_DEVICE_MODE (0x01) and Index
 // Byte: 0x00. 
@@ -178,10 +180,10 @@ enum SENSOR_ENABLE_INDEX_BYTE {
 enum ALGORITHM_CONFIG_INDEX_BYTE {
 
   SET_TARG_PERC,
-  SET_STEP_SIZE,
-  SET_SENSITIVITY,
-  SET_AVG_SAMPLES,
-  SET_SAMPLE_WHRM,
+  SET_STEP_SIZE            = 0x00,
+  SET_SENSITIVITY          = 0x00,
+  SET_AVG_SAMPLES          = 0x00,
+  SET_SAMPLE_WHRM          = 0x02,
   SET_WHRM_MAX_HEIGHT      = 0x02,
   SET_WHRM_MAX_WEIGHT      = 0x02,
   SET_WHRM_MAX_AGE         = 0x02,
@@ -225,6 +227,7 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
 enum ALM_AGC_WRITE_BYTE {
   
   AGC_GAIN_ID              = 0x00, 
+  AGC_STEP_SIZE_ID,
   AGC_SENSITIVITY_ID,
   AGC_NUM_SAMP_ID
 
