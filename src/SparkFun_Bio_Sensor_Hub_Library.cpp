@@ -574,7 +574,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer() {
 // This function sets the target percentage of the full-scale ADC range that
 // the automatic gain control algorithm uses. It takes a paramater of zero to 
 // 100 percent. 
-bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc){
+bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc) {
 
   if( perc < 0 || perc > 100)
     return; 
@@ -592,13 +592,13 @@ bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc){
 // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
 // This function chnages the step size toward the target for the AGC algorithm. 
 // It takes a paramater of zero to 100 percent. 
-bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step){
+bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step) {
 
-  if( perc < 0 || perc > 100)
+  if( step < 0 || step > 100)
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_STEP_SIZE_ID, step); 
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_STEP_SIZE, AGC_STEP_SIZE_ID, step); 
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -610,13 +610,13 @@ bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step){
 // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
 // This function chnages the step size toward the target for the AGC algorithm. 
 // It takes a paramater of zero to 100 percent. 
-bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense){
+bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense) {
 
-  if( perc < 0 || perc > 100)
+  if( sense < 0 || sense > 100 )
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_SENSITIVITY_ID, sense); 
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_SENSITIVITY, AGC_SENSITIVITY_ID, sense); 
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -628,14 +628,277 @@ bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense){
 // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t avg){
+bool SparkFun_Bio_Sensor_Hub::configALMsamples(uint8_t avg) {
 
-  if( perc < 0 || perc > 100)
+  if( avg < 0 || avg > 255 )
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_SENSITIVITY_ID, avg); 
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
   if( statusByte == SUCCESS )
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
+// This function sets the sample rate for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMsampRate(uint16_t samp) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_SAMPLE_WHRM, WHRM_SAMP_RATE_ID, samp); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
+// This function sets the maximum height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMaxHeight(uint16_t maxHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_HEIGHT, WHRM_MAX_HEIGHT_ID, maxHeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
+// This function sets the maximum weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMaxWeight(uint16_t maxWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_WEIGHT, SET_WHRM_MAX_WEIGHT, maxWeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
+// This function sets the maximum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMaxAge(uint8_t maxAge) {
+
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_AGE, WHRM_MAX_AGE_ID, maxAge); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
+// This function sets the minimum height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMinHeight(uint16_t minHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_HEIGHT, WHRM_MIN_HEIGHT_ID, minHeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_WEIGHT (0x02), Write Byte: WHRM_MIN_WEIGHT_ID (0x05)
+// This function sets the minimum weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMinWeight(uint16_t minWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_WEIGHT, WHRM_MIN_WEIGHT_ID, minWeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
+// This function sets the minimum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMMinAge(uint8_t minAge) {
+
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_AGE, WHRM_MIN_AGE_ID, minAge); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
+// This function sets the default height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMDefHeight(uint16_t defHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_HEIGHT, WHRM_DEF_HEIGHT_ID, defHeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
+// This function sets the default weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMDefWeight(uint16_t defWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_WEIGHT, WHRM_DEF_WEIGHT_ID, defWeight); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
+// This function sets the default age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMDefAge(uint8_t defAge) {
+
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_AGE, WHRM_DEF_AGE_ID, defAge); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
+// This function sets the maximum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t bpm) {
+
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_BPM, WHRM_BPM_INIT, bpm); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0A)
+// This function sets the maximum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+// INCOMPLETE - this function should write three 32 bit integers -
+// public/private?
+bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t someVal) {
+
+  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF, MAXIMFAST_COEF_ID, someVal); 
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
+// (0x02), Write Byte: WHRM_AEC_ID (0x0B)
+// This function enables or disables automatic exposure control (AEC). The
+// function takes the parameter zero for disable and one for enable. 
+bool SparkFun_Bio_Sensor_Hub::enableAutoExpCont(uint8_t enable) {
+  
+  if( enable != 0 || enable != 1)
+    return false; 
+
+  uint8_t statusByte = writeRegister( CHANGE_ALGORITHM_CONFIG, SET_EXPOSURE_CNTRL, WHRM_AEC_ID, enable);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_SKIN_CONTACT_DET (0x02), Write Byte: WHRM_SCD_ID (0x0C)
+// This function enables or disables skin contact detection. The
+// function takes the parameter zero for disable and one for enable. 
+bool SparkFun_Bio_Sensor_Hub::enableSkinDetect(uint8_t enable) {
+  
+  if( enable != 0 || enable != 1)
+    return false; 
+
+  uint8_t statusByte = writeRegister( CHANGE_ALGORITHM_CONFIG, SET_SKIN_CONTACT_DET, WHRM_SCD_ID, enable);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
+// This function sets adjusted target photo detector current period in seconds.
+bool SparkFun_Bio_Sensor_Hub::adjustPhotoDet(uint16_t per) {
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_PHOTO_DETECT, WHRM_PD_ID, per);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
+// This function sets the skin contract detect debounce window. It's not clear
+// if this is in seconds or not in the datasheet.
+bool SparkFun_Bio_Sensor_Hub::setSCDWindow(uint16_t time) {
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_SCD_DEBOUNCE, WHRM_SCD_DEBOUNCE_ID, time);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
+// This function sets motion magnitude threshold in 0.1g
+bool SparkFun_Bio_Sensor_Hub::setMotionMag(uint16_t mag) {
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_THRESH, WHRM_MOTION_ID, mag);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_WHRM_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
+// This function sets motion magnitude threshold in 0.1g
+bool SparkFun_Bio_Sensor_Hub::setMotionMag(uint16_t mag) {
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_THRESH, WHRM_MOTION_ID, mag);
+
+  if( statusByte == SUCCESS)
     return true; 
   else 
     return false; 

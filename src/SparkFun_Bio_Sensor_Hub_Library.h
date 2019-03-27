@@ -247,7 +247,8 @@ enum ALM_WHRM_WRITE_BYTE {
   WHRM_DEF_HEIGHT_ID,
   WHRM_DEF_WEIGHT_ID,
   WHRM_DEF_AGE_ID,
-  MAXIMFAST_COEF_ID        = 0x0A,
+  WHRM_BPM_INIT            = 0x0A
+  MAXIMFAST_COEF_ID,
   WHRM_AEC_ID,                       // Automatic Exposure Control
   WHRM_SCD_ID,                       // Skin Contact Detect
   WHRM_PD_ID,                        // Photo Detector
