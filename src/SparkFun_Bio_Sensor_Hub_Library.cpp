@@ -52,7 +52,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   pinMode(_resetPin, OUTPUT); 
   pinMode(_mfioPin, INPUT); // Input so that it may be used
 
-  responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2);
+  responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
   return responseByte[1];
 
 }
@@ -79,7 +79,7 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
   pinMode(_mfioPin, OUTPUT); 
   
   // Let's check to see if the device made it into bootloader mode.  
-  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2); 
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte
   return responseByte;
 
 }
@@ -100,7 +100,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
       return statusByte; 
 
     // Here we'll check if the board made it into Bootloader mode...
-    uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 0x00, 2); 
+    uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte
     return responseByte; // This is in fact the status byte, need second returned byte - bootloader mode
 
 }
@@ -420,6 +420,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
   uint8_t regCont = readByte(READ_REGISTER, READ_ACCELEROMETER, regAddr, 1); 
   return regCont;
 
+}
+
+// Family Byte 
+uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140(){
 }
 
 // This function uses the given family, index, and write byte to communicate

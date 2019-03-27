@@ -56,11 +56,12 @@ enum READ_STATUS_BYTE_VALUE {
 };
 
 
-// All the defines below are 1. Index Bytes nestled in the larger category of the
+// All the defines below are: 1. Index Bytes nestled in the larger category of the
 // family registry bytes listed above and 2. The Write Bytes associated with
 // their Index Bytes.
 
-// Family Registry Byte 0x01, Index Bye 0x00
+// Write Bytes under Family Byte: SET_DEVICE_MODE (0x01) and Index
+// Byte: 0x00. 
 enum DEVICE_MODE_WRITE_BYTES {
 
   EXIT_BOOTLOADER          = 0x00,
@@ -69,7 +70,7 @@ enum DEVICE_MODE_WRITE_BYTES {
 
 };
 
-// Index Byte associated with Family Registry 0x10
+// Index Byte under Family Byte: OUTPUT_FORMAT (0x10)
 enum OUTPUT_MODE_INDEX_BYTE {
 
   SET_FORMAT,
@@ -77,8 +78,8 @@ enum OUTPUT_MODE_INDEX_BYTE {
 
 };
 
-// Write Bytes associated with OUTPUT_MODE_INDEX_BYTE: SET_FORMAT
-// 0x00. 
+// Write Bytes under Family Byte: OUTPUT_FORMAT (0x10) and Index byte: SET_FORMAT
+// (0x00)
 enum OUTPUT_MODE_WRITE_BYTE {
 
   PAUSE                    = 0x00,
@@ -92,7 +93,7 @@ enum OUTPUT_MODE_WRITE_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x12
+// Index Byte under the Family Byte: READ_DATA_OUTPUT (0x12)
 enum FIFO_OUTPUT_INDEX_BYTE {
 
   NUM_SAMPLES,
@@ -100,8 +101,7 @@ enum FIFO_OUTPUT_INDEX_BYTE {
 
 };
 
-
-// Index Byte associated with Family Registry Byte 0x13
+// Index Byte under the Family Byte: READ_DATA_INPUT (0x13)
 enum FIFO_EXTERNAL_INDEX_BYTE {
 
   SAMPLE_SIZE,
@@ -112,14 +112,14 @@ enum FIFO_EXTERNAL_INDEX_BYTE {
 
 };
 
-// Write Byte associated with FIFO_EXTERNAL_INDEX_BYTE:
-// SAMPLE_SIZE, READ_SENSOR_DATA, and READ_NUM_SAMPLES_INPUT. 
+// Write Byte under the Family Byte: READ_DATA_INPUT (0x13) and the Index Bytes: 
+// FIFO_EXTERNAL_INDEX_BYTE.
 enum FIFO_OUTPUT_WRITE_BYTE {
 
   ACCELEROMETER = 0x04 
 
 };
-// Index Byte associated with Family Registry Byte 0x40
+// Index Byte under the Family Registry Byte: WRITE_REGISTER (0x40)
 enum WRITE_REGISTER_INDEX_BYTE {
 
   WRITE_MAX86140,
@@ -130,7 +130,7 @@ enum WRITE_REGISTER_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x41
+// Index Byte under the Family Registry Byte: READ_REGISTER (0x41)
 enum READ_REGISTER_INDEX_BYTE {
 
   READ_MAX86140,
@@ -141,7 +141,7 @@ enum READ_REGISTER_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x42
+// Index Byte under the Family Registry Byte: READ_ATTRIBUTES_AFE (0x42)
 enum GET_AFE_INDEX_BYTE {
   
   RETRIEVE_AFE_MAX86140,
@@ -152,7 +152,7 @@ enum GET_AFE_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x43
+// Index Byte under the Family Byte: DUMP_REGISTERS (0x43)
 enum DUMP_REGISTER_INDEX_BYTE {
   
   DUMP_REGISTER_MAX86140,
@@ -160,10 +160,10 @@ enum DUMP_REGISTER_INDEX_BYTE {
   DUMP_REGISTER_MAX30001,
   DUMP_REGISTER_MAX30101,
   DUMP_REGISTER_ACCELEROMETER
-
+::
 };
 
-// Index Byte associated with Family Registry Byte 0x44
+// Index Byte under the Family Byte: ENABLE_SENSOR (0x44)
 enum SENSOR_ENABLE_INDEX_BYTE {
   
   ENABLE_MAX86140 = 0x00,
@@ -174,7 +174,7 @@ enum SENSOR_ENABLE_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x50
+// Index Byte under the Family Byte: CHANGE_ALGORITHM_CONFIG (0x50)
 enum ALGORITHM_CONFIG_INDEX_BYTE {
 
   SET_TARG_PERC,
@@ -220,8 +220,8 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
 
 };
 
-// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: SET_TARG_PERC
-// BYTE
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
+// Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - SET_TARG_PERC
 enum ALM_AGC_WRITE_BYTE {
   
   AGC_GAIN_ID              = 0x00, 
@@ -230,8 +230,8 @@ enum ALM_AGC_WRITE_BYTE {
 
 };
 
-// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WHRM Bytes
-// specifically.
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
+// Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - WHRM 
 enum ALM_WHRM_WRITE_BYTE {
 
   WHRM_SAMP_RATE_ID        = 0x00,
@@ -255,7 +255,8 @@ enum ALM_WHRM_WRITE_BYTE {
 
 };
 
-// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WHRM Bytes
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
+// Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - BPT 
 enum ALM_BPT_WRITE_BYTE {
 
   BPT_BLOOD_PRESSURE_ID    = 0x00,
@@ -268,7 +269,8 @@ enum ALM_BPT_WRITE_BYTE {
 
 };
 
-// Write Bytes associated with the ALGORITHM_CONFIG_INDEX_BYTE: WSPO2 Bytes
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
+// Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - WSPO2 
 enum ALM_WSP02_WRITE_BYTE {
 
   WSP02_COEF_ID         = 0x00,
@@ -282,7 +284,7 @@ enum ALM_WSP02_WRITE_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x51
+// Index Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51)
 enum READ_ALGORITHM_INDEX_BYTE {
 
   READ_AGC_PERCENTAGE      = 0x00,
@@ -322,8 +324,8 @@ enum READ_ALGORITHM_INDEX_BYTE {
 
 };
 
-// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, AGC
-// bytes.
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and Index Byte: 
+// READ_ALGORITHM_INDEX_BYTE - AGC
 enum READ_AGC_ALM_WRITE_BYTE {
   
   READ_AGC_ID              = 0x00,
@@ -333,8 +335,8 @@ enum READ_AGC_ALM_WRITE_BYTE {
 
 };
 
-// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, WHRM
-// bytes
+// Write Bytes under Family Byte: READ_ALGORITHM_CONFIG (0x51) and the Index Byte: 
+// READ_ALGORITHM_INDEX_BYTE - WHRM
 enum READ_WHRM_ALM_WRITE_BYTE {
 
   READ_WHRM_SAMPLE_RATE_ID = 0x00,
@@ -360,8 +362,8 @@ enum READ_WHRM_ALM_WRITE_BYTE {
  
 };
 
-// Write Bytes associated with the Index Byte: READ_ALGORITHM_INDEX_BYTE, WSP02
-// bytes
+// Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the Index Byte: 
+// READ_ALGORITHM_INDEX_BYTE
 enum READ_WSP02_ALM_WRITE_BYTE {
 
   READ_WSP02_COEF_ID       = 0x00,
@@ -377,7 +379,7 @@ enum READ_WSP02_ALM_WRITE_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x52
+// Index Byte under the Family Byte: ENABLE_ALGORITHM (0x52).
 enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
   ENABLE_AGC_ALM           = 0x00,
@@ -389,7 +391,7 @@ enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x80
+// Index Byte under the Family Byte: BOOTLOADER_FLASH (0x80).
 enum BOOTLOADER_FLASH_INDEX_BYTE {
 
   SET_INIT_VECTOR_BYTES    = 0x00,
@@ -400,7 +402,7 @@ enum BOOTLOADER_FLASH_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0x81
+// Index Byte under the Family Byte: BOOTLOADER_INFO (0x81).
 enum BOOTLOADER_INFO_INDEX_BYTE {
 
   BOOTLOADER_VERS          = 0x00,
@@ -408,7 +410,7 @@ enum BOOTLOADER_INFO_INDEX_BYTE {
 
 };
 
-// Index Byte associated with Family Registry Byte 0xFF
+// Index Byte under the Family Byte: IDENTITY (0xFF).
 enum IDENTITY_INDEX_BYTES {
 
   READ_MCU_TYPE            = 0x00,
