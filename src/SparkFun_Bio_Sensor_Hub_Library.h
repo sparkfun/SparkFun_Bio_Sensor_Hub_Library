@@ -420,56 +420,184 @@ enum IDENTITY_INDEX_BYTES {
 class SparkFun_Bio_Sensor_Hub
 {
   public:  
-  // Variables
+  // Variables ------------
  
-  // Constructor 
+  // Constructor ----------
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
-  // Functions
+  // Functions ------------
+  
+  // Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
+  // The following function initializes the sensor. To place the MAX32664 into
+  // application mode, the MFIO pin must be pulled HIGH while the board is held
+  // in reset for 10ms. After 50 addtional ms have elapsed the board should be 
+  // in application mode and will return two bytes, the first 0x00 is a 
+  // successful communcation byte, followed by 0x00 which is the byte indicating 
+  // which mode the IC is in. 
   uint8_t begin( TwoWire &wirePort = Wire);
+  // Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
+  // The following function puts the MAX32664 into bootloader mode. To place the MAX32664 into
+  // bootloader mode, the MFIO pin must be pulled LOW while the board is held
+  // in reset for 10ms. After 50 addtional ms have elapsed the board should be 
+  // in bootloader mode and will return two bytes, the first 0x00 is a 
+  // successful communcation byte, followed by 0x08 which is the byte indicating 
+  // that the board is in bootloader mode. 
   bool beginBootloader( TwoWire &wirePort = Wire); 
-  uint8_t getMCUtype(); 
-  long getBootloaderInf();
+  // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
+  // The following function is an alternate way to set the mode of the of
+  // MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
+  // well as reset. 
+  // INCOMPLETE
   uint8_t setOperatingMode(uint8_t selection); 
+  // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
+  // The following function returns a byte that signifies the microcontoller that
+  // is in communcation with your host microcontroller. Returns 0x00 for the
+  // MAX32625 and 0x01 for the MAX32660/MAX32664. 
+  // INCOMPLETE
+  uint8_t getMCUtype(); 
+  // Family Byte: BOOTLOADER_INFO (0x80), Index Byte: BOOTLOADER_VERS (0x00) 
+  // This function checks the version number of the bootloader on the chip and
+  // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
+  // and the Revision Byte. 
+  // INCOMPLETE
+  long getBootloaderInf();
 
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
+  // Byte: enable (parameter - 0x00 or 0x01). 
+  // This function enables the MAX86140. 
   bool enableSensorMAX86140(uint8_t enable);
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
+  // Byte: enable (parameter - 0x00 or 0x01). 
+  // This function enables the MAX30205. 
   bool enableSensorMAX30205(uint8_t enable); 
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
+  // Byte: enable (parameter - 0x00 or 0x01). 
+  // This function enables the MAX30001. 
   bool enableSensorMAX30001(uint8_t enable);
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
+  // Byte: enable (parameter - 0x00 or 0x01).
+  // This function enables the MAX30101. 
   uint8_t enableSensorMAX30101(uint8_t enable);
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
+  // Byte: enable (parameter - 0x00 or 0x01). 
+  // This function enables the ACCELEROMETER. 
   bool enableSensorAccel(uint8_t enable);
 
-  bool setDeviceMode( uint8_t boot_mode ); 
+  // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
+  // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
   bool setOutputMode(uint8_t outputType);
+  // Family Byte: OUTPUT_FORMAT, Index Byte: SET_THRESHOLD, Write byte: intThres
+  // (parameter - value betwen 0 and 0xFF).
+  // This function changes the threshold for the FIFO interrupt bit/pin. The
+  // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
+  // (begin). 
   bool setFIFOThreshold(uint8_t intThresh);   
-
+  // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
+  // Byte: NONE
+  // This function returns the number of samples available in the FIFO. 
+  // INCOMPLETE
   uint8_t numSamplesOutFIFO();
+  // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+  // Byte: NONE
+  // This function returns the data in the FIFO. 
+  // INCOMPLETE
   uint8_t getDataOutFIFO();
+  // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+  // Byte: NONE
+  // This function adds support for the acceleromter that is NOT included on
+  // SparkFun's product, The Family Registery of 0x13 and 0x14 is skipped for now. 
   uint8_t numSamplesExternalSensor();
 
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX86140 (0x00), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
+  // or non-successful write.  
   bool writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the MAX30205 sensor and returns a boolean indicating a successful or
+  // non-successful write. 
   bool writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the MAX30001 sensor and returns a boolean indicating a successful or
+  // non-successful write. 
   bool writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the MAX30101 sensor and returns a boolean indicating a successful or
+  // non-successful write. 
   bool writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the Accelerometer and returns a boolean indicating a successful or
+  // non-successful write. 
   bool writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
 
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX86140 and MAX8641
+  // Sensors and returns the values at that register. 
   uint8_t readRegisterMAX8614X(uint8_t regAddr);
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30205 (0x01), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX30205 Sensor and
+  // returns the values at that register. 
   uint8_t readRegisterMAX30205(uint8_t regAddr);
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30001 (0x02), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX30001 Sensor and
+  // returns the values at that register. 
   uint8_t readRegisterMAX30001(uint8_t regAddr);
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX30101 Sensor and
+  // returns the values at that register. 
   uint8_t readRegisterMAX30101(uint8_t regAddr);
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX30101 Sensor and
+  // returns the values at that register. 
   uint8_t readRegisterAccel(uint8_t regAddr);
 
   private:   
-  // Variables 
+  // Variables -----------
   uint8_t _resetPin;
   uint8_t _mfioPin;
   int _address; 
   
-  // I-squared-C Class
+  // I-squared-C Class----
   TwoWire *_i2cPort;
 
-  // Functions
+  // Functions------------
+  
+  // This function uses the given family, index, and write byte to communicate
+  // with the MAX32664 which in turn communicates with downward sensors. There
+  // are two steps demonstrated in this function. First a write to the MCU
+  // indicating what you want to do, a delay, and then a read to confirm positive
+  // transmission. 
+  uint8_t writeByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte );
+  // This function sends information to the MAX32664 to specifically write values
+  // to the registers of downward sensors and so also requires a
+  // register address and register value as parameters. Again there is the write
+  // of the specific bytes followed by a read to confirm positive transmission. 
+  uint8_t writeRegister( uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal );
+  // This function handles all read commands or stated another way, all information
+  // requests. It starts a request by writing the family byte, index byte, and
+  // delays 60 microseconds, during which the MAX32664 retrieves the requested 
+  // information. An I-squared-C request is then issued, and the information is read.
+  uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint16_t _numOfReads ); 
+  // This function is exactly as the one above except it accepts a Write Byte as
+  // a paramter. It starts a request by writing the family byte, index byte, and
+  // write byte to the MAX32664, delays 60 microseconds, during which
+  // the MAX32664 retrieves the requested information. A I-squared-C request is
+  // then issued, and the information is read.
   uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
-  uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
-  uint8_t writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal);
 };
+
 #endif

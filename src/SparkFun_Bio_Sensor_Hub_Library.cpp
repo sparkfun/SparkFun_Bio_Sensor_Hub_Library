@@ -423,22 +423,29 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 }
 
 // This function uses the given family, index, and write byte to communicate
-// with the MAX32664. 
+// with the MAX32664 which in turn communicates with downward sensors. There
+// are two steps demonstrated in this function. First a write to the MCU
+// indicating what you want to do, a delay, and then a read to confirm positive
+// transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte) {
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
-  _i2cPort->write(_writeByte); //multiple writes?
+  _i2cPort->write(_writeByte); 
   _i2cPort->endTransmission(); 
   delayMicroseconds(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, 1); //Status Byte
+  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
   uint8_t statusByte = _i2cPort->read(); 
   return statusByte; 
 
 }
 
+// This function sends information to the MAX32664 to specifically write values
+// to the registers of downward sensors and so also requires a
+// register address and register value as parameters. Again there is the write
+// of the specific bytes followed by a read to confirm positive transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal)
 {
 
@@ -450,15 +457,18 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _ind
   _i2cPort->endTransmission(); 
   delayMicroseconds(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, 1); //Status Byte
+  _i2cPort->requestFrom(_address, 1); // Status Byte, 0x00 is a successful transmit.
   uint8_t statusByte = _i2cPort->read(); 
   _i2cPort->endTransmission();
   return statusByte; 
 
 }
 
-// Some reads require a writeByte
-uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
+// This function handles all read commands or stated another way, all information
+// requests. It starts a request by writing the family byte, index byte, and
+// delays 60 microseconds, during which the MAX32664 retrieves the requested 
+// information. An I-squared-C request is then issued, and the information is read.
+uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint16_t _numOfReads )
 {
 
    uint8_t returnByte[_numOfReads]; 
@@ -470,10 +480,34 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexB
 
   _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
   for(int i = 0; i < _numOfReads; i++){
-    returnByte[i] = _i2cPort->read(); //Status byte is alwasy sent before read value
+    returnByte[i] = _i2cPort->read(); //Status byte is always sent before read value
   }
 
   return returnByte; 
 
 }
 
+// This function is exactly as the one above except it accepts a Write Byte as
+// a paramter. It starts a request by writing the family byte, index byte, and
+// write byte to the MAX32664, delays 60 microseconds, during which
+// the MAX32664 retrieves the requested information. A I-squared-C request is
+// then issued, and the information is read.
+uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads )
+{
+
+   uint8_t returnByte[_numOfReads]; 
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte[i] = _i2cPort->read(); //Status byte is always sent before read value
+  }
+
+  return returnByte; 
+
+}
