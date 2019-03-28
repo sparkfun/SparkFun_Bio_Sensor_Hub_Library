@@ -202,13 +202,13 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
   SET_WHRM_THRESH          = 0x02,
   SET_WHRM_MIN_PD          = 0x02,
   SET_WHRM_PPG             = 0x02,
-  SET_BPT                  = 0x04,
+  SET_BPT_MED              = 0x04,
   SET_BPT_DIASTOLIC        = 0x04,
   SET_BPT_SYSTOLIC         = 0x04,
   CALIBRATE_BPT            = 0x04,
   SET_BPT_EST_DATE         = 0x04,
   SET_BPT_REST             = 0x04,
-  SET_BPT_SPO2             = 0x04,
+  SET_BPT_SPO2_COEF        = 0x04,
   SET_WSPO2_COEF           = 0x05,
   SET_WSP02_SRATE          = 0x05,
   SET_WSP02_RUN            = 0x05,
@@ -247,9 +247,9 @@ enum ALM_WHRM_WRITE_BYTE {
   WHRM_DEF_HEIGHT_ID,
   WHRM_DEF_WEIGHT_ID,
   WHRM_DEF_AGE_ID,
-  WHRM_BPM_INIT            = 0x0A
+  WHRM_BPM_INIT            = 0x0A,
   MAXIMFAST_COEF_ID,
-  WHRM_AEC_ID,                       // Automatic Exposure Control
+  WHRM_AEC_ID              = 0x0B,    // Automatic Exposure Control
   WHRM_SCD_ID,                       // Skin Contact Detect
   WHRM_PD_ID,                        // Photo Detector
   WHRM_SCD_DEBOUNCE_ID,
@@ -576,6 +576,7 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t _resetPin;
   uint8_t _mfioPin;
   int _address; 
+  uint8_t _calibData[608];
   
   // I-squared-C Class----
   TwoWire *_i2cPort;
@@ -588,21 +589,20 @@ class SparkFun_Bio_Sensor_Hub
   // indicating what you want to do, a delay, and then a read to confirm positive
   // transmission. 
   uint8_t writeByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte );
-  // This function sends information to the MAX32664 to specifically write values
-  // to the registers of downward sensors and so also requires a
-  // register address and register value as parameters. Again there is the write
+  // This function sends is simliar to the one above and sends info to the MAX32664 
+  // but takes an additional uint8_t as a paramter. Again there is the write
   // of the specific bytes followed by a read to confirm positive transmission. 
-  uint8_t writeRegister( uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal );
+  uint8_t writeByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _writeVal );
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
-  // information. An I-squared-C request is then issued, and the information is read.
+  // information. An I-squared-C request is then issued, and the information is read and returned.
   uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint16_t _numOfReads ); 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
-  // then issued, and the information is read.
+  // then issued, and the information is read and returned. 
   uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _numOfReads ); 
 };
 

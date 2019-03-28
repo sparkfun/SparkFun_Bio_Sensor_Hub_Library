@@ -304,7 +304,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesExternalSensor() {
 // or non-successful write.  
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX86140, regAddr, regVal);
+  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX86140, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
   else
@@ -318,7 +318,7 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regV
 // non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal) {
  
-  uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30205, regAddr, regVal);
+  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30205, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
   else
@@ -332,7 +332,7 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t reg
 // non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal) {
   
-  uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
+  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
   else
@@ -346,7 +346,7 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t reg
 // non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
+  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
   else
@@ -360,7 +360,7 @@ bool SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t reg
 // non-successful write. 
 bool SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeRegister(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
+  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
   if( writeStat == SUCCESS) 
     return true; 
   else
@@ -580,7 +580,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc) {
     return; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_GAIN_ID, perc); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_GAIN_ID, perc); 
   if( statusByte == SUCCESS )
     return true;
   else
@@ -598,7 +598,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step) {
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_STEP_SIZE, AGC_STEP_SIZE_ID, step); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_STEP_SIZE, AGC_STEP_SIZE_ID, step); 
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -616,7 +616,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense) {
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_SENSITIVITY, AGC_SENSITIVITY_ID, sense); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_SENSITIVITY, AGC_SENSITIVITY_ID, sense); 
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -634,7 +634,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMsamples(uint8_t avg) {
     return false; 
 
   // Successful communication or no?
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -690,7 +690,7 @@ bool SparkFun_Bio_Sensor_Hub::configWHRMMaxWeight(uint16_t maxWeight) {
 // (WHRM) algorithm. 
 bool SparkFun_Bio_Sensor_Hub::configWHRMMaxAge(uint8_t maxAge) {
 
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_AGE, WHRM_MAX_AGE_ID, maxAge); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_AGE, WHRM_MAX_AGE_ID, maxAge); 
   if( statusByte == SUCCESS)
     return true; 
   else 
@@ -732,7 +732,7 @@ bool SparkFun_Bio_Sensor_Hub::configWHRMMinWeight(uint16_t minWeight) {
 // (WHRM) algorithm. 
 bool SparkFun_Bio_Sensor_Hub::configWHRMMinAge(uint8_t minAge) {
 
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_AGE, WHRM_MIN_AGE_ID, minAge); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_AGE, WHRM_MIN_AGE_ID, minAge); 
   if( statusByte == SUCCESS)
     return true; 
   else 
@@ -774,7 +774,7 @@ bool SparkFun_Bio_Sensor_Hub::configWHRMDefWeight(uint16_t defWeight) {
 // (WHRM) algorithm. 
 bool SparkFun_Bio_Sensor_Hub::configWHRMDefAge(uint8_t defAge) {
 
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_AGE, WHRM_DEF_AGE_ID, defAge); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_AGE, WHRM_DEF_AGE_ID, defAge); 
   if( statusByte == SUCCESS)
     return true; 
   else 
@@ -788,7 +788,7 @@ bool SparkFun_Bio_Sensor_Hub::configWHRMDefAge(uint8_t defAge) {
 // (WHRM) algorithm. 
 bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t bpm) {
 
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_WHRM_BPM, WHRM_BPM_INIT, bpm); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_BPM, WHRM_BPM_INIT, bpm); 
   if( statusByte == SUCCESS)
     return true; 
   else 
@@ -797,14 +797,16 @@ bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t bpm) {
 }
 
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
-// SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0A)
+// SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
 // This function sets the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-// INCOMPLETE - this function should write three 32 bit integers -
-// public/private?
-bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t someVal) {
+// This function takes three values that are used as the Sp02 coefficients. 
+bool SparkFun_Bio_Sensor_Hub::configWHRMBPM(long coef1, long coef2, long coef3) {
 
-  uint8_t statusByte = writeRegister(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF, MAXIMFAST_COEF_ID, someVal); 
+  long coefArr[3] = {coef1, coef2, coef3};
+
+  uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF, MAXIMFAST_COEF_ID, coefArr); 
+  delete[] coefArr;
   if( statusByte == SUCCESS)
     return true; 
   else 
@@ -821,7 +823,7 @@ bool SparkFun_Bio_Sensor_Hub::enableAutoExpCont(uint8_t enable) {
   if( enable != 0 || enable != 1)
     return false; 
 
-  uint8_t statusByte = writeRegister( CHANGE_ALGORITHM_CONFIG, SET_EXPOSURE_CNTRL, WHRM_AEC_ID, enable);
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_EXPOSURE_CNTRL, WHRM_AEC_ID, enable);
 
   if( statusByte == SUCCESS)
     return true; 
@@ -839,7 +841,7 @@ bool SparkFun_Bio_Sensor_Hub::enableSkinDetect(uint8_t enable) {
   if( enable != 0 || enable != 1)
     return false; 
 
-  uint8_t statusByte = writeRegister( CHANGE_ALGORITHM_CONFIG, SET_SKIN_CONTACT_DET, WHRM_SCD_ID, enable);
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_SKIN_CONTACT_DET, WHRM_SCD_ID, enable);
 
   if( statusByte == SUCCESS)
     return true; 
@@ -892,11 +894,12 @@ bool SparkFun_Bio_Sensor_Hub::setMotionMag(uint16_t mag) {
 }
 
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
-// SET_WHRM_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
-// This function sets motion magnitude threshold in 0.1g
-bool SparkFun_Bio_Sensor_Hub::setMotionMag(uint16_t mag) {
+// SET_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
+// This function changes the minimum photodetector currrent in 0.1mA
+// increments. 
+bool SparkFun_Bio_Sensor_Hub::changePDCurrent(uint16_t curr) {
   
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_THRESH, WHRM_MOTION_ID, mag);
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_MIN_PD, WHRM_MIN_PD_ID, curr);
 
   if( statusByte == SUCCESS)
     return true; 
@@ -904,6 +907,255 @@ bool SparkFun_Bio_Sensor_Hub::setMotionMag(uint16_t mag) {
     return false; 
 
 }
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_WHRM_PPG (0x02), Write Byte: WHRM_PPG_PD_ID (0x11)
+// This function changes the source of the photoplethysmography (PPG) signal for 
+// the photodetector (PD). The paramater "pd" accepts three values: zero - PD1, 
+// one - PD2, and three - PD1 and PD2.
+bool SparkFun_Bio_Sensor_Hub::changePPGSource(uint8_t pd) {
+
+  if( pd < 0 || pd > 3)
+    return false; 
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_PPG, WHRM_PPG_PD_ID, pd );
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
+// The function will configure the blood pressure trending (BPT) algorithm for
+// the users that are on blood pressure medicine. The parameter accepts the
+// value of zero (not using) or one (using). 
+bool SparkFun_Bio_Sensor_Hub::bptMedicine(uint8_t onbpm) {
+
+  if( onbpm != 0 || onbpm != 1)
+    return false; 
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_BPT_MED, BPT_BLOOD_PRESSURE_ID, onbpm );
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_BPT_DIASTOLIC (0x04), Write Byte: BPT_DIASTOLIC_ID (0x01)
+// This funciton writes the three givin diastolic BP byte values needed by the
+// calibration procedure.  
+bool SparkFun_Bio_Sensor_Hub::setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
+  
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
+  _i2cPort->write(SET_BPT_DIASTOLIC);    
+  _i2cPort->write(BPT_DIASTOLIC_ID); 
+  _i2cPort->write(val1);     
+  _i2cPort->write(val2);     
+  _i2cPort->write(val3);     
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
+  uint8_t statusByte = _i2cPort->read(); 
+  if( statusByte == SUCCESS ) 
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_BPT_SYSTOLIC (0x04), Write Byte: BPT_SYSTOLIC_ID (0x02)
+// This funciton writes the three givin systolic BP byte values needed by the
+// calibration procedure.  
+bool SparkFun_Bio_Sensor_Hub::setSystolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
+  
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
+  _i2cPort->write(SET_BPT_SYSTOLIC);    
+  _i2cPort->write(BPT_SYSTOLIC_ID); 
+  _i2cPort->write(val1);     
+  _i2cPort->write(val2);     
+  _i2cPort->write(val3);     
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
+  uint8_t statusByte = _i2cPort->read(); 
+  if( statusByte == SUCCESS ) 
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
+// (0x04), Write Byte: BPT_DATE_ID (0x04)
+// This function sets the estimation date with the given month/day integer. 
+bool SparkFun_Bio_Sensor_Hub::setBPTEstimationDate(uint16_t monthDay) {
+
+  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_EST_DATE, BPT_DATE_ID, monthDay);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_REST
+// (0x04), Write Byte: BPT_RESTING_ID (0x05)
+// This function adjusts the blood pressure trending algorithm for a user that
+// is resting (zero) or not resting (one). 
+bool SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
+
+  if( resting != 0 || resting != 1)
+    return false; 
+
+  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_REST, BPT_RESTING_ID, resting);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_SPO2_COEF
+// (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
+// This function sets the given Sp02 coefficients for the blood pressure trending
+// algorithm. 
+bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long spCoef1, long spCoef2, long spCoef3 ) {
+  
+  long coefArr[3] = { spCoef1, spCoef2, spCoef3 };
+
+  uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_BPT_SPO2_COEF, BPT_SP02_COEF_ID, coefArr);
+  delete[] coefArr;
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSPO2_COEF
+// (0x05), Write Byte: WSP02_COEF_ID (0x00)
+// This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
+// algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
+bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long wspCoef1, long wspCoef2, long wspCoef3 ) {
+  
+  long coefArr[3] = { wspCoef1, wspCoef2, wspCoef3 };
+
+  uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_WSPO2_COEF, WSP02_COEF_ID, coefArr);
+  delete[] coefArr;
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_SRATE
+// (0x05), Write Byte: WSP02_SAMPLE_RATE_ID (0x01)
+// This function changes the wrist Sp02 sample rate to 100Hz (zero) or 25Hz
+// (one).
+bool SparkFun_Bio_Sensor_Hub::changeWSP02SampRate(uint8_t rate) {
+
+  if( rate != 0 || rate != 1)
+    return false; 
+  
+  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_SRATE, WSP02_SAMPLE_RATE_ID, rate);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_RUN
+// (0x05), Write Byte: WSP02_RUN_MODE_ID (0x02)
+// This function changes the writs Sp02 algorithm run mode from continuous
+// (zero), from/to one-shot (one).
+bool SparkFun_Bio_Sensor_Hub::changeWSP02RunMode(uint8_t mode) {
+
+  if( mode != 0 || mode != 1)
+    return false; 
+  
+  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_RUN, WSP02_RUN_MODE_ID, mode);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_AGC
+// (0x05), Write Byte: WSP02_MOT_DTCT_ID (0x03)
+// This function changes the wrist Sp02 algorithm's AGC mode. You can disable
+// it (zero) or enable it (one). 
+bool SparkFun_Bio_Sensor_Hub::changeWSP02AGCMode(uint8_t enable) {
+
+  if( enable != 0 || enable != 1)
+    return false; 
+  
+  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_AGC, WSP02_MOT_DTCT_ID, enable);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
+}
+
+//-------------------Private Functions-----------------------
+
+// For Read: Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
+// READ_WHRM_BPT_RESULTS (0x04), Write Byte: BPT_CALIBRATE_ID (0x03) 
+// For Write: Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: CALIBRATE_BPT
+// (0x04), Write Byte: BPT_CALIBRATE_ID (0x03)
+//
+// This function takes the 608 data points acquired by the calibration
+// procedure and feeds them into the blood pressure trending
+// algorithm. 
+bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
+ 
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(READ_ALGORITHM_CONFIG);    
+  _i2cPort->write(READ_WHRM_BPT_RESULTS);    
+  _i2cPort->write(BPT_CALIBRATE_ID); 
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 609); // 608 bytes of data and one status byte
+  uint8_t statusByte = _i2cPort->read();  
+  if( statusByte != SUCCESS )
+    return false; 
+  else {
+    for( byte i = 0; i < 608; i++ ){ // Read all data into the calibration data array
+      _calibData[i] = _i2cPort->read(); 
+    }
+  }
+
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
+  _i2cPort->write(CALIBRATE_BPT);    
+  _i2cPort->write(BPT_CALIBRATE_ID); 
+  for(byte i = 0; i < 608; i++){ // Length of the given calibration data is 608
+    _i2cPort->write(calibData[i]);     
+  }
+  _i2cPort->endTransmission(); 
+delayMicroseconds(CMD_DELAY); 
+  _i2cPort->requestFrom(_address, 1); // 608 bytes of data and one status byte
+  uint8_t statusByte = _i2cPort->read();  
+  if( statusByte != SUCCESS )
+    return false; 
+}
+
 
 // This function uses the given family, index, and write byte to communicate
 // with the MAX32664 which in turn communicates with downward sensors. There
@@ -952,14 +1204,41 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // to the registers of downward sensors and so also requires a
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegister(uint8_t _familyByte, uint8_t _indexByte, uint8_t _regAddr, uint8_t _regVal)
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _writeVal)
 {
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
-  _i2cPort->write(_regAddr);    
-  _i2cPort->write(_regVal);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->write(_writeVal);    
+  _i2cPort->endTransmission(); 
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 1); // Status Byte, 0x00 is a successful transmit.
+  uint8_t statusByte = _i2cPort->read(); 
+  _i2cPort->endTransmission();
+  return statusByte; 
+
+}
+
+// This function sends information to the MAX32664 to specifically write values
+// to the registers of downward sensors and so also requires a
+// register address and register value as parameters. Again there is the write
+// of the specific bytes followed by a read to confirm positive transmission. 
+uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, long _writeVal[3])
+{
+
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  for( byte i = 0; i < 3; i++){
+    _i2cPort->write(_writeVal[i] >> 24); 
+    _i2cPort->write(_writeVal[i] >> 16); 
+    _i2cPort->write(_writeVal[i] >> 8); 
+    _i2cPort->write(_writeVal[i]); 
+  }
   _i2cPort->endTransmission(); 
   delayMicroseconds(CMD_DELAY); 
 
