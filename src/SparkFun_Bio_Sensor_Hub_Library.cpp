@@ -909,7 +909,7 @@ bool SparkFun_Bio_Sensor_Hub::changePDCurrent(uint16_t curr) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
 // SET_WHRM_PPG (0x02), Write Byte: WHRM_PPG_PD_ID (0x11)
 // This function changes the source of the photoplethysmography (PPG) signal for 
-// the photodetector (PD). The paramater "pd" accepts three values: zero - PD1, 
+// the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
 // one - PD2, and three - PD1 and PD2.
 bool SparkFun_Bio_Sensor_Hub::changePPGSource(uint8_t pd) {
 
@@ -1463,150 +1463,88 @@ uint8_t SparkFun_Bio_Sensor_Hub::readPPGSource() {
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_COEF (0x05), Write Byte: READ_WSP02_COEF_ID (0x00)
-// The function reads whether the setting for blood pressure medicine is
-// enabled for the blood pressure trending (BPT) algorithm. 
-bool SparkFun_Bio_Sensor_Hub::bptMedicine(uint8_t onbpm) {
-
-  if( onbpm != 0 || onbpm != 1)
-    return false; 
+// This function reads the coefficiencts used for the WSP02 algorithm. It
+// returns the three long integers that are multiplied by 100,000 that are used
+// as teh coefficients. 
+// INCOMPLETE
+long * SparkFun_Bio_Sensor_Hub::readWSP02Coef() {
   
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_BPT_MED, BPT_BLOOD_PRESSURE_ID, onbpm );
-
-  if( statusByte == SUCCESS)
-    return true; 
-  else 
-    return false; 
+  long sp02Arr[3]; //make public
+  sp02Arr = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_COEF, READ_WSP02_COEF_ID );
+  return sp02Arr; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_SAMP_RATE(0x05), Write Byte: READ_WSP02_SAMP_RATE_ID (0x01)
-// This funciton writes the three givin diastolic BP byte values needed by the
-// calibration procedure.  
-bool SparkFun_Bio_Sensor_Hub::setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
-  
-  _i2cPort->beginTransmission(_address);     
-  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
-  _i2cPort->write(SET_BPT_DIASTOLIC);    
-  _i2cPort->write(BPT_DIASTOLIC_ID); 
-  _i2cPort->write(val1);     
-  _i2cPort->write(val2);     
-  _i2cPort->write(val3);     
-  _i2cPort->endTransmission(); 
-  delayMicroseconds(CMD_DELAY); 
+// This function reads the WSP02 sample rate; returned in Hz. 
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02SampRate() {
 
-  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
-  uint8_t statusByte = _i2cPort->read(); 
-  if( statusByte == SUCCESS ) 
-    return true; 
-  else 
-    return false; 
+  uint8_t sampRate = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_SAMP_RATE, READ_WSP02_SAMP_RATE_ID ); 
+  return sampRate;
+
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_RUN_MODE (0x05), Write Byte: READ_WSP02_RUN_MODE_ID (0x02)
-// This function writes the three givin systolic BP byte values needed by the
-// calibration procedure.  
-bool SparkFun_Bio_Sensor_Hub::setSystolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
-  
-  _i2cPort->beginTransmission(_address);     
-  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
-  _i2cPort->write(SET_BPT_SYSTOLIC);    
-  _i2cPort->write(BPT_SYSTOLIC_ID); 
-  _i2cPort->write(val1);     
-  _i2cPort->write(val2);     
-  _i2cPort->write(val3);     
-  _i2cPort->endTransmission(); 
-  delayMicroseconds(CMD_DELAY); 
+// This function returns the run mode of the WSP02 algorithm: zer0- continuous
+// or one - One-shot. 
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02RunMode() {
 
-  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
-  uint8_t statusByte = _i2cPort->read(); 
-  if( statusByte == SUCCESS ) 
-    return true; 
-  else 
-    return false; 
+  uint8_t runMode = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_RUN_MODE, READ_WSP02_RUN_MODE_ID );  
+  return runMode; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_AGC_STAT (0x05), Write Byte: READ_WSP02_AGC_STAT_ID (0x03)
-// This function sets the estimation date with the given month/day integer. 
-bool SparkFun_Bio_Sensor_Hub::setBPTEstimationDate(uint16_t monthDay) {
+// This function reads whether AGC mode is enabled or disabled. 
+uint8_t SparkFun_Bio_Sensor_Hub::readAGCmode() {
 
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_EST_DATE, BPT_DATE_ID, monthDay);
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint8_t enable = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_STAT, READ_WSP02_AGC_STAT_ID );
+  return enable; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_MD_STAT (0x05), Write Byte: READ_WSP02_MD_STAT_ID (0x04)
-// This function adjusts the blood pressure trending algorithm for a user that
-// is resting (zero) or not resting (one). 
-bool SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
+// This function checks whether motion detection is enable (one) or not (zero). 
+uint8_t SparkFun_Bio_Sensor_Hub::readMotionDetect() {
 
-  if( resting != 0 || resting != 1)
-    return false; 
-
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_REST, BPT_RESTING_ID, resting);
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint8_t motionDetect = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_STAT, READ_WSP02_MD_STAT_ID);
+  return motionDetect; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_MD_PRD (0x05), Write Byte: READ_WSP02_MD_PRD (0x05)
-// This function sets the given Sp02 coefficients for the blood pressure trending
-// algorithm. 
-bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long spCoef1, long spCoef2, long spCoef3 ) {
+// This function reads the motion detection period in seconds. 
+uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
   
-  long coefArr[3] = { spCoef1, spCoef2, spCoef3 };
-
-  uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_BPT_SPO2_COEF, BPT_SP02_COEF_ID, coefArr);
-  delete[] coefArr;
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint16_t detPeriod = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID );
+  return detPeriod; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_MOT_THRESH
 // (0x05), Write Byte: READ_WSP02_MOT_THRESH (0x06)
-// This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
-// algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
-bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long wspCoef1, long wspCoef2, long wspCoef3 ) {
+// This function reads the long integer that is the motion threshold times
+// 100,000. 
+long SparkFun_Bio_Sensor_Hub::readMotThresh() {
   
-  long coefArr[3] = { wspCoef1, wspCoef2, wspCoef3 };
-
-  uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_WSPO2_COEF, WSP02_COEF_ID, coefArr);
-  delete[] coefArr;
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  long motThresh = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID );
+  return motThresh; 
 
 }
 
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
-// (0x05), Write Byte: READ_WSP02_AGC_TO (0x07)
-// This function changes the wrist Sp02 sample rate to 100Hz (zero) or 25Hz
-// (one).
-bool SparkFun_Bio_Sensor_Hub::changeWSP02SampRate(uint8_t rate) {
+// (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
+// This function reads the time out period of the WSp02 Algorithm. 
+uint16_t SparkFun_Bio_Sensor_Hub::readWSP02Per() {
 
-  if( rate != 0 || rate != 1)
-    return false; 
-  
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_SRATE, WSP02_SAMPLE_RATE_ID, rate);
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint16_t period = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_TO, READ_WSP02_AGC_TO_ID );
+  return period;
 
 }
 
