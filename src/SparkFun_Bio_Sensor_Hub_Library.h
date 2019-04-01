@@ -14,6 +14,14 @@
 #define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
 
+struct version {
+
+  byte major; 
+  byte minor; 
+  byte revision; 
+
+}; 
+
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
 enum READ_STATUS_BYTE_VALUE {

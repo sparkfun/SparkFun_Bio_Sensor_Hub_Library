@@ -1671,20 +1671,53 @@ bool SparkFun_Bio_Sensor_Hub::enableWSP02Algorithm(uint8_t enable) {
 }
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_INIT_VECTOR_BYTES (0x00)
+void SparkFun_Bio_Sensor_Hub::setInitBytes
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_AUTH_BYTES (0x01)
 
-// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02)
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02),
+// Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 
+bool SparkFun_Bio_Sensor_Hub::setNumPages(uint8_t totalPages) {
+
+  uint8_t statusByte = writeByte( BOOTLOADER_FLASH, SET_NUM_PAGES, 0x00, totalPages );
+  return statusByte; 
+
+}
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
+bool SparkFun_Bio_Sensor_Hub::eraseFlash() {
+
+  uint8_t statusByte = writeByte( BOOTLOADER_FLASH, ERASE_FLASH ); 
+  return statusByte; 
+
+}
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SEND_PAGE_VALUE (0x04)
 
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
+struct SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
+
+  struct bootVers = readByte (BOOTLOADER_INFO, BOOTLOADER_VERS, 4 ); 
+  return bootVers; 
+
+}
 
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: PAGE_SIZE (0x01)
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
+struct SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
+
+  struct bioHubVers = readByte( IDENTITY, READ_SENSOR_HUB_VERS, 4 ); 
+  return bioHubVers; 
+
+}
+
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
+struct SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
+
+  struct algoVers = readByte( IDENTITY, READ_ALM_VERS, 4 ); 
+  return algoVers; 
+
+}
 
 //-------------------Private Functions-----------------------
 
