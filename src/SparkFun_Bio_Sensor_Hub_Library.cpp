@@ -1540,57 +1540,44 @@ long SparkFun_Bio_Sensor_Hub::readMotThresh() {
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
 // (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
-// This function reads the time out period of the WSp02 Algorithm. 
-uint16_t SparkFun_Bio_Sensor_Hub::readWSP02Per() {
+// This function reads the time out period of the AGC for the WSp02 Algorithm. 
+uint16_t SparkFun_Bio_Sensor_Hub::readWSP02AGCTimeOut() {
 
-  uint16_t period = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_TO, READ_WSP02_AGC_TO_ID );
-  return period;
+  uint16_t timeOut = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_TO, READ_WSP02_AGC_TO_ID );
+  return timeOut;
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_ALGTHM_TO 
 // (0x05), Write Byte: READ_WSP02_ALGTHM_TO_ID (0x08)
-// This function changes the writs Sp02 algorithm run mode from continuous
-// (zero), from/to one-shot (one).
-bool SparkFun_Bio_Sensor_Hub::changeWSP02RunMode(uint8_t mode) {
+// This function returns the timeout period of the WSp02 Algorithm.
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02AlgTimeOut() {
 
-  if( mode != 0 || mode != 1)
-    return false; 
-  
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_RUN, WSP02_RUN_MODE_ID, mode);
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint16_t timeOut = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_ALGTHM_TO, READ_WSP02_ALGTHM_TO_ID );
+  return timeOut; 
 
 }
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_PD_PPG
 // (0x05), Write Byte: READ_WSP02_PD_PPG_ID (0x03)
-// This function changes the wrist Sp02 algorithm's AGC mode. You can disable
-// it (zero) or enable it (one). 
-bool SparkFun_Bio_Sensor_Hub::changeWSP02AGCMode(uint8_t enable) {
+// This function reads the source of the photoplethysmogorphy: 0x01 = PD1 or
+// 0x02 = PD2.  
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02PPGSource() {
 
-  if( enable != 0 || enable != 1)
-    return false; 
-  
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_AGC, WSP02_AGC_MODE_ID, enable);
-  if (statusByte == SUCCESS)
-    return true;
-  else
-    return false;
+  uint8_t ppgSource = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_PD_PPG, READ_WSP02_PD_PPG_ID );
+  return ppgSource;
 
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
 // ENABLE_AGC_ALM (0x00)
-// This function enables (one) or disables (zero) motion detect.
-bool SparkFun_Bio_Sensor_Hub::enableWSP02MotDet(uint8_t enable) {
+// This function enables (one) or disables (zero) the automatic gain control algorithm. 
+bool SparkFun_Bio_Sensor_Hub::enableAGCalgorithm(uint8_t enable) {
 
   if( enable != 0 || enable != 1)
     return false; 
   
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_MOT_DETECT, WSP02_MOT_DTCT_ID, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AGC_ALM, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1600,11 +1587,14 @@ bool SparkFun_Bio_Sensor_Hub::enableWSP02MotDet(uint8_t enable) {
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
 // ENABLE_AEC_ALM (0x01)
-// This function changes the period of the motion detect and though the
-// datasheet does not specify, I assume is in seconds. 
-bool SparkFun_Bio_Sensor_Hub::enableWSP02MotDetPer(uint16_t detPer) {
+// This function enables (one) or disables (zero) the automatic exposure
+// control (AEC) algorithm.
+bool SparkFun_Bio_Sensor_Hub::enableAECAlgorithm(uint8_t enable) {
 
-  uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_DTCT_PER, WSP02_MOT_DTCT_PER_ID, detPer);
+  if( enable != 0 || enable != 1)
+    return false; 
+  
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AEC_ALM, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1614,73 +1604,87 @@ bool SparkFun_Bio_Sensor_Hub::enableWSP02MotDetPer(uint16_t detPer) {
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
 // ENABLE_WHRM_ALM (0x02)
-// This function changes the motion threshold for the WSp02 algorithm. The
-// given number is multiplied by 100,000. 
-bool SparkFun_Bio_Sensor_Hub::setWSP02MotThresh(long threshVal) {
+// This function enables (one) or disables (zero) the wrist heart rate monitor
+// algorithm.
+bool SparkFun_Bio_Sensor_Hub::enableWHRMFastAlgorithm(uint8_t enable) {
 
-  _i2cPort->beginTransmission(_address);     
-  _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
-  _i2cPort->write(SET_WSP02_THRESH);    
-  _i2cPort->write(WSP02_MOT_THRESH_ID); 
-  _i2cPort->write(threshVal >> 24); 
-  _i2cPort->write(threshVal >> 16); 
-  _i2cPort->write(threshVal >> 8); 
-  _i2cPort->write(threshVal); 
-  _i2cPort->endTransmission(); 
-  delayMicroseconds(CMD_DELAY); 
-
-  _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
-  uint8_t statusByte = _i2cPort->read(); 
-  if( statusByte == SUCCESS )
-    return true; 
-  else
+  if( enable != 0 || enable != 1)
     return false; 
+  
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALM, enable);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
 
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALM
 // (0x03)
-// This function changes the timeout period of the wrist Sp02 AGC algorithm. The
-// paramter should be given in seconds. 
-bool SparkFun_Bio_Sensor_Hub::setWSP02AGCTimeout(uint8_t toVal) {
+// This function enables (one) or disables (zero) the electrocardiogram 
+// (ECG) algorithm.
+bool SparkFun_Bio_Sensor_Hub::enableECGAlgorithm(uint8_t enable) {
 
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_AGC_TOUT, WSP02_AGC_TO_ID, toVal );
-  if( statusByte == SUCCESS )
-    return true; 
-  else 
+  if( enable != 0 || enable != 1)
     return false; 
+  
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_ECG_ALM, enable);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
 }
 
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALM
 // (0x04)
-// This function changes the timeout period of the wrist Sp02 algorithm. The
-// paramter should be given in seconds. 
-bool SparkFun_Bio_Sensor_Hub::setWSP02AGCTimeout(uint8_t toVal) {
+// This function enables (one) or disables (zero) the electrocardiogram 
+// (ECG) algorithm.
+bool SparkFun_Bio_Sensor_Hub::enableECGAlgorithm(uint8_t enable) {
 
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_ALG_TOUT, WSP02_ALM_TO_ID, toVal );
-  if( statusByte == SUCCESS )
-    return true; 
-  else 
+  if( enable != 0 || enable != 1)
     return false; 
+  
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_BPT_ALM, enable);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
+
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALM
 // (0x05)
-// This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
-// The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-bool SparkFun_Bio_Sensor_Hub::setWSP02PPGSource(uint8_t pd) {
+// This function enables (one) or disables (zero) the WSP02 algorithm..
+bool SparkFun_Bio_Sensor_Hub::enableWSP02Algorithm(uint8_t enable) {
   
-  if( pd != 1 || pd != 2 )
+  if( enable != 0 || enable != 1)
     return false; 
-
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_PPG_SIG, WSP02_PD_CONFIG, pd );
-  if( statusByte == SUCCESS )
-    return true; 
-  else 
-    return false; 
+  
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WSP02_ALM, enable);
+  if (statusByte == SUCCESS)
+    return true;
+  else
+    return false;
 
 }
+
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_INIT_VECTOR_BYTES (0x00)
+
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_AUTH_BYTES (0x01)
+
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02)
+
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
+
+// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SEND_PAGE_VALUE (0x04)
+
+// Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
+
+// Family Byte: BOOTLOADER_INFO (0x81), Index Byte: PAGE_SIZE (0x01)
+// Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
+// Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
 
 //-------------------Private Functions-----------------------
 
