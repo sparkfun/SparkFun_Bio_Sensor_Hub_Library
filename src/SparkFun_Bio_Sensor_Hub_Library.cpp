@@ -39,7 +39,6 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, 
 // which mode the IC is in. 
 uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
 
-  uint8_t * responseByte;
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
   //  to avoid multiple begins with other sketches.
@@ -52,8 +51,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   pinMode(_resetPin, OUTPUT); 
   pinMode(_mfioPin, INPUT); // Input so that it may be used
 
-  responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
-  return responseByte[1];
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
+  return responseByte; 
 
 }
 
@@ -268,9 +267,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
   uint8_t sampAvail;
 
   // Checks the status byte but not the number of samples....
-  uint8_t statusByte = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
-  if( statusByte == SUCCESS )
-    return sampAvail;
+  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
+  return sampAvail;
 
 }
 
@@ -431,9 +429,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
 
   uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX86140, 20);// Fake read amount  
-  if( statusByte == SUCCESS ){
-    // Get attributes here
-  }
     
 }
 
@@ -446,9 +441,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
 uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
 
   uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30205, 20);// Fake read amount  
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
     
 }
 
@@ -461,10 +453,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
 uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
 
   uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30001, 20);// Fake read amount  
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
-    
+
 }
 
 // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
@@ -476,9 +465,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
 uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
 
   uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 20);// Fake read amount  
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
     
 }
 
@@ -493,9 +479,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
 uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
 
   uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 20);// Fake read amount  
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
     
 }
 
@@ -507,9 +490,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX86140(){
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX86140, 20); //Fake read amount
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
 
 }
 
@@ -521,9 +501,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX86140(){
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30205() {
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30205, 20); //Fake read amount
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
 
 }
 
@@ -535,9 +512,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30205() {
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30001, 20); //Fake read amount
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
 
 }
 
@@ -549,9 +523,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 20); //Fake read amount
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
 
 }
 
@@ -563,9 +534,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer() {
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_ACCELEROMETER, 20); //Fake read amount
-  if( statusByte == SUCCESS ){
-    // return attributes here
-  }
 
 }
 
@@ -1269,7 +1237,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWHRMsampRate() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxHeight() {
 
-  uint16_t maxHeight = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_HEIGHT, READ_WHRM_MAX_HEIGHT_ID, 3); 
+  uint16_t maxHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_HEIGHT, READ_WHRM_MAX_HEIGHT_ID, 3); 
   return maxHeight; 
 
 }
@@ -1280,7 +1248,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxWeight() {
 
-  uint16_t maxWeight = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_WEIGHT, READ_WHRM_MAX_WEIGHT_ID, 3); 
+  uint16_t maxWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_WEIGHT, READ_WHRM_MAX_WEIGHT_ID, 3); 
   return maxWeight; 
 
 }
@@ -1289,9 +1257,9 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxWeight() {
 // READ_WHRM_MAX_AGE (0x02), Write Byte: READ_MAX_AGE_ID (0x03)
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxAge() {
+uint8_t SparkFun_Bio_Sensor_Hub::readWHRMMaxAge() {
 
-  uint16_t maxAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_AGE, READ_WHRM_MAX_AGE_ID, 3); 
+  uint8_t maxAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_AGE, READ_WHRM_MAX_AGE_ID, 3); 
   return maxAge; 
 
 }
@@ -1302,7 +1270,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMaxAge() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMinHeight() {
 
-  uint16_t minAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_HEIGHT, READ_WHRM_MIN_HEIGHT_ID, 3); 
+  uint16_t minAge = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_HEIGHT, READ_WHRM_MIN_HEIGHT_ID, 3); 
   return minAge; 
 
 }
@@ -1313,7 +1281,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMinHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMMinWeight() {
 
-  uint16_t minWeight = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_WEIGHT, READ_WHRM_MIN_WEIGHT_ID, 3); 
+  uint16_t minWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_WEIGHT, READ_WHRM_MIN_WEIGHT_ID, 3); 
   return minWeight;
 
 }
@@ -1335,7 +1303,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWHRMMinAge() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMDefHeight() {
 
-  uint16_t defHeight = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_HEIGHT, READ_WHRM_DEF_HEIGHT_ID, 3); 
+  uint16_t defHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_HEIGHT, READ_WHRM_DEF_HEIGHT_ID, 3); 
   return defHeight; 
 
 }
@@ -1346,7 +1314,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWHRMDefHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWHRMDefWeight() {
 
-  uint16_t defWeight = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_WEIGHT, READ_WHRM_DEF_WEIGHT_ID, 3); 
+  uint16_t defWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_WEIGHT, READ_WHRM_DEF_WEIGHT_ID, 3); 
   return defWeight;
 
 }
@@ -1382,7 +1350,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWHRMBPM() {
 long * SparkFun_Bio_Sensor_Hub::readWHRMCoef() {
  //long coefArr[]; 
   long * coefArr; //Make public
-  coefArr = readByte( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, 13 ); 
+  coefArr = readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, 4 ); 
   return coefArr;
 }
 
@@ -1413,7 +1381,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSkinDetect() {
 // This function reads the current period of the photo detector in seconds.
 uint16_t SparkFun_Bio_Sensor_Hub::readPhotoDetPer() {
   
-  uint16_t seconds = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PRD, READ_WHRM_PD_PRD_ID, 3 );
+  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PRD, READ_WHRM_PD_PRD_ID, 3 );
   return seconds; 
 
 }
@@ -1421,10 +1389,10 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPhotoDetPer() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WHRM_SCD_DEB (0x02), Write Byte: READ_WHRM_SCD_DEB_ID (0x0E)
 // This function reads the skin contract detect debounce window. It's not clear
-// if this is in seconds according to the datasheet. 
+// if this is in seconds when reading the datasheet. 
 uint16_t SparkFun_Bio_Sensor_Hub::readSCDWindow() {
   
-  uint16_t seconds = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID, 3);
+  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID, 3);
   return seconds; 
 
 }
@@ -1434,7 +1402,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSCDWindow() {
 // This function reads the motion magnitude threshold in 0.1g increments. 
 uint16_t SparkFun_Bio_Sensor_Hub::readMotionMag() {
   
-  uint16_t thresh = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_MOT_MAG, READ_WHRM_MOT_MAG_ID, 3);
+  uint16_t thresh = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_MOT_MAG, READ_WHRM_MOT_MAG_ID, 3);
   return thresh; 
 
 }
@@ -1444,7 +1412,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readMotionMag() {
 // This function reads the set minimum photodetector currrent in 0.1mA.
 uint16_t SparkFun_Bio_Sensor_Hub::readPDCurrent() {
   
-  uint16_t minCurr = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_MIN, READ_WHRM_PD_MIN_ID, 3);
+  uint16_t minCurr = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_MIN, READ_WHRM_PD_MIN_ID, 3);
   return minCurr; 
 
 }
@@ -1469,8 +1437,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::readPPGSource() {
 // INCOMPLETE
 long * SparkFun_Bio_Sensor_Hub::readWSP02Coef() {
   
-  long sp02Arr[3]; //make public
-  sp02Arr = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_COEF, READ_WSP02_COEF_ID, 13 );
+  long * sp02Arr; //make public
+  sp02Arr = readMultipleBytes( READ_ALGORITHM_CONFIG, READ_WSP02_COEF, READ_WSP02_COEF_ID, 4 );
   return sp02Arr; 
 
 }
@@ -1521,7 +1489,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMotionDetect() {
 // This function reads the motion detection period in seconds. 
 uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
   
-  uint16_t detPeriod = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID, 3 );
+  uint16_t detPeriod = readIntByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID, 3 );
   return detPeriod; 
 
 }
@@ -1532,7 +1500,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
 // 100,000. 
 long SparkFun_Bio_Sensor_Hub::readMotThresh() {
   
-  long motThresh = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
+  long motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
   return motThresh; 
 
 }
@@ -1697,7 +1665,7 @@ bool SparkFun_Bio_Sensor_Hub::eraseFlash() {
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
 version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
-  struct bootVers = readByte (BOOTLOADER_INFO, BOOTLOADER_VERS, 4 ); 
+  struct bootVers = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 4 ); 
   return bootVers; 
 
 }
@@ -1856,37 +1824,45 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 }
 
 // This function handles all read commands or stated another way, all information
-// requests. It starts a request by writing the family byte, index byte, and
-// delays 60 microseconds, during which the MAX32664 retrieves the requested 
+// requests. It starts a request by writing the family byte an index byte, and
+// then delays 60 microseconds, during which the MAX32664 retrieves the requested 
 // information. An I-squared-C request is then issued, and the information is read.
-uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
+uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
 {
 
-   uint8_t returnByte[_numOfReads]; 
+  uint8_t returnByte;
+  uint8_t statusByte;
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->endTransmission();
   delayMicroseconds(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
-  for(int i = 0; i < _numOfReads; i++){
-    returnByte[i] = _i2cPort->read(); //Status byte is always sent before read value
-  }
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  numReads--; // One read for status byte.  
+  if( !statusByte )// SUCCESS (0x00)
+    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  return returnByte; 
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte = _i2cPort->read(); 
+  }
+  return returnByte; // If good then return the actual byte. 
+
+
 
 }
 
-// This function is exactly as the one above except it accepts a Write Byte as
-// a paramter. It starts a request by writing the family byte, index byte, and
-// write byte to the MAX32664, delays 60 microseconds, during which
+// This function is exactly as the one above except it accepts also receives a 
+// Write Byte as a paramter. It starts a request by writing the family byte, index byte, and
+// write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
-uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
-   uint8_t returnByte[_numOfReads]; 
+  uint8_t returnByte;
+  uint8_t statusByte;
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
@@ -1894,19 +1870,62 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexB
   _i2cPort->endTransmission();
   delayMicroseconds(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
-  for(int i = 0; i < _numOfReads; i++){
-    returnByte[i] = _i2cPort->read(); //Status byte is always sent before read value
-  }
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  numReads--; // One read for status byte.  
+  if( !statusByte )// SUCCESS (0x00)
+    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte = _i2cPort->read(); 
+  }
+  return returnByte; // If good then return the actual byte. 
+
+}
+
+// This function handles all read commands or stated another way, all information
+// requests. It starts a request by writing the family byte, an index byte, and
+// a write byte and then then delays 60 microseconds, during which the MAX32664 
+// retrieves the requested information. An I-squared-C request is then issued, 
+// and the information is read. This differs from the above read commands in
+// that it returns a 16 bit integer instead of 8. 
+uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+{
+
+   uint16_t returnByte;
+   uint16_t statusByte; 
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  numReads--; // One read for status byte.  
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
+
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte |= (_i2cPort->read() << 8);
+    returnByte |= _i2cPort->read();
+  }
   return returnByte; 
 
 }
 
-uint16_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+// This function handles all read commands or stated another way, all information
+// requests. It starts a request by writing the family byte, an index byte, and
+// a write byte and then then delays 60 microseconds, during which the MAX32664 
+// retrieves the requested information. An I-squared-C request is then issued, 
+// and the information is read. This differs from the above read commands in
+// that it returns a 4 byte (long) integer instead of 8. 
+long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
-   uint8_t returnByte[_numOfReads]; 
+   long returnByte;
+   long statusByte; 
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
@@ -1914,11 +1933,50 @@ uint16_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->endTransmission();
   delayMicroseconds(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, _numOfReads); //Will always get a status byte
-  for(int i = 0; i < _numOfReads; i++){
-    returnByte[i] = _i2cPort->read(); //Status byte is always sent before read value
-  }
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  numReads--; // One read for status byte.  
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
+  for(int i = 0; i < _numOfReads; i++){
+    returnByte |= (_i2cPort->read() << 24);
+    returnByte |= (_i2cPort->read() << 16);
+    returnByte |= (_i2cPort->read() << 8);
+    returnByte |= _i2cPort->read();
+  }
   return returnByte; 
+
+}
+// This function handles all read commands or stated another way, all information
+// requests. It starts a request by writing the family byte, an index byte, and
+// a write byte and then then delays 60 microseconds, during which the MAX32664 
+// retrieves the requested information. An I-squared-C request is then issued, 
+// and the information is read. This function is very similar to the one above
+// except it returns three long bytes instead of one. 
+long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+{
+
+   uint8_t statusByte; 
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  numReads--; // One read for status byte.  
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return; 
+
+  for(int i = 0; i < _numOfReads; i++){
+    _readCoefArr[i] |= (_i2cPort->read() << 24);
+    _readCoefArr[i] |= (_i2cPort->read() << 16);
+    _readCoefArr[i] |= (_i2cPort->read() << 8);
+    _readCoefArr[i] |= _i2cPort->read();
+  }
+  return * readCoefArr; 
 
 }

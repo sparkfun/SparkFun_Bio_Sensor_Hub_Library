@@ -429,8 +429,6 @@ class SparkFun_Bio_Sensor_Hub
 {
   public:  
   // Variables ------------
-  long readCoefArr[3];
-  long writeCoefArr[3];
 
   struct version {
     byte major; 
@@ -874,7 +872,7 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WHRM_MAX_AGE (0x02), Write Byte: READ_MAX_AGE_ID (0x03)
   // This function reads the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMMaxAge();
+  uint8_t readWHRMMaxAge();
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MIN_HEIGHT (0x02), Write Byte: READ_WHRM_MIN_HEIGHT_ID (0x04)
   // This function reads the minimum height for the wrist heart rate monitor
@@ -934,7 +932,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_SCD_DEB (0x02), Write Byte: READ_WHRM_SCD_DEB_ID (0x0E)
   // This function reads the skin contract detect debounce window. It's not clear
-  // if this is in seconds according to the datasheet. 
+  // if this is in seconds when reading the datasheet. 
   uint16_t readSCDWindow();
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_MOT_MAG (0x02), Write Byte: READ_WHRM_MOT_MAG_ID (0x0F)
@@ -1039,6 +1037,8 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t _mfioPin;
   int _address; 
   uint8_t _calibData[608];
+  long _readCoefArr[3];
+  long _writeCoefArr[3];
   
   // I-squared-C Class----
   TwoWire *_i2cPort;
@@ -1079,15 +1079,27 @@ class SparkFun_Bio_Sensor_Hub
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
   // information. An I-squared-C request is then issued, and the information is read and returned.
-  uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads ); 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
   // then issued, and the information is read and returned. 
-  uint8_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
+  // This function handles all read commands or stated another way, all information
+  // requests. It starts a request by writing the family byte, an index byte, and
+  // a write byte and then then delays 60 microseconds, during which the MAX32664 
+  // retrieves the requested information. An I-squared-C request is then issued, 
+  // and the information is read. This differs from the above read commands in
+  // that it returns a 16 bit integer instead of 8. 
+  uint16_t readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  // This function handles all read commands or stated another way, all information
+  // requests. It starts a request by writing the family byte, an index byte, and
+  // a write byte and then then delays 60 microseconds, during which the MAX32664 
+  // retrieves the requested information. An I-squared-C request is then issued, 
+  // and the information is read. This differs from the above read commands in
+  // that it returns a 4 byte (long) integer instead of 8. 
+  long readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
 
-  uint16_t * readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
 }
-
 #endif
