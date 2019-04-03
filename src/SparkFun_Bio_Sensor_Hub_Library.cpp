@@ -264,8 +264,6 @@ bool SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
 // INCOMPLETE
 uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
 
-  uint8_t sampAvail;
-
   // Checks the status byte but not the number of samples....
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
   return sampAvail;

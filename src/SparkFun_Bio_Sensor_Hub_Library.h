@@ -953,8 +953,11 @@ class SparkFun_Bio_Sensor_Hub
   // This function reads the coefficiencts used for the WSP02 algorithm. It
   // returns the three long integers that are multiplied by 100,000 that are used
   // as teh coefficients. 
-  // INCOMPLETE
-  long * readWSP02SampRate();
+  long * readWSP02Coef();
+  // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
+  // READ_WSP02_SAMP_RATE(0x05), Write Byte: READ_WSP02_SAMP_RATE_ID (0x01)
+  // This function reads the WSP02 sample rate; returned in Hz. 
+  uint8_t readWSP02SampRate();
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_RUN_MODE (0x05), Write Byte: READ_WSP02_RUN_MODE_ID (0x02)
   // This function returns the run mode of the WSP02 algorithm: zer0- continuous
@@ -1092,14 +1095,22 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 4 byte (long) integer instead of 8. 
-  long readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  // This function handles all read commands or stated another way, all information
+  // requests. It starts a request by writing the family byte, an index byte, and
+  // a write byte and then then delays 60 microseconds, during which the MAX32664 
+  // retrieves the requested information. An I-squared-C request is then issued, 
+  // and the information is read. This function is very similar to the one above
+  // except it returns three long bytes instead of one. 
+  long * readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
 
-}
+};
+
 #endif
