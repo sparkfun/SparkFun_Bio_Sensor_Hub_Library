@@ -1896,7 +1896,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( !statusByte )// SUCCESS (0x00)
+  if( statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(int i = 0; i < _numOfReads; i++){
@@ -1928,7 +1928,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( !statusByte )// SUCCESS (0x00)
+  if( statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(int i = 0; i < _numOfReads; i++){
@@ -1959,7 +1959,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+  if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(int i = 0; i < _numOfReads; i++){
@@ -1991,7 +1991,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+  if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(int i = 0; i < _numOfReads; i++){
@@ -2023,7 +2023,7 @@ long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+  if( statusByte ) // Pass through if SUCCESS (0x00). 
     return; 
 
   for(int i = 0; i < _numOfReads; i++){
