@@ -1651,20 +1651,46 @@ bool SparkFun_Bio_Sensor_Hub::setNumPages(uint8_t totalPages) {
 }
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
+// Returns true on successful communication.
 bool SparkFun_Bio_Sensor_Hub::eraseFlash() {
 
-  uint8_t statusByte = writeByte( BOOTLOADER_FLASH, ERASE_FLASH ); 
-  return statusByte; 
+  // This is a unique write in that it does not have a relevant write byte.
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(BOOTLOADER_FLASH);    
+  _i2cPort->write(ERASE_FLASH);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 1); 
+  uint8_t statusByte = _i2cPort->read(); 
+  if( !statusByte ) 
+    return true; 
+  else 
+    return false; 
 
 }
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SEND_PAGE_VALUE (0x04)
-
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
 version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
-  struct bootVers = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 4 ); 
-  return bootVers; 
+  version booVers; //BOO!
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(BOOTLOADER_INFO);    
+  _i2cPort->write(BOOTLOADER_VERS);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 4); 
+  uint8_t statusByte = _i2cPort->read();
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return; // Just return
+
+  booVers.major = _i2cPort->read();
+  booVers.minor = _i2cPort->read();
+  booVers.revision = _i2cPort->read();  
+
+  return booVers; 
 
 }
 
@@ -1672,7 +1698,22 @@ version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
 version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 
-  struct bioHubVers = readByte( IDENTITY, READ_SENSOR_HUB_VERS, 4 ); 
+  version bioHubVers; 
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(BOOTLOADER_INFO);    
+  _i2cPort->write(BOOTLOADER_VERS);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 4); 
+  uint8_t statusByte = _i2cPort->read();
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return; // Just return
+
+  bioHubVers.major = _i2cPort->read();
+  bioHubVers.minor = _i2cPort->read();
+  bioHubVers.revision = _i2cPort->read();  
+
   return bioHubVers; 
 
 }
@@ -1680,7 +1721,22 @@ version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
 version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
-  struct algoVers = readByte( IDENTITY, READ_ALM_VERS, 4 ); 
+  version algoVers; 
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(BOOTLOADER_INFO);    
+  _i2cPort->write(BOOTLOADER_VERS);    
+  _i2cPort->endTransmission();
+  delayMicroseconds(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, 4); 
+  uint8_t statusByte = _i2cPort->read();
+  if( !statusByte ) // Pass through if SUCCESS (0x00). 
+    return; // Just return
+
+  algoVers.major = _i2cPort->read();
+  algoVers.minor = _i2cPort->read();
+  algoVers.revision = _i2cPort->read();  
+
   return algoVers; 
 
 }
@@ -1696,6 +1752,7 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 // algorithm. 
 bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
  
+  uint8_t statusByte; 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(READ_ALGORITHM_CONFIG);    
   _i2cPort->write(READ_WHRM_BPT_RESULTS);    
@@ -1704,7 +1761,7 @@ bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
   delayMicroseconds(CMD_DELAY); 
 
   _i2cPort->requestFrom(_address, 609); // 608 bytes of data and one status byte
-  uint8_t statusByte = _i2cPort->read();  
+  statusByte = _i2cPort->read();  
   if( statusByte != SUCCESS )
     return false; 
   else {
@@ -1718,12 +1775,12 @@ bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
   _i2cPort->write(CALIBRATE_BPT);    
   _i2cPort->write(BPT_CALIBRATE_ID); 
   for(byte i = 0; i < 608; i++){ // Length of the given calibration data is 608
-    _i2cPort->write(calibData[i]);     
+    _i2cPort->write(_calibData[i]);     
   }
   _i2cPort->endTransmission(); 
-delayMicroseconds(CMD_DELAY); 
+  delayMicroseconds(CMD_DELAY); 
   _i2cPort->requestFrom(_address, 1); // 608 bytes of data and one status byte
-  uint8_t statusByte = _i2cPort->read();  
+  statusByte = _i2cPort->read();  
   if( statusByte != SUCCESS )
     return false; 
 }
@@ -1825,7 +1882,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 // requests. It starts a request by writing the family byte an index byte, and
 // then delays 60 microseconds, during which the MAX32664 retrieves the requested 
 // information. An I-squared-C request is then issued, and the information is read.
-uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
+uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads )
 {
 
   uint8_t returnByte;
@@ -1838,7 +1895,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
-  numReads--; // One read for status byte.  
+  _numOfReads--; // One read for status byte.  
   if( !statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
@@ -1856,7 +1913,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 // write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
-uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
 {
 
   uint8_t returnByte;
@@ -1870,7 +1927,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
-  numReads--; // One read for status byte.  
+  _numOfReads--; // One read for status byte.  
   if( !statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
@@ -1887,7 +1944,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 16 bit integer instead of 8. 
-uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
 {
 
    uint16_t returnByte;
@@ -1901,7 +1958,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
-  numReads--; // One read for status byte.  
+  _numOfReads--; // One read for status byte.  
   if( !statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
@@ -1919,7 +1976,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 4 byte (long) integer instead of 8. 
-long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
 {
 
    long returnByte;
@@ -1933,7 +1990,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
-  numReads--; // One read for status byte.  
+  _numOfReads--; // One read for status byte.  
   if( !statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
@@ -1952,7 +2009,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
 // except it returns three long bytes instead of one. 
-long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
 {
 
    uint8_t statusByte; 
@@ -1965,7 +2022,7 @@ long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _
 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
-  numReads--; // One read for status byte.  
+  _numOfReads--; // One read for status byte.  
   if( !statusByte ) // Pass through if SUCCESS (0x00). 
     return; 
 
@@ -1975,6 +2032,6 @@ long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _
     _readCoefArr[i] |= (_i2cPort->read() << 8);
     _readCoefArr[i] |= _i2cPort->read();
   }
-  return * readCoefArr; 
+  return _readCoefArr; 
 
 }

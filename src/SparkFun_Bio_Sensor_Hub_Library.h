@@ -13,6 +13,12 @@
 #define NO_WRITE 0x00 
 #define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
+struct version {
+  byte major; 
+  byte minor; 
+  byte revision; 
+}; 
+
 
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
@@ -429,12 +435,6 @@ class SparkFun_Bio_Sensor_Hub
 {
   public:  
   // Variables ------------
-
-  struct version {
-    byte major; 
-    byte minor; 
-    byte revision; 
-  }; 
 
   // Constructor ----------
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
@@ -1025,6 +1025,7 @@ class SparkFun_Bio_Sensor_Hub
   // Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 
   bool setNumPages(uint8_t totalPages);
   // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
+  // Returns true on successful communication.
   bool eraseFlash();
   // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
   version readBootloaderVers();
@@ -1082,34 +1083,34 @@ class SparkFun_Bio_Sensor_Hub
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
   // information. An I-squared-C request is then issued, and the information is read and returned.
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, int _numOfReads ); 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
   // then issued, and the information is read and returned. 
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads ); 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 4 byte (long) integer instead of 8. 
-  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
   // except it returns three long bytes instead of one. 
-  long * readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  long * readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
 
 };
 
