@@ -9,7 +9,7 @@
 #define ENABLE 0x01
 #define APP_MODE 0x00
 #define BOOTLOADER_MODE 0x08
-#define CMD_DELAY 60 //microseconds
+#define CMD_DELAY 2 //milliseconds
 #define NO_WRITE 0x00 
 #define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
