@@ -81,6 +81,19 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 
 }
 
+void SparkFun_Bio_Sensor_Hub::readBPM(){
+  uint8_t statusByte = dumpRegisterMAX30101(); 
+  if( statusByte != SUCCESS)
+    return false; 
+
+  uint8_t registerCont = readRegisterMAX30101(0x07);  
+  if(registerCont != 0x60) //More on this later
+    return false; 
+
+
+
+    
+}
 // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
 // The following function is an alternate way to set the mode of the of
 // MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
@@ -523,6 +536,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
   
   uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 20); //Fake read amount
+  return statusByte; 
 
 }
 
