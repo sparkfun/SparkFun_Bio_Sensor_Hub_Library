@@ -13,6 +13,7 @@
 #define NO_WRITE 0x00 
 #define INCORR_PARAM 0xFF
 const int BIO_ADDRESS = 0x55;
+
 struct version {
   byte major; 
   byte minor; 

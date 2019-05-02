@@ -50,25 +50,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   delay(50); 
   pinMode(_mfioPin, INPUT); 
 
-  delay(1000); 
-
   uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
-  Serial.print("0x0"); 
-  Serial.println(responseByte); 
-
-  delay(1000); 
-
-  responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
-  Serial.print("0x0"); 
-  Serial.println(responseByte); 
-
-  delay(1000); 
-
-  responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
-  Serial.print("0x0"); 
-  Serial.println(responseByte); 
-
-
   return responseByte; 
 }
 
@@ -107,7 +89,9 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
    
     // Must be one of the three....
-    if (selection != EXIT_BOOTLOADER || selection != RESET || selection != ENTER_BOOTLOADER)
+    if (selection == EXIT_BOOTLOADER || selection == RESET || selection == ENTER_BOOTLOADER)
+      { }
+    else
       return INCORR_PARAM;
 
     uint8_t statusByte = writeByte(SET_DEVICE_MODE, 0x00, selection);
@@ -208,7 +192,9 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
 // This function enables the MAX30101. 
 uint8_t SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 
-  if(enable != 0 || enable != 1)
+  if(enable == 0 || enable == 1)
+    { }
+  else  
     return false; 
 
   // Check that communication was successful, not that the sensor is enabled.
