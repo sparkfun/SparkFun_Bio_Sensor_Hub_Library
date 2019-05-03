@@ -82,7 +82,8 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 }
 
 void SparkFun_Bio_Sensor_Hub::readBPM(){
-  uint8_t statusByte = dumpRegisterMAX30101(); 
+
+  dumpRegisterMAX30101(); 
   if( statusByte != SUCCESS)
     return false; 
 
@@ -535,8 +536,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 // INCOMPLETE: Need to read datasheets to get exact amount of registers.
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
   
-  uint8_t statusByte = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 20); //Fake read amount
-  return statusByte; 
+  readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, max30101Array); 
+  return statusByte;  
 
 }
 
@@ -1954,6 +1955,30 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
 }
 
+uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array )
+{
+
+  uint8_t returnByte;
+  uint8_t statusByte;
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->endTransmission();
+  delay(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, _numOfReads); 
+  statusByte = _i2cPort->read();
+  _numOfReads--; // One read for status byte.  
+  if( statusByte )// SUCCESS (0x00)
+    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
+
+  for(int i = 0; i < _numOfReads; i++){
+    array[i] = _i2cPort->read(); 
+  }
+  return array; // If good then return the actual byte. 
+
+}
 // This function handles all read commands or stated another way, all information
 // requests. It starts a request by writing the family byte, an index byte, and
 // a write byte and then then delays 60 microseconds, during which the MAX32664 

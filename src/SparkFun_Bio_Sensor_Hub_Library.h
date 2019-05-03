@@ -436,7 +436,7 @@ class SparkFun_Bio_Sensor_Hub
 {
   public:  
   // Variables ------------
-
+  uint8_t max30101Array[255]; 
   // Constructor ----------
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
