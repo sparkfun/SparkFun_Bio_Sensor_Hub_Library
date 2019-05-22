@@ -81,6 +81,15 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 
 }
 
+// Family Byte: HUB_STATUS (0x00), Index Byte: 0x00, No Write Byte.
+// The following function checks the status of the FIFO. 
+uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
+  
+  uint8_t status = readByte(HUB_STATUS, 0x00, 1); // Just family and index byte. 
+  return status; // Will return 0x08
+
+}
+
 void SparkFun_Bio_Sensor_Hub::readBPM(){
 
   dumpRegisterMAX30101(); 
@@ -90,10 +99,21 @@ void SparkFun_Bio_Sensor_Hub::readBPM(){
   uint8_t registerCont = readRegisterMAX30101(0x07);  
   if(registerCont != 0x60) //More on this later
     return false; 
+ 
+  setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
+  // Set FiFo threshold 
+  setFIFOThreshold(0x0F); // This many samples will be ready to read later.
+  enableSensorMAX30101(); 
+  enableWHRMFastAlgorithm();
 
-
-
-    
+  uint8_t status = readSensorHubStatus();
+  if( status != SUCCESS )
+    return false; 
+  
+  // Get number of samples in FIFO
+  // How many are in the FIFO?
+  uint8_t totalSamp = numSamplesOutFIFO(); 
+   
 }
 // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
 // The following function is an alternate way to set the mode of the of
