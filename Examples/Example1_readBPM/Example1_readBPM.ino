@@ -18,9 +18,7 @@ void setup(){
   uint8_t result = bioHub.begin();
   Serial.print("0x0");
   Serial.println(result); 
-  if(bioHub.enableSensorMAX30101(ENABLE))
-    Serial.println("Enabling sensor."); 
-  readBPM(); 
+  bioHub.readBPM(); //??
     
 }
 

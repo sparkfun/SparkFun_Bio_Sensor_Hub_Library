@@ -15,9 +15,11 @@
 const int BIO_ADDRESS = 0x55;
 
 struct version {
+
   byte major; 
   byte minor; 
   byte revision; 
+
 }; 
 
 
@@ -1151,6 +1153,8 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
   version readAlgorithmVersion();
 
+  void readBPM();
+
   private:   
   // Variables -----------
   uint8_t _resetPin;
@@ -1237,6 +1241,8 @@ class SparkFun_Bio_Sensor_Hub
   // except it returns three long bytes instead of one. 
   long * readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
 
+  // Needs comment - INCOMPLETE
+  uint8_t * readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array);
 };
 
 #endif

@@ -113,8 +113,13 @@ void SparkFun_Bio_Sensor_Hub::readBPM(){
   // Get number of samples in FIFO
   // How many are in the FIFO?
   uint8_t totalSamp = numSamplesOutFIFO(); 
-   
+  // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
+  // Pass it a declared array
+  dataArray * readFillArray(READ_DATA_OUTPUT, READ_DATA, totalSamp, max30101Array); 
+  return dataArray; 
+
 }
+
 // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
 // The following function is an alternate way to set the mode of the of
 // MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
@@ -556,7 +561,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 // INCOMPLETE: Need to read datasheets to get exact amount of registers.
 uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
   
-  readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, max30101Array); 
+  uint8_t statusByte = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, max30101Array); 
   return statusByte;  
 
 }
@@ -1983,7 +1988,6 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _i
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
-  _i2cPort->write(_writeByte);    
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
