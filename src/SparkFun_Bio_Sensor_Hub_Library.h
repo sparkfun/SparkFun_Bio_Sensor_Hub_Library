@@ -12,13 +12,14 @@
 #define CMD_DELAY 2 //milliseconds
 #define NO_WRITE 0x00 
 #define INCORR_PARAM 0xFF
+#define WHRM_ARRAY_SIZE 8
 const int BIO_ADDRESS = 0x55;
 
 struct version {
 
-  byte major; 
-  byte minor; 
-  byte revision; 
+  uint8_t major; 
+  uint8_t minor; 
+  uint8_t revision; 
 
 }; 
 
@@ -438,7 +439,18 @@ class SparkFun_Bio_Sensor_Hub
 {
   public:  
   // Variables ------------
-  uint8_t max30101Array[255]; 
+  uint8_t max30101Array[2]; 
+  uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
+
+  struct whrmFIFO {
+    // 8 bytes total
+    uint16_t heartRate; // LSB = 0.1bpm
+    uint8_t  confidence; // 0-100% LSB = 1%
+    uint16_t oxygen; // 0-100% LSB = 1%
+    uint8_t  whrmStatus; // 0: Success, 1: Not Ready
+
+  } body; 
+
   // Constructor ----------
   SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
 
@@ -461,6 +473,10 @@ class SparkFun_Bio_Sensor_Hub
   // successful communcation byte, followed by 0x08 which is the byte indicating 
   // that the board is in bootloader mode. 
   bool beginBootloader( TwoWire &wirePort = Wire); 
+
+  // Family Byte: HUB_STATUS (0x00), Index Byte: 0x00, No Write Byte.
+  // The following function checks the status of the FIFO. 
+  uint8_t readSensorHubStatus();
 
   // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
   // The following function is an alternate way to set the mode of the of
@@ -501,7 +517,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
   // Byte: enable (parameter - 0x00 or 0x01).
   // This function enables the MAX30101. 
-  uint8_t enableSensorMAX30101(uint8_t enable);
+  bool enableSensorMAX30101(uint8_t enable);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
   // Byte: enable (parameter - 0x00 or 0x01). 
@@ -1153,7 +1169,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
   version readAlgorithmVersion();
 
-  void readBPM();
+  uint16_t readBPM();
 
   private:   
   // Variables -----------

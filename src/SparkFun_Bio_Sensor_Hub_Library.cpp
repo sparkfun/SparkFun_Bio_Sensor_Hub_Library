@@ -90,21 +90,17 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
 
 }
 
-void SparkFun_Bio_Sensor_Hub::readBPM(){
-
-  dumpRegisterMAX30101(); 
-  if( statusByte != SUCCESS)
-    return false; 
+uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
 
   uint8_t registerCont = readRegisterMAX30101(0x07);  
   if(registerCont != 0x60) //More on this later
     return false; 
  
   setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
-  // Set FiFo threshold 
-  setFIFOThreshold(0x0F); // This many samples will be ready to read later.
-  enableSensorMAX30101(); 
-  enableWHRMFastAlgorithm();
+  // Set FiFo threshold to ONE, I just want one sample
+  setFIFOThreshold(0x01);  // This can be set somewhere, perhaps it should just be a setting. 
+  enableSensorMAX30101(1); // This paramater and the one below does not seem necessary. 
+  enableWHRMFastAlgorithm(1);
 
   uint8_t status = readSensorHubStatus();
   if( status != SUCCESS )
@@ -112,11 +108,18 @@ void SparkFun_Bio_Sensor_Hub::readBPM(){
   
   // Get number of samples in FIFO
   // How many are in the FIFO?
+  // Should be one....
   uint8_t totalSamp = numSamplesOutFIFO(); 
+  if( totalSamp != 1 )
+    return false; 
+
   // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
   // Pass it a declared array
-  dataArray * readFillArray(READ_DATA_OUTPUT, READ_DATA, totalSamp, max30101Array); 
-  return dataArray; 
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+  body.heartRate |= (data[0] << 8); 
+  body.heartRate |= (data[1]); 
+  return body.heartRate;
+
 
 }
 
@@ -229,7 +232,7 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
 // Byte: enable (parameter - 0x00 or 0x01).
 // This function enables the MAX30101. 
-uint8_t SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 
   if(enable == 0 || enable == 1)
     { }
@@ -1991,9 +1994,10 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _i
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
+  _numOfReads++; // Add one for statusByte 
   _i2cPort->requestFrom(_address, _numOfReads); 
-  statusByte = _i2cPort->read();
-  _numOfReads--; // One read for status byte.  
+  statusByte = _i2cPort->read(); // Got it
+  _numOfReads--; // One read for status byte, remove one from reads.   
   if( statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
