@@ -85,45 +85,44 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 // The following function checks the status of the FIFO. 
 uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
   
-  uint8_t status = readByte(0x00, 0x00, 2); // Just family and index byte. 
+  uint8_t status = readByte(0x00, 0x00, 1); // Just family and index byte. 
   return status; // Will return 0x00
 
 }
 
 uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
 
- uint8_t registerCont = readRegisterMAX30101(0x07);  
-  Serial.print("Register content at 0x07...");
-  Serial.println(registerCont);
-  //if(registerCont != 0x60) //More on this later
-  //  return false; 
- 
-  setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
-  // Set FiFo threshold to ONE, I just want one sample
-  setFIFOThreshold(0x01);  // This can be set somewhere, perhaps it should just be a setting. 
-  max30101Control(1); 
-  enableWHRMFastAlgorithm(1);
-  delay(10);
-  uint8_t status = readSensorHubStatus();
-  Serial.print("Status: ");
-  Serial.println(status, HEX);
-  if( status != SUCCESS )
-    return false; 
-  
-  // Get number of samples in FIFO
-  // How many are in the FIFO?
-  // Should be one....
-  uint8_t totalSamp = numSamplesOutFIFO(); 
-  Serial.print("Samples in FIFO: "); 
-  Serial.println(totalSamp);
+ //uint8_t registerCont = readRegisterMAX30101(0x07);  
+ // Serial.print("Register content at 0x07...");
+ // Serial.println(registerCont);
+ // //if(registerCont != 0x60) //More on this later
+ // //  return false; 
+ //
+ // setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
+ // // Set FiFo threshold to ONE, I just want one sample
+ // setFIFOThreshold(0x01);  // This can be set somewhere, perhaps it should just be a setting. 
+ // max30101Control(1); // Enable 
+ // enableWHRMFastAlgorithm(1);
+ // delay(10);
+ // uint8_t status = readSensorHubStatus();
+ // Serial.print("Status: ");
+ // Serial.println(status, HEX);
+ // if( status != SUCCESS )
+ //   return false; 
+ // 
+ // // Get number of samples in FIFO
+ // // How many are in the FIFO?
+ // // Should be one....
+ // uint8_t totalSamp = numSamplesOutFIFO(); 
+ // Serial.print("Samples in FIFO: "); 
+ // Serial.println(totalSamp);
 
-  //if( totalSamp != 1 )
-  //  return false; 
+ // //if( totalSamp != 1 )
+ // //  return false; 
 
-  // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
-  // Pass it a declared array
-  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
-  Serial.println("Data: ");
+ // // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
+ // // Pass it a declared array
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, 10, bigArray); 
   for(int i = 0; i < WHRM_ARRAY_SIZE; i ++){
     Serial.print(data[i]);
     Serial.print(",");
@@ -1631,12 +1630,12 @@ bool SparkFun_Bio_Sensor_Hub::enableAECAlgorithm(uint8_t enable) {
 // ENABLE_WHRM_ALM (0x02)
 // This function enables (one) or disables (zero) the wrist heart rate monitor
 // algorithm.
-bool SparkFun_Bio_Sensor_Hub::enableWHRMFastAlgorithm(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::whrmFastAlgorithmControl(uint8_t algSwitch) {
 
-  if( enable != 0 || enable != 1)
+  if( algSwitch != 0 || algSwitch != 1)
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALM, algSwitch);
   if (statusByte == SUCCESS)
     return true;
   else

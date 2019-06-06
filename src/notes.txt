@@ -7,10 +7,9 @@ Change readByte functions to take the correct parameter
     need.  
 
 These enable functions need to be changed to "suchAndSuchControl"
+NAK'ing on enable ----
+  * Databit is not getting set
+  * probably because sensor is not enabling and not filling FIFO
 
 
-JLink - Ask Michelle - do we have Adapters on order for 20x10
-  * cables as well
-Samples for 20 pin shrouded SMD connector - again Jlink
-Circuit Python - added to Python page
   

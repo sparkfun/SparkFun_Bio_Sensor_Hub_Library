@@ -447,6 +447,7 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t max30101Array[2]; 
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
   uint8_t afeArr[2];//
+  uint8_t bigArray[10];
 
   struct whrmFIFO {
     // 8 bytes total
