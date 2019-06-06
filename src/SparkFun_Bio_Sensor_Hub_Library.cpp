@@ -9,7 +9,7 @@
   registers, but includes a larger set of definable values.  
 
   SparkFun Electronics
-  Date: March, 2019
+  Date: June, 2019
   Author: Elias Santistevan
 kk
   License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
@@ -48,9 +48,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
   delay(50); 
-  pinMode(_mfioPin, INPUT); 
+  pinMode(_mfioPin, INPUT); // To be used as an interrupt later
 
-  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte.
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 1); // 0x00 only possible Index Byte.
   return responseByte; 
 }
 
@@ -85,24 +85,28 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 // The following function checks the status of the FIFO. 
 uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
   
-  uint8_t status = readByte(HUB_STATUS, 0x00, 1); // Just family and index byte. 
-  return status; // Will return 0x08
+  uint8_t status = readByte(0x00, 0x00, 2); // Just family and index byte. 
+  return status; // Will return 0x00
 
 }
 
 uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
 
-  uint8_t registerCont = readRegisterMAX30101(0x07);  
-  if(registerCont != 0x60) //More on this later
-    return false; 
+ uint8_t registerCont = readRegisterMAX30101(0x07);  
+  Serial.print("Register content at 0x07...");
+  Serial.println(registerCont);
+  //if(registerCont != 0x60) //More on this later
+  //  return false; 
  
   setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
   // Set FiFo threshold to ONE, I just want one sample
   setFIFOThreshold(0x01);  // This can be set somewhere, perhaps it should just be a setting. 
-  enableSensorMAX30101(1); // This paramater and the one below does not seem necessary. 
+  max30101Control(1); 
   enableWHRMFastAlgorithm(1);
-
+  delay(10);
   uint8_t status = readSensorHubStatus();
+  Serial.print("Status: ");
+  Serial.println(status, HEX);
   if( status != SUCCESS )
     return false; 
   
@@ -110,12 +114,20 @@ uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
   // How many are in the FIFO?
   // Should be one....
   uint8_t totalSamp = numSamplesOutFIFO(); 
-  if( totalSamp != 1 )
-    return false; 
+  Serial.print("Samples in FIFO: "); 
+  Serial.println(totalSamp);
+
+  //if( totalSamp != 1 )
+  //  return false; 
 
   // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
   // Pass it a declared array
   uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+  Serial.println("Data: ");
+  for(int i = 0; i < WHRM_ARRAY_SIZE; i ++){
+    Serial.print(data[i]);
+    Serial.print(",");
+  }
   body.heartRate |= (data[0] << 8); 
   body.heartRate |= (data[1]); 
   return body.heartRate;
@@ -141,7 +153,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
       return statusByte; 
 
     // Here we'll check if the board made it into Bootloader mode...
-    uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte
+    uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 1); // 0x00 only possible Index Byte
     return responseByte; // This is in fact the status byte, need second returned byte - bootloader mode
 
 }
@@ -181,13 +193,13 @@ long SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
 // Byte: enable (parameter - 0x00 or 0x01). 
 // This function enables the MAX86140. 
-bool SparkFun_Bio_Sensor_Hub::enableSensorMAX86140(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::max86140Control(uint8_t senSwitch) {
 
-  if(enable != 0 || enable != 1)
+  if(senSwitch != 0 || senSwitch != 1)
     return false; 
 
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX86140, enable);
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX86140, senSwitch);
   if( statusByte == SUCCESS )
     return true; 
   else
@@ -198,13 +210,13 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX86140(uint8_t enable) {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
 // Byte: enable (parameter - 0x00 or 0x01). 
 // This function enables the MAX30205. 
-bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30205(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::max30205Control(uint8_t senSwitch) {
 
-  if(enable != 0 || enable != 1)
+  if(senSwitch != 0 || senSwitch != 1)
     return false; 
   
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30205, enable);
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30205, senSwitch);
   if( statusByte == SUCCESS ) 
     return true; 
   else
@@ -215,13 +227,13 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30205(uint8_t enable) {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
 // Byte: enable (parameter - 0x00 or 0x01). 
 // This function enables the MAX30001. 
-bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::max30001Control(uint8_t senSwitch) {
 
-  if(enable != 0 || enable != 1)
+  if(senSwitch != 0 || senSwitch != 1)
     return false; 
 
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30001, enable);
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30001, senSwitch);
   if( statusByte == SUCCESS ) 
     return true; 
   else
@@ -232,15 +244,15 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30001(uint8_t enable) {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
 // Byte: enable (parameter - 0x00 or 0x01).
 // This function enables the MAX30101. 
-bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
 
-  if(enable == 0 || enable == 1)
+  if(senSwitch == 0 || senSwitch == 1)
     { }
   else  
     return false; 
 
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t responseByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, enable);
+  uint8_t responseByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, senSwitch);
   if( responseByte == SUCCESS ) 
     return true; 
   else
@@ -251,13 +263,13 @@ bool SparkFun_Bio_Sensor_Hub::enableSensorMAX30101(uint8_t enable) {
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
 // Byte: enable (parameter - 0x00 or 0x01). 
 // This function enables the Accelerometer. 
-bool SparkFun_Bio_Sensor_Hub::enableSensorAccel(uint8_t enable) {
+bool SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 
-  if(enable != 0 || enable != 1)
+  if(accelSwitch != 0 || accelSwitch != 1)
     return false; 
   
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, enable);
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, accelSwitch);
   if( statusByte == SUCCESS ) 
     return true; 
   else
@@ -504,9 +516,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
 // and the number of registers available. 
 // INCOMPLETE - must check datasheet of individual sensor to know how many
 // registers are returned. 
-uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
+uint8_t* SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
 
-  uint8_t statusByte = readByte(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 20);// Fake read amount  
+  uint8_t* afePoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, afeArr);// Fake read amount  
+  return afePoint;
+
     
 }
 
@@ -1937,16 +1951,19 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   _i2cPort->write(_indexByte);    
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
-
+  
+  _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( statusByte )// SUCCESS (0x00)
+  if( statusByte )// SUCCESS (0x00) - how do I know its 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(int i = 0; i < _numOfReads; i++){
     returnByte = _i2cPort->read(); 
   }
+  Serial.print("Return Byte: ");
+  Serial.println(returnByte);
   return returnByte; // If good then return the actual byte. 
 
 
@@ -1970,6 +1987,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
+  _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
@@ -2025,6 +2043,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
+  _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
@@ -2057,6 +2076,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
+  _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
@@ -2089,6 +2109,7 @@ long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
+  _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  

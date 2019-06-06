@@ -1,0 +1,16 @@
+Change readByte functions to take the correct parameter
+  * numofRead does not have to be subtracted from to get teh StatusByte if
+    your'e going to get it everytime. 
+  * Incorrect - I have to request a certain number of reads, so I should add
+    one in each read 
+  * fix those functions that use readByte functions to include only what we
+    need.  
+
+These enable functions need to be changed to "suchAndSuchControl"
+
+
+JLink - Ask Michelle - do we have Adapters on order for 20x10
+  * cables as well
+Samples for 20 pin shrouded SMD connector - again Jlink
+Circuit Python - added to Python page
+  

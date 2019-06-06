@@ -4,15 +4,20 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
+
 #define WRITE_FIFO_INPUT_BYTE 0x04
-#define DISABLE 0x00
-#define ENABLE 0x01
-#define APP_MODE 0x00
-#define BOOTLOADER_MODE 0x08
-#define CMD_DELAY 2 //milliseconds
-#define NO_WRITE 0x00 
-#define INCORR_PARAM 0xFF
-#define WHRM_ARRAY_SIZE 8
+#define DISABLE               0x00
+#define ENABLE                0x01
+#define APP_MODE              0x00
+#define BOOTLOADER_MODE       0x08
+#define NO_WRITE              0x00 
+#define INCORR_PARAM          0xFF
+
+#define CMD_DELAY             2 //milliseconds
+#define WHRM_ARRAY_SIZE       6  // Number of bytes....
+#define MAX30101_ARRAY_SIZE   12 // 4 values of 24 bit LED values
+#define BPT_ARRAY_SIZE        6  
+
 const int BIO_ADDRESS = 0x55;
 
 struct version {
@@ -134,7 +139,7 @@ enum FIFO_OUTPUT_WRITE_BYTE {
 // Index Byte under the Family Registry Byte: WRITE_REGISTER (0x40)
 enum WRITE_REGISTER_INDEX_BYTE {
 
-  WRITE_MAX86140,
+  WRITE_MAX86140 = 0x00,
   WRITE_MAX30205,
   WRITE_MAX30001,
   WRITE_MAX30101,
@@ -145,7 +150,7 @@ enum WRITE_REGISTER_INDEX_BYTE {
 // Index Byte under the Family Registry Byte: READ_REGISTER (0x41)
 enum READ_REGISTER_INDEX_BYTE {
 
-  READ_MAX86140,
+  READ_MAX86140 = 0x00,
   READ_MAX30205,
   READ_MAX30001,
   READ_MAX30101,
@@ -156,7 +161,7 @@ enum READ_REGISTER_INDEX_BYTE {
 // Index Byte under the Family Registry Byte: READ_ATTRIBUTES_AFE (0x42)
 enum GET_AFE_INDEX_BYTE {
   
-  RETRIEVE_AFE_MAX86140,
+  RETRIEVE_AFE_MAX86140 = 0x00,
   RETRIEVE_AFE_MAX30205,
   RETRIEVE_AFE_MAX30001,
   RETRIEVE_AFE_MAX30101,
@@ -167,7 +172,7 @@ enum GET_AFE_INDEX_BYTE {
 // Index Byte under the Family Byte: DUMP_REGISTERS (0x43)
 enum DUMP_REGISTER_INDEX_BYTE {
   
-  DUMP_REGISTER_MAX86140,
+  DUMP_REGISTER_MAX86140 = 0x00,
   DUMP_REGISTER_MAX30205,
   DUMP_REGISTER_MAX30001,
   DUMP_REGISTER_MAX30101,
@@ -441,6 +446,7 @@ class SparkFun_Bio_Sensor_Hub
   // Variables ------------
   uint8_t max30101Array[2]; 
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
+  uint8_t afeArr[2];//
 
   struct whrmFIFO {
     // 8 bytes total
@@ -500,29 +506,29 @@ class SparkFun_Bio_Sensor_Hub
   long getBootloaderInf();
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
-  // Byte: enable (parameter - 0x00 or 0x01). 
+  // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX86140. 
-  bool enableSensorMAX86140(uint8_t enable);
+  bool max86140Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
-  // Byte: enable (parameter - 0x00 or 0x01). 
+  // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30205. 
-  bool enableSensorMAX30205(uint8_t enable); 
+  bool max30205Control(uint8_t senSwitch); 
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
-  // Byte: enable (parameter - 0x00 or 0x01). 
+  // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30001. 
-  bool enableSensorMAX30001(uint8_t enable);
+  bool max30001Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
-  // Byte: enable (parameter - 0x00 or 0x01).
+  // Byte: senSwitch (parameter - 0x00 or 0x01).
   // This function enables the MAX30101. 
-  bool enableSensorMAX30101(uint8_t enable);
+  bool max30101Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
-  // Byte: enable (parameter - 0x00 or 0x01). 
+  // Byte: accelSwitch (parameter - 0x00 or 0x01). 
   // This function enables the ACCELEROMETER. 
-  bool enableSensorAccel(uint8_t enable);
+  bool accelControl(uint8_t accelSwitch);
 
   // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
   // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
@@ -648,7 +654,7 @@ class SparkFun_Bio_Sensor_Hub
   // and the number of registers available. 
   // INCOMPLETE - must check datasheet of individual sensor to know how many
   // registers are returned. 
-  uint8_t getAFEAttributesMAX30101();
+  uint8_t* getAFEAttributesMAX30101();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
   // RETRIEVE_AFE_ACCELEROMETER (0x04)
@@ -1132,7 +1138,7 @@ class SparkFun_Bio_Sensor_Hub
   // ENABLE_WHRM_ALM (0x02)
   // This function enables (one) or disables (zero) the wrist heart rate monitor
   // algorithm.
-  bool enableWHRMFastAlgorithm(uint8_t enable);
+  bool whrmFastAlgorithmControl(uint8_t algSwitch);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALM
   // (0x03)
