@@ -4,8 +4,8 @@
 #define ENABLE 1 
 #define DEF_ADDR 0x55
 
-const int resPin = 7;
-const int mfioPin = 8;
+const int resPin = 4;
+const int mfioPin = 5;
 uint8_t* p = 0; //Null pointer, only possible value to assign to a pointer 
 
 //reset pin, mfio pin
@@ -17,18 +17,17 @@ void setup(){
 
   Wire.begin();
   uint8_t result = bioHub.begin();
-  Serial.print("0x0");
-  Serial.println(result); 
-  delay(1000);  
+  if (!result)
+    Serial.println("Sensor Ready!");
+  delay(1000);
 
+  // Should be 60, returning 48
   result = bioHub.readRegisterMAX30101(0x07); 
-  Serial.print("0x0");
-  Serial.print(result, HEX);
-  Serial.print(" : ");
+  Serial.print("Max30101 FIFO: ");
   Serial.println(result);
 
   bioHub.setFIFOThreshold(0x02); //2 samples - can hold 32
-  bioHub.max30101Control(1);
+  bioHub.max30101Control(1); //enable
   bioHub.whrmFastAlgorithmControl(1);
 
   Serial.print("Status after enabling algorithms and max30101: "); 

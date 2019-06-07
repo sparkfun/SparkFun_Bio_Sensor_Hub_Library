@@ -43,11 +43,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
   //  to avoid multiple begins with other sketches.
 
-  digitalWrite(_resetPin, LOW); 
   digitalWrite(_mfioPin, HIGH); 
+  digitalWrite(_resetPin, LOW); 
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
-  delay(50); 
+  delay(1000); 
   pinMode(_mfioPin, INPUT); // To be used as an interrupt later
 
   uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 1); // 0x00 only possible Index Byte.
@@ -61,7 +61,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
 // in bootloader mode and will return two bytes, the first 0x00 is a 
 // successful communcation byte, followed by 0x08 which is the byte indicating 
 // that the board is in bootloader mode. 
-bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
+uint8_t SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
 
   _i2cPort = &wirePort; 
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
@@ -76,7 +76,7 @@ bool SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
   pinMode(_mfioPin, OUTPUT); 
   
   // Let's check to see if the device made it into bootloader mode.  
-  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 2); // 0x00 only possible Index Byte
+  uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 1); // 0x00 only possible Index Byte
   return responseByte;
 
 }
@@ -224,7 +224,7 @@ bool SparkFun_Bio_Sensor_Hub::max30205Control(uint8_t senSwitch) {
 }
 
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
-// Byte: enable (parameter - 0x00 or 0x01). 
+// Byte: senSwitch (parameter - 0x00 or 0x01). 
 // This function enables the MAX30001. 
 bool SparkFun_Bio_Sensor_Hub::max30001Control(uint8_t senSwitch) {
 
@@ -241,7 +241,7 @@ bool SparkFun_Bio_Sensor_Hub::max30001Control(uint8_t senSwitch) {
 }
 
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
-// Byte: enable (parameter - 0x00 or 0x01).
+// Byte: senSwitch  (parameter - 0x00 or 0x01).
 // This function enables the MAX30101. 
 bool SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
 
@@ -260,7 +260,7 @@ bool SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
 }
 
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
-// Byte: enable (parameter - 0x00 or 0x01). 
+// Byte: accepts (parameter - 0x00 or 0x01). 
 // This function enables the Accelerometer. 
 bool SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 
@@ -1856,7 +1856,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte); 
   _i2cPort->endTransmission(); 
-  delay(CMD_DELAY); 
+  delay(1000); 
 
   _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
   uint8_t statusByte = _i2cPort->read(); 
@@ -1904,7 +1904,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 
   _i2cPort->requestFrom(_address, 1); // Status Byte, 0x00 is a successful transmit.
   uint8_t statusByte = _i2cPort->read(); 
-  _i2cPort->endTransmission();
   return statusByte; 
 
 }
@@ -1931,7 +1930,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 
   _i2cPort->requestFrom(_address, 1); // Status Byte, 0x00 is a successful transmit.
   uint8_t statusByte = _i2cPort->read(); 
-  _i2cPort->endTransmission();
   return statusByte; 
 
 }
@@ -1949,7 +1947,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->endTransmission();
-  delay(CMD_DELAY); 
+  delay(CMD_DELAY);
   
   _numOfReads++; // Status byte.... 
   _i2cPort->requestFrom(_address, _numOfReads); 
@@ -1961,8 +1959,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   for(int i = 0; i < _numOfReads; i++){
     returnByte = _i2cPort->read(); 
   }
-  Serial.print("Return Byte: ");
-  Serial.println(returnByte);
   return returnByte; // If good then return the actual byte. 
 
 

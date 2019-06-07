@@ -10,6 +10,10 @@ These enable functions need to be changed to "suchAndSuchControl"
 NAK'ing on enable ----
   * Databit is not getting set
   * probably because sensor is not enabling and not filling FIFO
+  * Delay on sensor into application mode extended quite a bit for seemingly no
+    reason
+  * Enabling the sensor required a much longer delay than the CMD_DELY (2ms) -
+    1 second to be exact.
 
 
   

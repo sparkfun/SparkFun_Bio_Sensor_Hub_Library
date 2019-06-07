@@ -13,7 +13,7 @@
 #define NO_WRITE              0x00 
 #define INCORR_PARAM          0xFF
 
-#define CMD_DELAY             2 //milliseconds
+#define CMD_DELAY             2  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
 #define MAX30101_ARRAY_SIZE   12 // 4 values of 24 bit LED values
 #define BPT_ARRAY_SIZE        6  
@@ -479,7 +479,7 @@ class SparkFun_Bio_Sensor_Hub
   // in bootloader mode and will return two bytes, the first 0x00 is a 
   // successful communcation byte, followed by 0x08 which is the byte indicating 
   // that the board is in bootloader mode. 
-  bool beginBootloader( TwoWire &wirePort = Wire); 
+  uint8_t beginBootloader( TwoWire &wirePort = Wire); 
 
   // Family Byte: HUB_STATUS (0x00), Index Byte: 0x00, No Write Byte.
   // The following function checks the status of the FIFO. 
@@ -1262,10 +1262,10 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
   // except it returns three long bytes instead of one. 
-  long * readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
+  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
 
   // Needs comment - INCOMPLETE
-  uint8_t * readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array);
+  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array);
 };
 
 #endif
