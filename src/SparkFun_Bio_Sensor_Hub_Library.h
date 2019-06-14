@@ -447,7 +447,7 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t max30101Array[2]; 
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
   uint8_t afeArr[2];//
-  uint8_t bigArray[10];
+  uint8_t bigArray[6];
 
   struct whrmFIFO {
     // 8 bytes total
@@ -1176,7 +1176,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
   version readAlgorithmVersion();
 
-  uint16_t readBPM();
+  uint16_t readBPM(int numSamples);
 
   private:   
   // Variables -----------

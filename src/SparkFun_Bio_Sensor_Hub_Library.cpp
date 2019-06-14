@@ -90,7 +90,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
 
 }
 
-uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
+uint16_t SparkFun_Bio_Sensor_Hub::readBPM(int numSamples){
 
  //uint8_t registerCont = readRegisterMAX30101(0x07);  
  // Serial.print("Register content at 0x07...");
@@ -122,15 +122,44 @@ uint16_t SparkFun_Bio_Sensor_Hub::readBPM(){
 
  // // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
  // // Pass it a declared array
-  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, 10, bigArray); 
-  for(int i = 0; i < WHRM_ARRAY_SIZE; i ++){
-    Serial.print(data[i]);
-    Serial.print(",");
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+  int retVal =0;
+  for(int i = 0; i < numSamples; i ++){
+//    Serial.print("IR count: ");
+//    long retVal = 0;
+//    retVal = long(data[0]) << 16; 
+//    retVal |= long(data[1]) << 8; 
+//    retVal |= data[2]; 
+//    Serial.println(retVal);
+//    Serial.print("RED count: ");
+//    retVal = long(data[3]) << 16; 
+//    retVal |= long(data[4]) << 8; 
+//    retVal |= data[5]; 
+//    Serial.println(retVal);
+//    Serial.print("LED3 count: ");
+//    retVal = long(data[6]) << 16; 
+//    retVal |= long(data[7]) << 8; 
+//    retVal |= data[8]; 
+//    Serial.println(retVal);
+//    Serial.print("LED4 count: ");
+//    retVal = long(data[9]) << 16; 
+//    retVal |= long(data[10]) << 8; 
+//    retVal |= data[11]; 
+//    Serial.println(retVal);
+    body.heartRate = (uint16_t(data[0]) << 8); 
+    body.heartRate |= (data[1]); 
+    Serial.print("Heart Rate: ");
+    Serial.println(body.heartRate/10);
+    Serial.print("Confidence: ");
+    Serial.println(data[2]);
+    Serial.print("SP02: ");
+    retVal = uint16_t(data[3]) << 8;
+    retVal |= data[4]; 
+    Serial.println(retVal/10);
+    Serial.print("Machine State: ");
+    Serial.println(signed(data[5]));
   }
-  body.heartRate |= (data[0] << 8); 
-  body.heartRate |= (data[1]); 
   return body.heartRate;
-
 
 }
 
@@ -320,7 +349,7 @@ bool SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
 uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
 
   // Checks the status byte but not the number of samples....
-  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
+  uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, 1); 
   return sampAvail;
 
 }
@@ -1632,7 +1661,9 @@ bool SparkFun_Bio_Sensor_Hub::enableAECAlgorithm(uint8_t enable) {
 // algorithm.
 bool SparkFun_Bio_Sensor_Hub::whrmFastAlgorithmControl(uint8_t algSwitch) {
 
-  if( algSwitch != 0 || algSwitch != 1)
+  if( algSwitch == 0 || algSwitch == 1)
+    { }
+  else
     return false; 
   
   uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALM, algSwitch);
@@ -1667,7 +1698,9 @@ bool SparkFun_Bio_Sensor_Hub::enableECGAlgorithm(uint8_t enable) {
 // (BPT) algorithm.
 bool SparkFun_Bio_Sensor_Hub::enableBPTAlgorithm(uint8_t enable) {
 
-  if( enable != 0 || enable != 1)
+  if( enable == 0 || enable == 1)
+  { }
+  else
     return false; 
   
   uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_BPT_ALM, enable);
@@ -1856,7 +1889,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte); 
   _i2cPort->endTransmission(); 
-  delay(1000); 
+  delay(500); 
 
   _i2cPort->requestFrom(_address, 1); // Status Byte, success or no? 0x00 is a successful transmit
   uint8_t statusByte = _i2cPort->read(); 
