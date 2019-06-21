@@ -15,10 +15,16 @@
 
 #define CMD_DELAY             2  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
-#define MAX30101_ARRAY_SIZE   12 // 4 values of 24 bit LED values
-#define BPT_ARRAY_SIZE        6  
+#define MAX30101_WHRM_ARRAY   18 // 4 values of 24 bit LED values
 
 const int BIO_ADDRESS = 0x55;
+
+struct max30101Attr {
+
+  uint8_t attSize;
+  uint8_t numRegisters;
+
+};
 
 struct version {
 
@@ -444,12 +450,11 @@ class SparkFun_Bio_Sensor_Hub
 {
   public:  
   // Variables ------------
-  uint8_t max30101Array[2]; 
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
   uint8_t afeArr[2];//
-  uint8_t bigArray[6];
+  uint8_t sensBpmArr[MAX30101_WHRM_ARRAY];
 
-  struct whrmFIFO {
+  struct whrmFifo {
     // 8 bytes total
     uint16_t heartRate; // LSB = 0.1bpm
     uint8_t  confidence; // 0-100% LSB = 1%
@@ -491,6 +496,18 @@ class SparkFun_Bio_Sensor_Hub
   // well as reset. 
   // INCOMPLETE
   uint8_t setOperatingMode(uint8_t selection); 
+  
+  // This function sets very basic settings to get sensor and biometric data.
+  // The biometric data includes data about heartrate, the confidence
+  // level, SpO2 levels, and whether the sensor has detected a finger or not. 
+  bool beginBpm();
+  
+  // This function sets very basic settings to get sensor and biometric data.
+  // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+  // and Green. The biometric data includes data about heartrate, the confidence
+  // level, SpO2 levels, and whether the sensor has detected a finger or not. 
+  // Of note, the number of samples is set to one. 
+  bool beginSensorBpm();
 
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
@@ -655,7 +672,7 @@ class SparkFun_Bio_Sensor_Hub
   // and the number of registers available. 
   // INCOMPLETE - must check datasheet of individual sensor to know how many
   // registers are returned. 
-  uint8_t* getAFEAttributesMAX30101();
+  max30101Attr getAFEAttributesMAX30101();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
   // RETRIEVE_AFE_ACCELEROMETER (0x04)
@@ -692,7 +709,7 @@ class SparkFun_Bio_Sensor_Hub
   // MAX30101 sensor: register zero and register value zero to register n and 
   // register value n.
   // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t dumpRegisterMAX30101();
+  uint8_t* dumpRegisterMAX30101();
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
   // This function returns all registers and register values sequentially of the
@@ -1176,7 +1193,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
   version readAlgorithmVersion();
 
-  uint16_t readBPM(int numSamples);
+  whrmFifo readBPM();
 
   private:   
   // Variables -----------

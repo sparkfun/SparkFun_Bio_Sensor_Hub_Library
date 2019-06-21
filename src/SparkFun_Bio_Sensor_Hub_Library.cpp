@@ -48,7 +48,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   delay(10); 
   digitalWrite(_resetPin, HIGH); 
   delay(1000); 
-  pinMode(_mfioPin, INPUT); // To be used as an interrupt later
+  pinMode(_mfioPin, INPUT_PULLUP); // To be used as an interrupt later
 
   uint8_t responseByte = readByte(READ_DEVICE_MODE, 0x00, 1); // 0x00 only possible Index Byte.
   return responseByte; 
@@ -90,75 +90,148 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
 
 }
 
-uint16_t SparkFun_Bio_Sensor_Hub::readBPM(int numSamples){
+// This function sets very basic settings to get sensor and biometric data.
+// The biometric data includes data about heartrate, the confidence
+// level, SpO2 levels, and whether the sensor has detected a finger or not. 
+bool SparkFun_Bio_Sensor_Hub::beginBpm(){
 
- //uint8_t registerCont = readRegisterMAX30101(0x07);  
- // Serial.print("Register content at 0x07...");
- // Serial.println(registerCont);
- // //if(registerCont != 0x60) //More on this later
- // //  return false; 
- //
- // setOutputMode(SENSOR_AND_ALGORITHM); // No return value here
- // // Set FiFo threshold to ONE, I just want one sample
- // setFIFOThreshold(0x01);  // This can be set somewhere, perhaps it should just be a setting. 
- // max30101Control(1); // Enable 
- // enableWHRMFastAlgorithm(1);
- // delay(10);
- // uint8_t status = readSensorHubStatus();
- // Serial.print("Status: ");
- // Serial.println(status, HEX);
- // if( status != SUCCESS )
- //   return false; 
- // 
- // // Get number of samples in FIFO
- // // How many are in the FIFO?
- // // Should be one....
- // uint8_t totalSamp = numSamplesOutFIFO(); 
- // Serial.print("Samples in FIFO: "); 
- // Serial.println(totalSamp);
+  uint8_t statusChauf = 0;
+  statusChauf = readRegisterMAX30101(0x07); // Recommended 
+  if(statusChauf == 0)
+    return;
 
- // //if( totalSamp != 1 )
- // //  return false; 
+  statusChauf = setOutputMode(ALM_DATA); // Just the data
+  if( statusChauf != 1 )
+    return; 
 
- // // Read the "totalSamp" number with an I2C read or FIFO threshold paramater?
- // // Pass it a declared array
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired.
+  if( statusChauf != 1 )
+    return; 
+
+  statusChauf = max30101Control(ENABLE); 
+  if( statusChauf != 1 )
+    return; 
+
+  statusChauf = whrmFastAlgorithmControl(ENABLE); 
+  if( statusChauf != 1 )
+    return; 
+
+  delay(2000);
+  return true; 
+
+}
+
+// This function sets very basic settings to get sensor and biometric data.
+// Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+// and Green. The biometric data includes data about heartrate, the confidence
+// level, SpO2 levels, and whether the sensor has detected a finger or not. 
+// Of note, the number of samples is set to one. 
+bool SparkFun_Bio_Sensor_Hub::beginSensorBpm(){
+
+  uint8_t statusChauf; // Our status chauffeur
+  statusChauf = readRegisterMAX30101(0x07); // Recommended 
+  if(statusChauf == 0)
+    return;
+
+  statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
+  if( statusChauf != 1 )
+    return; 
+
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  if( statusChauf != 1 )
+    return; 
+
+  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
+  if( statusChauf != 1 )
+    return; 
+
+  statusChauf = whrmFastAlgorithmControl(ENABLE); //Enable algorithm
+  if( statusChauf != 1 )
+    return; 
+
+  delay(2000);
+  return true; 
+
+}
+
+whrmFifo SparkFun_Bio_Sensor_Hub::readBPM(){
+
+  whrmFifo body; 
+  uint8_t statusChauf;
+  statusChauf = readSensorHubStatus();
+  if(statusChauf == 1) // Communication Error
+    return; 
+
+  Serial.print("Number of Samples: ");  
+  statusChauf = numSamplesOutFIFO(); // Determine the number of reads
+  Serial.println(statusChauf);
+
   uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
-  int retVal =0;
-  for(int i = 0; i < numSamples; i ++){
-//    Serial.print("IR count: ");
-//    long retVal = 0;
-//    retVal = long(data[0]) << 16; 
-//    retVal |= long(data[1]) << 8; 
-//    retVal |= data[2]; 
-//    Serial.println(retVal);
-//    Serial.print("RED count: ");
-//    retVal = long(data[3]) << 16; 
-//    retVal |= long(data[4]) << 8; 
-//    retVal |= data[5]; 
-//    Serial.println(retVal);
-//    Serial.print("LED3 count: ");
-//    retVal = long(data[6]) << 16; 
-//    retVal |= long(data[7]) << 8; 
-//    retVal |= data[8]; 
-//    Serial.println(retVal);
-//    Serial.print("LED4 count: ");
-//    retVal = long(data[9]) << 16; 
-//    retVal |= long(data[10]) << 8; 
-//    retVal |= data[11]; 
-//    Serial.println(retVal);
-    body.heartRate = (uint16_t(data[0]) << 8); 
-    body.heartRate |= (data[1]); 
-    Serial.print("Heart Rate: ");
-    Serial.println(body.heartRate/10);
-    Serial.print("Confidence: ");
-    Serial.println(data[2]);
-    Serial.print("SP02: ");
-    retVal = uint16_t(data[3]) << 8;
-    retVal |= data[4]; 
-    Serial.println(retVal/10);
-    Serial.print("Machine State: ");
-    Serial.println(signed(data[5]));
-  }
+
+  // Heart Rate formatting
+  Serial.print("Heart Rate: ");
+  body.heartRate = (uint16_t(data[0]) << 8); 
+  body.heartRate |= (data[1]); 
+  body.heartRate = body.heartRate/10; 
+  Serial.println(body.heartRate);
+  
+  // Confidence formatting
+  Serial.print("Confidence: ");
+  body.confidence = data[2]; 
+  Serial.println(body.confidence);
+
+  //Blood oxygen level formatting
+  Serial.print("SP02: ");
+  body.oxygen = uint16_t(data[3]) << 8;
+  body.oxygen |= data[4]; 
+  body.oxygen = body.oxygen/10;
+  Serial.println(body.oxygen);
+
+  //"Machine State" - has a finger been detected?
+  Serial.print("Machine State: ");
+  body.whrmStatus = data[5];
+  Serial.println(body.whrmStatus);
+
+  return body;
+
+}
+
+uint16_t SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
+
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_WHRM_ARRAY, sensBpmArr; 
+  Serial.print("IR count: ");
+  long retVal = 0;
+  retVal = long(data[0]) << 16; 
+  retVal |= long(data[1]) << 8; 
+  retVal |= data[2]; 
+  Serial.println(retVal);
+  Serial.print("RED count: ");
+  retVal = long(data[3]) << 16; 
+  retVal |= long(data[4]) << 8; 
+  retVal |= data[5]; 
+  Serial.println(retVal);
+  Serial.print("LED3 count: ");
+  retVal = long(data[6]) << 16; 
+  retVal |= long(data[7]) << 8; 
+  retVal |= data[8]; 
+  Serial.println(retVal);
+  Serial.print("LED4 count: ");
+  retVal = long(data[9]) << 16; 
+  retVal |= long(data[10]) << 8; 
+  retVal |= data[11]; 
+  Serial.println(retVal);
+  body.heartRate = (uint16_t(data[12]) << 8); 
+  body.heartRate |= (data[13]); 
+  Serial.print("Heart Rate: ");
+  Serial.println(body.heartRate/10);
+  Serial.print("Confidence: ");
+  Serial.println(data[14]);
+  Serial.print("SP02: ");
+  retVal = uint16_t(data[15]) << 8;
+  retVal |= data[16]; 
+  Serial.println(retVal/10);
+  Serial.print("Machine State: ");
+  Serial.println(signed(data[17]));
   return body.heartRate;
 
 }
@@ -544,10 +617,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
 // and the number of registers available. 
 // INCOMPLETE - must check datasheet of individual sensor to know how many
 // registers are returned. 
-uint8_t* SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
-
+max30101Attr SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
+  
+  max30101Attr regCont; 
   uint8_t* afePoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, afeArr);// Fake read amount  
-  return afePoint;
+  regCont.attSize = afePoint[0];
+  regCont.numRegisters = afePoint[1];
+  return regCont;
 
     
 }
@@ -604,10 +680,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 // MAX30101 sensor: register zero and register value zero to register n and 
 // register value n.
 // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
+uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
   
-  uint8_t statusByte = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, max30101Array); 
-  return statusByte;  
+  uint8_t* regPoint  = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, registerArray); 
+  return regPoint;  
 
 }
 
