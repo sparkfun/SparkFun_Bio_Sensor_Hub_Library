@@ -20,7 +20,7 @@ kk
 
 #include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ) { 
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ) { 
   
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
@@ -154,10 +154,15 @@ bool SparkFun_Bio_Sensor_Hub::beginSensorBpm(){
 
 }
 
+// This function takes the 8 bytes from the FIFO buffer related to the wrist
+// heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
+// and the finger detected status (uint8_t). Note that the the algorithm is stated as 
+// "wrist" though the sensor only works with the finger. The data is loaded
+// into the whrmFifo and returned.  
 whrmFifo SparkFun_Bio_Sensor_Hub::readBPM(){
 
-  whrmFifo body; 
-  uint8_t statusChauf;
+  whrmFifo libBpm; 
+  uint8_t statusChauf; // The status chauffeur captures return values. 
   statusChauf = readSensorHubStatus();
   if(statusChauf == 1) // Communication Error
     return; 
@@ -170,69 +175,68 @@ whrmFifo SparkFun_Bio_Sensor_Hub::readBPM(){
 
   // Heart Rate formatting
   Serial.print("Heart Rate: ");
-  body.heartRate = (uint16_t(data[0]) << 8); 
-  body.heartRate |= (data[1]); 
-  body.heartRate = body.heartRate/10; 
-  Serial.println(body.heartRate);
-  
+  libBpm.heartRate = (uint16_t(data[0]) << 8); 
+  libBpm.heartRate |= (data[1]); 
+  libBpm.heartRate = libBpm.heartRate/10; 
+  Serial.println(libBpm.heartRate);
+
   // Confidence formatting
   Serial.print("Confidence: ");
-  body.confidence = data[2]; 
-  Serial.println(body.confidence);
+  libBpm.confidence = data[2]; 
+  Serial.println(libBpm.confidence);
 
   //Blood oxygen level formatting
   Serial.print("SP02: ");
-  body.oxygen = uint16_t(data[3]) << 8;
-  body.oxygen |= data[4]; 
-  body.oxygen = body.oxygen/10;
-  Serial.println(body.oxygen);
+  libBpm.oxygen = uint16_t(data[3]) << 8;
+  libBpm.oxygen |= data[4]; 
+  libBpm.oxygen = libBpm.oxygen/10;
+  Serial.println(libBpm.oxygen);
 
   //"Machine State" - has a finger been detected?
   Serial.print("Machine State: ");
-  body.whrmStatus = data[5];
-  Serial.println(body.whrmStatus);
+  libBpm.whrmStatus = data[5];
+  Serial.println(libBpm.whrmStatus);
 
-  return body;
+  return libBpm;
 
 }
 
-uint16_t SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
+// This function takes 9 bytes of LED values from the MAX30101 associated with 
+// the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
+// related to the wrist heart rate algortihm: heart rate (uint16_t), confidence (uint8_t), 
+// SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
+// is stated as "wrist" though the sensor only works with the finger. The data is loaded
+// into the whrmFifo and returned.  
+ledFifo SparkFun_Bio_Sensor_Hub::readSensor(){ 
 
-  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_WHRM_ARRAY, sensBpmArr; 
+  ledFifo libLedFifo; 
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
+
   Serial.print("IR count: ");
-  long retVal = 0;
-  retVal = long(data[0]) << 16; 
-  retVal |= long(data[1]) << 8; 
-  retVal |= data[2]; 
-  Serial.println(retVal);
+  // Value of LED one....
+  libLedFifo.ledOne = long(data[0]) << 16; 
+  libLedFifo.ledOne |= long(data[1]) << 8; 
+  libLedFifo.ledOne |= data[2]; 
+  Serial.println(libLedFifo.ledOne);
   Serial.print("RED count: ");
-  retVal = long(data[3]) << 16; 
-  retVal |= long(data[4]) << 8; 
-  retVal |= data[5]; 
-  Serial.println(retVal);
+  // Value of LED two...
+  libLedFifo.ledTwo = long(data[3]) << 16; 
+  libLedFifo.ledTwo |= long(data[4]) << 8; 
+  libLedFifo.ledTwo |= data[5]; 
+  Serial.println(libLedFifo.ledTwo);
+  // Serial.print("LED3 count: ");
+  // libLedFifo = long(data[6]) << 16; 
+  // libLedFifo |= long(data[7]) << 8; 
+  // libLedFifo |= data[8]; 
+  // Serial.println(retVal);
   Serial.print("LED3 count: ");
-  retVal = long(data[6]) << 16; 
-  retVal |= long(data[7]) << 8; 
-  retVal |= data[8]; 
-  Serial.println(retVal);
-  Serial.print("LED4 count: ");
-  retVal = long(data[9]) << 16; 
-  retVal |= long(data[10]) << 8; 
-  retVal |= data[11]; 
-  Serial.println(retVal);
-  body.heartRate = (uint16_t(data[12]) << 8); 
-  body.heartRate |= (data[13]); 
-  Serial.print("Heart Rate: ");
-  Serial.println(body.heartRate/10);
-  Serial.print("Confidence: ");
-  Serial.println(data[14]);
-  Serial.print("SP02: ");
-  retVal = uint16_t(data[15]) << 8;
-  retVal |= data[16]; 
-  Serial.println(retVal/10);
-  Serial.print("Machine State: ");
-  Serial.println(signed(data[17]));
-  return body.heartRate;
+  // Value of LED three....
+  libLedFifo.ledThree = long(data[9]) << 16; 
+  libLedFifo.ledThree |= long(data[10]) << 8; 
+  libLedFifo.ledThree |= data[11]; 
+  Serial.println(libLedFifo.ledThree); 
+
+  return libLedFifo;
 
 }
 
@@ -681,9 +685,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30001() {
 // register value n.
 // INCOMPLETE: Need to read datasheets to get exact amount of registers.
 uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101() {
-  
-  uint8_t* regPoint  = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, registerArray); 
-  return regPoint;  
+   
+  //uint8_t* regPoint  = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, 255, registerArray); 
+  //return regPoint;  
 
 }
 
@@ -2047,7 +2051,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 // requests. It starts a request by writing the family byte an index byte, and
 // then delays 60 microseconds, during which the MAX32664 retrieves the requested 
 // information. An I-squared-C request is then issued, and the information is read.
-uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads )
+uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
 {
 
   uint8_t returnByte;
@@ -2065,7 +2069,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   if( statusByte )// SUCCESS (0x00) - how do I know its 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     returnByte = _i2cPort->read(); 
   }
   return returnByte; // If good then return the actual byte. 
@@ -2079,7 +2083,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 // write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
-uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
+uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
   uint8_t returnByte;
@@ -2098,14 +2102,14 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
   if( statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     returnByte = _i2cPort->read(); 
   }
   return returnByte; // If good then return the actual byte. 
 
 }
 
-uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array )
+uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t * array )
 {
 
   uint8_t returnByte;
@@ -2123,7 +2127,7 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _i
   if( statusByte )// SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     array[i] = _i2cPort->read(); 
   }
   return array; // If good then return the actual byte. 
@@ -2135,7 +2139,7 @@ uint8_t * SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _i
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 16 bit integer instead of 8. 
-uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
+uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
    uint16_t returnByte;
@@ -2154,7 +2158,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
   if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     returnByte |= (_i2cPort->read() << 8);
     returnByte |= _i2cPort->read();
   }
@@ -2168,7 +2172,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 4 byte (long) integer instead of 8. 
-long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
+long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
    long returnByte;
@@ -2187,7 +2191,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
   if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     returnByte |= (_i2cPort->read() << 24);
     returnByte |= (_i2cPort->read() << 16);
     returnByte |= (_i2cPort->read() << 8);
@@ -2202,7 +2206,7 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
 // except it returns three long bytes instead of one. 
-long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads )
+long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
 {
 
    uint8_t statusByte; 
@@ -2220,7 +2224,7 @@ long * SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _
   if( statusByte ) // Pass through if SUCCESS (0x00). 
     return; 
 
-  for(int i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < _numOfReads; i++){
     _readCoefArr[i] |= (_i2cPort->read() << 24);
     _readCoefArr[i] |= (_i2cPort->read() << 16);
     _readCoefArr[i] |= (_i2cPort->read() << 8);

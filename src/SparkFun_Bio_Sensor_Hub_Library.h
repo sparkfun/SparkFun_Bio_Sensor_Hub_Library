@@ -15,9 +15,9 @@
 
 #define CMD_DELAY             2  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
-#define MAX30101_WHRM_ARRAY   18 // 4 values of 24 bit LED values
+#define MAX30101_LED_ARRAY   12 // 4 values of 24 bit LED values
 
-const int BIO_ADDRESS = 0x55;
+const uint8_t BIO_ADDRESS = 0x55;
 
 struct max30101Attr {
 
@@ -34,6 +34,22 @@ struct version {
 
 }; 
 
+struct whrmFifo {
+  // 6 bytes total
+  uint16_t heartRate; // LSB = 0.1bpm
+  uint8_t  confidence; // 0-100% LSB = 1%
+  uint16_t oxygen; // 0-100% LSB = 1%
+  uint8_t  whrmStatus; // 0: Success, 1: Not Ready
+
+}; 
+
+struct ledFifo {
+  // 9 bytes total
+  uint32_t ledOne; 
+  uint32_t ledTwo; 
+  uint32_t ledThree; 
+
+}; 
 
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
@@ -46,9 +62,9 @@ enum READ_STATUS_BYTE_VALUE {
   ERR_INPUT_VALUE,
   ERR_TRY_AGAIN,
   ERR_BTLDR_GENERAL        = 0x80,
-  ERR_BTLDR_CHECKSUM       = 0x81,
-  ERR_BTLDR_AUTH           = 0x82,
-  ERR_BTLDR_INVALID_APP    = 0x83,
+  ERR_BTLDR_CHECKSUM,
+  ERR_BTLDR_AUTH,
+  ERR_BTLDR_INVALID_APP,
   ERR_UNKNOWN              = 0xFF
 
 };
@@ -451,20 +467,14 @@ class SparkFun_Bio_Sensor_Hub
   public:  
   // Variables ------------
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
-  uint8_t afeArr[2];//
-  uint8_t sensBpmArr[MAX30101_WHRM_ARRAY];
+  uint8_t afeArr[2];
+  uint8_t senArr[MAX30101_LED_ARRAY];
+  whrmFifo body; 
+  ledFifo led; 
 
-  struct whrmFifo {
-    // 8 bytes total
-    uint16_t heartRate; // LSB = 0.1bpm
-    uint8_t  confidence; // 0-100% LSB = 1%
-    uint16_t oxygen; // 0-100% LSB = 1%
-    uint8_t  whrmStatus; // 0: Success, 1: Not Ready
-
-  } body; 
 
   // Constructor ----------
-  SparkFun_Bio_Sensor_Hub(int address, uint8_t resetPin, uint8_t mfioPin ); 
+  SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions ------------
   
@@ -508,6 +518,21 @@ class SparkFun_Bio_Sensor_Hub
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
   // Of note, the number of samples is set to one. 
   bool beginSensorBpm();
+
+  // This function takes the 8 bytes from the FIFO buffer related to the wrist
+  // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
+  // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
+  // "wrist" though the sensor only works with the finger. The data is loaded
+  // into the whrmFifo and returned.  
+  whrmFifo readBPM();
+
+  // This function takes 9 bytes of LED values from the MAX30101 associated with 
+  // the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
+  // related to the wrist heart rate algortihm: heart rate (uint16_t), confidence (uint8_t), 
+  // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
+  // is stated as "wrist" though the sensor only works with the finger. The data is loaded
+  // into the whrmFifo and returned.  
+  ledFifo readSensor();
 
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
@@ -1193,13 +1218,11 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
   version readAlgorithmVersion();
 
-  whrmFifo readBPM();
-
   private:   
   // Variables -----------
   uint8_t _resetPin;
   uint8_t _mfioPin;
-  int _address; 
+  uint8_t _address; 
   uint8_t _calibData[608];
   long _readCoefArr[3];
   long _writeCoefArr[3];
@@ -1248,14 +1271,14 @@ class SparkFun_Bio_Sensor_Hub
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
   // information. An I-squared-C request is then issued, and the information is read and returned.
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, int _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads ); 
 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
   // then issued, and the information is read and returned. 
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads ); 
+  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1263,7 +1286,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
+  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1271,7 +1294,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 4 byte (long) integer instead of 8. 
-  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
+  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1279,10 +1302,9 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
   // except it returns three long bytes instead of one. 
-  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, int _numOfReads );
+  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
 
   // Needs comment - INCOMPLETE
-  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, int _numOfReads, uint8_t * array);
+  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t * array);
 };
-
 #endif

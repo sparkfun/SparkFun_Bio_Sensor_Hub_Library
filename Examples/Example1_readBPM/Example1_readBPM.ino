@@ -9,7 +9,6 @@ const int mfioPin = 5;
 uint8_t* p = 0; //Null pointer, only possible value to assign to a pointer 
 int result = 0; 
 int total = 0; 
-max30101Attr examStruct; 
 
 
 //reset pin, mfio pin
