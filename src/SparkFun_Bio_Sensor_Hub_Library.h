@@ -19,37 +19,37 @@
 
 const uint8_t BIO_ADDRESS = 0x55;
 
-struct max30101Attr {
-
-  uint8_t attSize;
-  uint8_t numRegisters;
-
-};
-
-struct version {
-
-  uint8_t major; 
-  uint8_t minor; 
-  uint8_t revision; 
-
-}; 
-
-struct whrmFifo {
+struct bioData {
   // 6 bytes total
   uint16_t heartRate; // LSB = 0.1bpm
   uint8_t  confidence; // 0-100% LSB = 1%
   uint16_t oxygen; // 0-100% LSB = 1%
-  uint8_t  whrmStatus; // 0: Success, 1: Not Ready
+  uint8_t  status; // 0: Success, 1: Not Ready
 
 }; 
 
-struct ledFifo {
+struct ledData {
   // 9 bytes total
   uint32_t ledOne; 
   uint32_t ledTwo; 
   uint32_t ledThree; 
 
 }; 
+
+struct version {
+  // 3 bytes total
+  uint8_t major; 
+  uint8_t minor; 
+  uint8_t revision; 
+
+}; 
+
+struct sensorAttributes {
+
+  uint8_t byteWord;
+  uint8_t availRegisters;
+
+};
 
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
@@ -467,11 +467,7 @@ class SparkFun_Bio_Sensor_Hub
   public:  
   // Variables ------------
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
-  uint8_t afeArr[2];
   uint8_t senArr[MAX30101_LED_ARRAY];
-  whrmFifo body; 
-  ledFifo led; 
-
 
   // Constructor ----------
   SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
@@ -510,21 +506,21 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets very basic settings to get sensor and biometric data.
   // The biometric data includes data about heartrate, the confidence
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
-  bool beginBpm();
+  uint8_t beginBpm();
   
   // This function sets very basic settings to get sensor and biometric data.
   // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
   // and Green. The biometric data includes data about heartrate, the confidence
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
   // Of note, the number of samples is set to one. 
-  bool beginSensorBpm();
+  uint8_t beginSensorBpm();
 
   // This function takes the 8 bytes from the FIFO buffer related to the wrist
   // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
   // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
   // "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  whrmFifo readBPM();
+  bioData readBpm();
 
   // This function takes 9 bytes of LED values from the MAX30101 associated with 
   // the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
@@ -532,7 +528,7 @@ class SparkFun_Bio_Sensor_Hub
   // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
   // is stated as "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  ledFifo readSensor();
+  ledData readSensor();
 
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
@@ -594,7 +590,7 @@ class SparkFun_Bio_Sensor_Hub
   // Byte: NONE
   // This function returns the data in the FIFO. 
   // INCOMPLETE
-  uint8_t getDataOutFIFO();
+  uint8_t* getDataOutFIFO(uint8_t data[]);
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
   // Byte: NONE
@@ -671,77 +667,62 @@ class SparkFun_Bio_Sensor_Hub
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX8640/1 sensors. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  // INCOMPLETE - must check datasheet of individual sensor to know how many
-  // registers are returned. 
-  uint8_t getAFEAttributesMAX86140();
+  sensorAttributes getAFEAttributesMAX86140();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30205 (0x01)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30205 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  // INCOMPLETE - must check datasheet of individual sensor to know how many
-  // registers are returned. 
-  uint8_t getAFEAttributesMAX30205();
+  sensorAttributes getAFEAttributesMAX30205();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30001 (0x02)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30001 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  // INCOMPLETE - must check datasheet of individual sensor to know how many
-  // registers are returned. 
-  uint8_t getAFEAttributesMAX30001();
+  sensorAttributes getAFEAttributesMAX30001();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30101 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  // INCOMPLETE - must check datasheet of individual sensor to know how many
-  // registers are returned. 
-  max30101Attr getAFEAttributesMAX30101();
+  sensorAttributes getAFEAttributesMAX30101();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
   // RETRIEVE_AFE_ACCELEROMETER (0x04)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // Accelerometer. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  // INCOMPLETE - must check datasheet of individual sensor to know how many
-  // registers are returned. 
-  uint8_t getAFEAttributesAccelerometer();
+  sensorAttributes getAFEAttributesAccelerometer();
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX86140 (0x00)
   // This function returns all registers and register values sequentially of the
   // MAX86140/1 Sensors: register zero and register value zero to register n and 
   // register value n.
-  // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t dumpRegisterMAX86140();
+  uint8_t* dumpRegisterMAX86140(uint8_t* regArray, uint8_t totalRegBytes);
   
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30205 (0x01)
   // This function returns all registers and register values sequentially of the
   // MAX30205 sensor: register zero and register value zero to register n and 
   // register value n.
-  // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t dumpRegisterMAX30205();
+  uint8_t* dumpRegisterMAX30205(uint8_t regArray[8]);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30001 (0x02)
   // This function returns all registers and register values sequentially of the
   // MAX30001 sensor: register zero and register value zero to register n and 
   // register value n.
-  // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t dumpRegisterMAX30001();
+  uint8_t* dumpRegisterMAX30001(uint8_t* regArray, uint8_t totalRegBytes);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
   // This function returns all registers and register values sequentially of the
   // MAX30101 sensor: register zero and register value zero to register n and 
   // register value n.
-  // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t* dumpRegisterMAX30101();
+  uint8_t* dumpRegisterMAX30101(uint8_t regArray[255]);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
   // This function returns all registers and register values sequentially of the
   // Accelerometer: register zero and register value zero to register n and 
   // register value n.
-  // INCOMPLETE: Need to read datasheets to get exact amount of registers.
-  uint8_t dumpRegisterAccelerometer();
+  uint8_t* dumpRegisterAccelerometer(uint8_t* regArray, uint8_t totalRegBytes);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
@@ -842,13 +823,13 @@ class SparkFun_Bio_Sensor_Hub
   // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
   // This function enables or disables automatic exposure control (AEC). The
   // function takes the parameter zero for disable and one for enable. 
-  bool enableAutoExpCont(uint8_t enable);
+  bool autoExpCont(uint8_t enable);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SKIN_CONTACT_DET (0x02), Write Byte: WHRM_SCD_ID (0x0C)
   // This function enables or disables skin contact detection. The
   // function takes the parameter zero for disable and one for enable. 
-  bool enableSkinDetect(uint8_t enable);
+  bool skinDetectControl(uint8_t enable);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
@@ -1069,7 +1050,7 @@ class SparkFun_Bio_Sensor_Hub
   // (WHRM) algorithm. It returns three long integers that are 
   // multiplied by 100,000.
   // INCOMPLETE
-  long * readWHRMCoef();
+  signed long* readWHRMCoef(signed long coefArr[3]);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_AEC_EN (0x02), Write Byte: READ_WHRM_AEC_EN_ID (0x0B)
@@ -1115,8 +1096,8 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WSP02_COEF (0x05), Write Byte: READ_WSP02_COEF_ID (0x00)
   // This function reads the coefficiencts used for the WSP02 algorithm. It
   // returns the three long integers that are multiplied by 100,000 that are used
-  // as teh coefficients. 
-  long * readWSP02Coef();
+  // as the coefficients. 
+  signed long* readWSP02Coef(signed long coefArr[3]);
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_SAMP_RATE(0x05), Write Byte: READ_WSP02_SAMP_RATE_ID (0x01)
@@ -1169,36 +1150,36 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AGC_ALM (0x00)
   // This function enables (one) or disables (zero) the automatic gain control algorithm. 
-  bool enableAGCalgorithm(uint8_t enable);
+  bool acgAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AEC_ALM (0x01)
   // This function enables (one) or disables (zero) the automatic exposure
   // control (AEC) algorithm.
-  bool enableAECAlgorithm(uint8_t enable);
+  bool aecAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_WHRM_ALM (0x02)
   // This function enables (one) or disables (zero) the wrist heart rate monitor
   // algorithm.
-  bool whrmFastAlgorithmControl(uint8_t algSwitch);
+  bool whrmFastAlgoControl(uint8_t algSwitch);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALM
   // (0x03)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  bool enableECGAlgorithm(uint8_t enable);
+  bool ecgAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALM
   // (0x04)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  bool enableBPTAlgorithm(uint8_t enable);
+  bool bptAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALM
   // (0x05)
   // This function enables (one) or disables (zero) the WSP02 algorithm..
-  bool enableWSP02Algorithm(uint8_t enable);
+  bool wsp02AlgoControl(uint8_t enable);
 
   // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02),
   // Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 
@@ -1224,7 +1205,6 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t _mfioPin;
   uint8_t _address; 
   uint8_t _calibData[608];
-  long _readCoefArr[3];
   long _writeCoefArr[3];
   
   // I-squared-C Class----
@@ -1302,7 +1282,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
   // except it returns three long bytes instead of one. 
-  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads, signed long* array );
 
   // Needs comment - INCOMPLETE
   uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t * array);

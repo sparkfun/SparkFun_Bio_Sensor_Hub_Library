@@ -1,6 +1,7 @@
 /*
- This example sketch gives you exactly what the SparkFun Pulse Oximiter and
- Heart Rate Monitor is designed to do: read heart rate and blood oxygen levels.
+ This example sketch first demonstrates how to retrieve the values of the
+ sensor's LEDs: RED, GREEN, and IR. It then shows you how to adjust the pulse
+ width of these LEDs. 
  This board requires I-squared-C connections but also connections to the reset
  and mfio pins. When using the device keep LIGHT and CONSISTENT pressure on the
  sensor. Otherwise you may crush the capillaries in your finger which results

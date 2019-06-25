@@ -1,19 +1,16 @@
 Change readByte functions to take the correct parameter
-  * numofRead does not have to be subtracted from to get teh StatusByte if
-    your'e going to get it everytime. 
-  * Incorrect - I have to request a certain number of reads, so I should add
-    one in each read 
   * fix those functions that use readByte functions to include only what we
     need.  
 
-These enable functions need to be changed to "suchAndSuchControl"
 NAK'ing on enable ----
-  * Databit is not getting set
-  * probably because sensor is not enabling and not filling FIFO
-  * Delay on sensor into application mode extended quite a bit for seemingly no
-    reason
-  * Enabling the sensor required a much longer delay than the CMD_DELY (2ms) -
-    1 second to be exact.
-
+  * Seemed to be something that resolved itself. Short delay is all that is
+    needed. 
+To do: 
+  * Make sure functions that create an array, delete said array.
+  * Make a specific write function for begin functions because they require longer
+    delays to set up. 
+  * Check to see if this function: SparkFun_Bio_Sensor_Hub::readWSP02Coef()
+    needs to asign anything to the output of the read function. - Actually all
+    long coefficient related functions....
 
   
