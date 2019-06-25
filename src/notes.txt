@@ -12,5 +12,9 @@ To do:
   * Check to see if this function: SparkFun_Bio_Sensor_Hub::readWSP02Coef()
     needs to asign anything to the output of the read function. - Actually all
     long coefficient related functions....
+  * These other coefficient functions need a once over
+
+
+
 
   

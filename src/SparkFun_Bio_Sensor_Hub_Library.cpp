@@ -576,7 +576,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
   uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX86140, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
-  delete tempArray; 
+  delete[] tempArray; 
   return maxAttr;
     
 }
@@ -592,7 +592,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
   uint8_t* tempPoint= readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30205, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
-  delete tempArray; 
+  delete[] tempArray; 
   return maxAttr;
     
 }
@@ -608,7 +608,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
   uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30001, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
-  delete tempArray; 
+  delete[] tempArray; 
   return maxAttr;
 
 }
@@ -624,7 +624,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
   uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
-  delete tempArray; 
+  delete[] tempArray; 
   return maxAttr;
 
     
@@ -643,7 +643,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
   uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
-  delete tempArray; 
+  delete[] tempArray; 
   return maxAttr;
     
 }
