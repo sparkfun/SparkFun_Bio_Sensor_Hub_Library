@@ -5,13 +5,17 @@
 #include <SPI.h>
 #include <Arduino.h>
 
-#define WRITE_FIFO_INPUT_BYTE 0x04
-#define DISABLE               0x00
-#define ENABLE                0x01
-#define APP_MODE              0x00
-#define BOOTLOADER_MODE       0x08
-#define NO_WRITE              0x00 
-#define INCORR_PARAM          0xFF
+#define WRITE_FIFO_INPUT_BYTE  0x04
+#define DISABLE                0x00
+#define ENABLE                 0x01
+#define APP_MODE               0x00
+#define BOOTLOADER_MODE        0x08
+#define NO_WRITE               0x00 
+#define INCORR_PARAM           0xFF
+
+#define CONFIGURATION_REGISTER 0x0A
+#define WIDTH_MASK             0xFC
+#define SAMP_MASK              0x1C
 
 #define CMD_DELAY             2  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
@@ -24,15 +28,16 @@ struct bioData {
   uint16_t heartRate; // LSB = 0.1bpm
   uint8_t  confidence; // 0-100% LSB = 1%
   uint16_t oxygen; // 0-100% LSB = 1%
-  uint8_t  status; // 0: Success, 1: Not Ready
+  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
 
 }; 
 
 struct ledData {
   // 9 bytes total
-  uint32_t ledOne; 
-  uint32_t ledTwo; 
+  uint32_t irLed; 
+  uint32_t redLed; 
   uint32_t ledThree; 
+  uint32_t greenLed; // MAX30101 multiLED mode
 
 }; 
 
@@ -123,12 +128,12 @@ enum OUTPUT_MODE_WRITE_BYTE {
 
   PAUSE                    = 0x00,
   SENSOR_DATA,
-  ALM_DATA,
+  ALGO_DATA,
   SENSOR_AND_ALGORITHM,
   PAUSE_TWO,
   SENSOR_COUNTER_BYTE,
-  ALM_COUNTER_BYTE,
-  SENSOR_ALM_COUNTER
+  ALGO_COUNTER_BYTE,
+  SENSOR_ALGO_COUNTER
 
 };
 
@@ -261,7 +266,7 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - SET_TARG_PERC
-enum ALM_AGC_WRITE_BYTE {
+enum ALGO_AGC_WRITE_BYTE {
   
   AGC_GAIN_ID              = 0x00, 
   AGC_STEP_SIZE_ID,
@@ -272,7 +277,7 @@ enum ALM_AGC_WRITE_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - WHRM 
-enum ALM_WHRM_WRITE_BYTE {
+enum ALGO_WHRM_WRITE_BYTE {
 
   WHRM_SAMP_RATE_ID        = 0x00,
   WHRM_MAX_HEIGHT_ID,
@@ -298,7 +303,7 @@ enum ALM_WHRM_WRITE_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - BPT 
-enum ALM_BPT_WRITE_BYTE {
+enum ALGO_BPT_WRITE_BYTE {
 
   BPT_BLOOD_PRESSURE_ID    = 0x00,
   BPT_DIASTOLIC_ID,
@@ -312,7 +317,7 @@ enum ALM_BPT_WRITE_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - WSPO2 
-enum ALM_WSP02_WRITE_BYTE {
+enum ALGO_WSP02_WRITE_BYTE {
 
   WSP02_COEF_ID         = 0x00,
   WSP02_SAMPLE_RATE_ID,
@@ -322,7 +327,7 @@ enum ALM_WSP02_WRITE_BYTE {
   WSP02_MOT_DTCT_PER_ID,
   WSP02_MOT_THRESH_ID,
   WSP02_AGC_TO_ID,
-  WSP02_ALM_TO_ID,
+  WSP02_ALGO_TO_ID,
   WSP02_PD_CONFIG
 
 };
@@ -369,7 +374,7 @@ enum READ_ALGORITHM_INDEX_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and Index Byte: 
 // READ_ALGORITHM_INDEX_BYTE - AGC
-enum READ_AGC_ALM_WRITE_BYTE {
+enum READ_AGC_ALGO_WRITE_BYTE {
   
   READ_AGC_PERC_ID              = 0x00,
   READ_AGC_STEP_SIZE_ID,
@@ -380,7 +385,7 @@ enum READ_AGC_ALM_WRITE_BYTE {
 
 // Write Bytes under Family Byte: READ_ALGORITHM_CONFIG (0x51) and the Index Byte: 
 // READ_ALGORITHM_INDEX_BYTE - WHRM
-enum READ_WHRM_ALM_WRITE_BYTE {
+enum READ_WHRM_ALGO_WRITE_BYTE {
 
   READ_WHRM_SAMPLE_RATE_ID = 0x00,
   READ_WHRM_MAX_HEIGHT_ID,
@@ -407,7 +412,7 @@ enum READ_WHRM_ALM_WRITE_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and the Index Byte: 
 // READ_ALGORITHM_INDEX_BYTE
-enum READ_WSP02_ALM_WRITE_BYTE {
+enum READ_WSP02_ALGO_WRITE_BYTE {
 
   READ_WSP02_COEF_ID       = 0x00,
   READ_WSP02_SAMP_RATE_ID,
@@ -425,12 +430,12 @@ enum READ_WSP02_ALM_WRITE_BYTE {
 // Index Byte under the Family Byte: ENABLE_ALGORITHM (0x52).
 enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
-  ENABLE_AGC_ALM           = 0x00,
-  ENABLE_AEC_ALM,
-  ENABLE_WHRM_ALM,
-  ENABLE_ECG_ALM,
-  ENABLE_BPT_ALM,
-  ENABLE_WSP02_ALM
+  ENABLE_AGC_ALGO           = 0x00,
+  ENABLE_AEC_ALGO,
+  ENABLE_WHRM_ALGO,
+  ENABLE_ECG_ALGO,
+  ENABLE_BPT_ALGO,
+  ENABLE_WSP02_ALGO
 
 };
 
@@ -458,7 +463,7 @@ enum IDENTITY_INDEX_BYTES {
 
   READ_MCU_TYPE            = 0x00,
   READ_SENSOR_HUB_VERS     = 0x03,
-  READ_ALM_VERS            = 0x07
+  READ_ALGO_VERS            = 0x07
 
 };
 
@@ -508,6 +513,11 @@ class SparkFun_Bio_Sensor_Hub
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
   uint8_t beginBpm();
   
+  // This function sets very basic settings to get LED count values from the MAX30101.
+  // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+  // and Green. 
+  uint8_t beginMaxSensor();
+  
   // This function sets very basic settings to get sensor and biometric data.
   // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
   // and Green. The biometric data includes data about heartrate, the confidence
@@ -529,6 +539,27 @@ class SparkFun_Bio_Sensor_Hub
   // is stated as "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
   ledData readSensor();
+
+  // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
+  // are modified to the same width. This will affect the number of samples that
+  // can be collected and will also affect the ADC resolution.
+  // Width(us) - Resolution -  Sample Rate
+  // Default is 69us - 15 resolution - 50 samples per second.
+  //  69us     -    15      -   <= 3200 (fastest - least resolution)
+  //  118us    -    16      -   <= 1600
+  //  215us    -    17      -   <= 1600
+  //  411us    -    18      -   <= 1000 (slowest - highest resolution)
+  uint8_t setPulseWidth(uint8_t width);
+
+  // This function changes the sample rate of the MAX30101 sensor. The sample
+  // rate is affected by the set pulse width of the MAX30101 LEDs. 
+  // Default is 69us - 15 resolution - 50 samples per second.
+  // Width(us) - Resolution -  Sample Rate
+  //  69us     -    15      -   <= 3200 (fastest - least resolution)
+  //  118us    -    16      -   <= 1600
+  //  215us    -    17      -   <= 1600
+  //  411us    -    18      -   <= 1000 (slowest - highest resolution)
+  uint8_t setSampleRate(uint8_t sampRate);
 
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
@@ -729,24 +760,24 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets the target percentage of the full-scale ADC range that
   // the automatic gain control algorithm uses. It takes a paramater of zero to 
   // 100 percent. 
-  bool configALMrange(uint8_t perc);
+  bool configALGOrange(uint8_t perc);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
   // This function changes the step size toward the target for the AGC algorithm. 
   // It takes a paramater of zero to 100 percent. 
-  bool configALMStepSize(uint8_t step);
+  bool configALGOStepSize(uint8_t step);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
   // This function changes the sensitivity of the AGC algorithm.
-  bool configALMsensitivity(uint8_t sense);
+  bool configALGOsensitivity(uint8_t sense);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  bool configALMsamples(uint8_t avg);
+  bool configALGOsamples(uint8_t avg);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
@@ -944,10 +975,10 @@ class SparkFun_Bio_Sensor_Hub
   bool setWSP02AGCTimeout(uint8_t toVal);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_ALG_TOUT
-  // (0x05), Write Byte: WSP02_ALM_TO_ID (0x08)
+  // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
   // This function changes the timeout period of the wrist Sp02 algorithm. The
   // paramter should be given in seconds. 
-  bool setWSP02ALMTimeout(uint8_t toVal);
+  bool setWSP02ALGOTimeout(uint8_t toVal);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_PPG_SIG
   // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
@@ -959,24 +990,24 @@ class SparkFun_Bio_Sensor_Hub
   // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
   // This function reads and returns the currently set target percentage 
   // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
-  uint8_t readALMrange();
+  uint8_t readALGOrange();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_STEP_SIZE (0x00), Write Byte: READ_AGC_STEP_SIZE_ID (0x01) 
   // This function returns the step size toward the target for the AGC algorithm. 
   // It returns a value between zero and 100 percent. 
-  uint8_t readALMStepSize();
+  uint8_t readALGOStepSize();
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_SENSITIVITY_ID (0x00), Write Byte: READ_AGC_SENSITIVITY_ID (0x02)
   // This function returns the sensitivity (percentage) of the automatic gain control. 
-  uint8_t readALMsensitivity();
+  uint8_t readALGOsensitivity();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_NUM_SAMPLES (0x00), Write Byte: READ_AGC_NUM_SAMPlES_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  uint8_t readALMsamples();
+  uint8_t readALGOsamples();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
@@ -1148,35 +1179,35 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t readWSP02PPGSource();
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-  // ENABLE_AGC_ALM (0x00)
+  // ENABLE_AGC_ALGO (0x00)
   // This function enables (one) or disables (zero) the automatic gain control algorithm. 
   bool acgAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-  // ENABLE_AEC_ALM (0x01)
+  // ENABLE_AEC_ALGO (0x01)
   // This function enables (one) or disables (zero) the automatic exposure
   // control (AEC) algorithm.
   bool aecAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-  // ENABLE_WHRM_ALM (0x02)
+  // ENABLE_WHRM_ALGO (0x02)
   // This function enables (one) or disables (zero) the wrist heart rate monitor
   // algorithm.
   bool whrmFastAlgoControl(uint8_t algSwitch);
 
-  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALM
+  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALGO
   // (0x03)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
   bool ecgAlgoControl(uint8_t enable);
 
-  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALM
+  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALGO
   // (0x04)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
   bool bptAlgoControl(uint8_t enable);
 
-  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALM
+  // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALGO
   // (0x05)
   // This function enables (one) or disables (zero) the WSP02 algorithm..
   bool wsp02AlgoControl(uint8_t enable);
@@ -1196,7 +1227,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
   version readSensorHubVersion();
 
-  // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
+  // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALGO_VERS (0x07)
   version readAlgorithmVersion();
 
   private:   
@@ -1285,6 +1316,6 @@ class SparkFun_Bio_Sensor_Hub
   long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads, signed long* array );
 
   // Needs comment - INCOMPLETE
-  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t * array);
+  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t array[]);
 };
 #endif

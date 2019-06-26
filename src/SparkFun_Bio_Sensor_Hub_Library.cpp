@@ -97,9 +97,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::beginBpm(){
 
   uint8_t statusChauf = 0;
   
-  statusChauf = readRegisterMAX30101(0x07); // Recommended 
+  readRegisterMAX30101(0x07); // Recommended 
 
-  statusChauf = setOutputMode(ALM_DATA); // Just the data
+  statusChauf = setOutputMode(ALGO_DATA); // Just the data
   if( statusChauf != 1 )
     return statusChauf; 
 
@@ -120,6 +120,34 @@ uint8_t SparkFun_Bio_Sensor_Hub::beginBpm(){
 
 }
 
+// This function sets very basic settings to get LED count values from the MAX30101.
+// Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+// and Green. 
+uint8_t SparkFun_Bio_Sensor_Hub::beginMaxSensor(){
+
+  uint8_t statusChauf; // Our status chauffeur
+  readRegisterMAX30101(0x07); // Recommended 
+
+  statusChauf = setOutputMode(SENSOR_DATA); // Just the sensor data (LED)
+  if( statusChauf != 1 )
+    return statusChauf; 
+
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  if( statusChauf != 1 )
+    return statusChauf; 
+
+  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
+  if( statusChauf != 1 )
+    return statusChauf; 
+
+  statusChauf = whrmFastAlgoControl(ENABLE); //Enable algorithm
+  if( statusChauf != 1 )
+    return statusChauf; 
+  
+  delay(1000);
+  return 0; 
+
+}
 // This function sets very basic settings to get sensor and biometric data.
 // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
 // and Green. The biometric data includes data about heartrate, the confidence
@@ -128,9 +156,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::beginBpm(){
 uint8_t SparkFun_Bio_Sensor_Hub::beginSensorBpm(){
 
   uint8_t statusChauf; // Our status chauffeur
-  statusChauf = readRegisterMAX30101(0x07); // Recommended 
-  if(statusChauf == 0)
-    return statusChauf;
+  readRegisterMAX30101(0x07); // Recommended 
 
   statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
   if( statusChauf != 1 )
@@ -201,31 +227,115 @@ ledData SparkFun_Bio_Sensor_Hub::readSensor(){
   ledData libLedFifo; 
   uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
 
-  Serial.print("IR count: ");
   // Value of LED one....
-  libLedFifo.ledOne = long(data[0]) << 16; 
-  libLedFifo.ledOne |= long(data[1]) << 8; 
-  libLedFifo.ledOne |= data[2]; 
-  Serial.println(libLedFifo.ledOne);
-  Serial.print("RED count: ");
+  libLedFifo.irLed = long(data[0]) << 16; 
+  libLedFifo.irLed |= long(data[1]) << 8; 
+  libLedFifo.irLed |= data[2]; 
+
   // Value of LED two...
-  libLedFifo.ledTwo = long(data[3]) << 16; 
-  libLedFifo.ledTwo |= long(data[4]) << 8; 
-  libLedFifo.ledTwo |= data[5]; 
-  Serial.println(libLedFifo.ledTwo);
-  // Serial.print("LED3 count: ");
-  // libLedFifo = long(data[6]) << 16; 
-  // libLedFifo |= long(data[7]) << 8; 
-  // libLedFifo |= data[8]; 
-  // Serial.println(retVal);
-  Serial.print("LED3 count: ");
+  libLedFifo.redLed = long(data[3]) << 16; 
+  libLedFifo.redLed |= long(data[4]) << 8; 
+  libLedFifo.redLed |= data[5]; 
+
+  // While it's not used in the MAX30101, but it may be used in other sensors,
+  // in which case this will still be useful.
+  libLedFifo.ledThree = long(data[6]) << 16; 
+  libLedFifo.ledThree |= long(data[7]) << 8; 
+  libLedFifo.ledThree |= data[8]; 
+
   // Value of LED three....
-  libLedFifo.ledThree = long(data[9]) << 16; 
-  libLedFifo.ledThree |= long(data[10]) << 8; 
-  libLedFifo.ledThree |= data[11]; 
-  Serial.println(libLedFifo.ledThree); 
+  libLedFifo.greenLed = long(data[9]) << 16; 
+  libLedFifo.greenLed |= long(data[10]) << 8; 
+  libLedFifo.greenLed |= data[11]; 
 
   return libLedFifo;
+
+}
+
+// This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
+// are modified to the same width. This will affect the number of samples that
+// can be collected and will also affect the ADC resolution. 
+// Default is 69us - 15 resolution - 50 samples per second.
+// Width(us) - Resolution -  Sample Rate
+//  69us     -    15      -   <= 3200 (fastest - least resolution)
+//  118us    -    16      -   <= 1600
+//  215us    -    17      -   <= 1600
+//  411us    -    18      -   <= 1000 (slowest - highest resolution)
+uint8_t SparkFun_Bio_Sensor_Hub::setPulseWidth(uint8_t width){
+
+  uint8_t bits; 
+  uint8_t statusByte;
+  uint8_t regVal;
+  
+  // Make sure the correct pulse width is selected. 
+  if( width == 69 )
+    bits = 0;
+  else if( width == 118 )
+    bits = 1;
+  else if( width == 215 )
+    bits = 2;
+  else if( width == 411 )
+    bits = 3;
+  else
+    return INCORR_PARAM;
+ 
+  // Get current register value so that nothing is overwritten.
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= WIDTH_MASK; // Mask bits to change. 
+  regVal |= bits; // Add bits
+  statusByte = writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
+
+  if(statusByte != SUCCESS)
+    return statusByte;
+  else
+    return SUCCESS; 
+
+}
+
+// This function changes the sample rate of the MAX30101 sensor. The sample
+// rate is affected by the set pulse width of the MAX30101 LEDs. 
+// Default is 69us - 15 resolution - 50 samples per second.
+// Width(us) - Resolution -  Sample Rate
+//  69us     -    15      -   <= 3200 (fastest - least resolution)
+//  118us    -    16      -   <= 1600
+//  215us    -    17      -   <= 1600
+//  411us    -    18      -   <= 1000 (slowest - highest resolution)
+uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint8_t sampRate){
+
+  uint8_t bits; 
+  uint8_t statusByte;
+  uint8_t regVal; 
+
+  // Make sure the correct sample rate was picked
+  if(sampRate == 50)
+    bits = 0; 
+  else if(sampRate == 100)
+    bits = 1; 
+  else if(sampRate == 200)
+    bits = 2; 
+  else if(sampRate == 400)
+    bits = 3; 
+  else if(sampRate == 800)
+    bits = 4; 
+  else if(sampRate == 1000)
+    bits = 5; 
+  else if(sampRate == 1600)
+    bits = 6; 
+  else if(sampRate == 3200)
+    bits = 7; 
+  else
+    return INCORR_PARAM;
+
+  // Get current register value so that nothing is overwritten.
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= SAMP_MASK; // Mask bits to change. 
+  regVal |= (bits << 2); // Add bits but shift them first to correct position.
+  statusByte = writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
+
+  if(statusByte != SUCCESS)
+    return statusByte;
+  else
+    return SUCCESS; 
 
 }
 
@@ -375,7 +485,7 @@ bool SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
 bool SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 
-  if (outputType < PAUSE || outputType > SENSOR_ALM_COUNTER) // Bytes between 0x00 and 0x07
+  if (outputType < PAUSE || outputType > SENSOR_ALGO_COUNTER) // Bytes between 0x00 and 0x07
     return false; 
 
   // Check that communication was successful, not that the IC is outputting
@@ -711,7 +821,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t* regArray, u
 // This function sets the target percentage of the full-scale ADC range that
 // the automatic gain control algorithm uses. It takes a paramater of zero to 
 // 100 percent. 
-bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc) {
+bool SparkFun_Bio_Sensor_Hub::configALGOrange(uint8_t perc) {
 
   if( perc < 0 || perc > 100)
     return; 
@@ -729,7 +839,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMrange(uint8_t perc) {
 // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
 // This function changes the step size toward the target for the AGC algorithm. 
 // It takes a paramater of zero to 100 percent. 
-bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step) {
+bool SparkFun_Bio_Sensor_Hub::configALGOStepSize(uint8_t step) {
 
   if( step < 0 || step > 100)
     return false; 
@@ -746,7 +856,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMStepSize(uint8_t step) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
 // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
 // This function changes the sensitivity of the AGC algorithm.
-bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense) {
+bool SparkFun_Bio_Sensor_Hub::configALGOsensitivity(uint8_t sense) {
 
   if( sense < 0 || sense > 100 )
     return false; 
@@ -764,7 +874,7 @@ bool SparkFun_Bio_Sensor_Hub::configALMsensitivity(uint8_t sense) {
 // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-bool SparkFun_Bio_Sensor_Hub::configALMsamples(uint8_t avg) {
+bool SparkFun_Bio_Sensor_Hub::configALGOsamples(uint8_t avg) {
 
   if( avg < 0 || avg > 255 )
     return false; 
@@ -1318,12 +1428,12 @@ bool SparkFun_Bio_Sensor_Hub::setWSP02AGCTimeout(uint8_t toVal) {
 
 
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_ALG_TOUT
-// (0x05), Write Byte: WSP02_ALM_TO_ID (0x08)
+// (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
 // This function changes the timeout period of the wrist Sp02 algorithm. The
 // paramter should be given in seconds. 
-bool SparkFun_Bio_Sensor_Hub::setWSP02ALMTimeout(uint8_t toVal) {
+bool SparkFun_Bio_Sensor_Hub::setWSP02ALGOTimeout(uint8_t toVal) {
 
-  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_ALG_TOUT, WSP02_ALM_TO_ID, toVal );
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_ALG_TOUT, WSP02_ALGO_TO_ID, toVal );
   if( statusByte == SUCCESS )
     return true; 
   else 
@@ -1351,7 +1461,7 @@ bool SparkFun_Bio_Sensor_Hub::setWSP02PPGSource(uint8_t pd) {
 // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
 // This function reads and returns the currently set target percentage 
 // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALMrange() {
+uint8_t SparkFun_Bio_Sensor_Hub::readALGOrange() {
 
   uint8_t range = readByte(READ_ALGORITHM_CONFIG, READ_AGC_PERCENTAGE, READ_AGC_PERC_ID, 2); 
   return range; 
@@ -1362,7 +1472,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALMrange() {
 // READ_AGC_STEP_SIZE (0x00), Write Byte: READ_AGC_STEP_SIZE_ID (0x01) 
 // This function returns the step size toward the target for the AGC algorithm. 
 // It returns a value between zero and 100 percent. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALMStepSize() {
+uint8_t SparkFun_Bio_Sensor_Hub::readALGOStepSize() {
 
   uint8_t stepSize = readByte(READ_ALGORITHM_CONFIG, READ_AGC_STEP_SIZE, READ_AGC_STEP_SIZE_ID, 2); 
   return stepSize;
@@ -1371,7 +1481,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALMStepSize() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
 // READ_AGC_SENSITIVITY_ID (0x00), Write Byte: READ_AGC_SENSITIVITY_ID (0x02)
 // This function returns the sensitivity (percentage) of the automatic gain control. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALMsensitivity() {
+uint8_t SparkFun_Bio_Sensor_Hub::readALGOsensitivity() {
 
   uint8_t sensitivity = readByte(READ_ALGORITHM_CONFIG, READ_AGC_SENSITIVITY, READ_AGC_SENSITIVITY_ID, 2); 
   return sensitivity; 
@@ -1382,7 +1492,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALMsensitivity() {
 // READ_AGC_NUM_SAMPLES (0x00), Write Byte: READ_AGC_NUM_SAMPLES_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALMsamples() {
+uint8_t SparkFun_Bio_Sensor_Hub::readALGOsamples() {
 
   uint8_t samples = readByte(READ_ALGORITHM_CONFIG, READ_AGC_NUM_SAMPLES, READ_AGC_NUM_SAMPLES_ID, 2); 
   return samples; 
@@ -1712,14 +1822,14 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWSP02PPGSource() {
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-// ENABLE_AGC_ALM (0x00)
+// ENABLE_AGC_ALGO (0x00)
 // This function enables (one) or disables (zero) the automatic gain control algorithm. 
 bool SparkFun_Bio_Sensor_Hub::acgAlgoControl(uint8_t enable) {
 
   if( enable != 0 || enable != 1)
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AGC_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1728,7 +1838,7 @@ bool SparkFun_Bio_Sensor_Hub::acgAlgoControl(uint8_t enable) {
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-// ENABLE_AEC_ALM (0x01)
+// ENABLE_AEC_ALGO (0x01)
 // This function enables (one) or disables (zero) the automatic exposure
 // control (AEC) algorithm.
 bool SparkFun_Bio_Sensor_Hub::aecAlgoControl(uint8_t enable) {
@@ -1736,7 +1846,7 @@ bool SparkFun_Bio_Sensor_Hub::aecAlgoControl(uint8_t enable) {
   if( enable != 0 || enable != 1)
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AEC_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AEC_ALGO, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1745,7 +1855,7 @@ bool SparkFun_Bio_Sensor_Hub::aecAlgoControl(uint8_t enable) {
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
-// ENABLE_WHRM_ALM (0x02)
+// ENABLE_WHRM_ALGO (0x02)
 // This function enables (one) or disables (zero) the wrist heart rate monitor
 // algorithm.
 bool SparkFun_Bio_Sensor_Hub::whrmFastAlgoControl(uint8_t algSwitch) {
@@ -1755,7 +1865,7 @@ bool SparkFun_Bio_Sensor_Hub::whrmFastAlgoControl(uint8_t algSwitch) {
   else
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALM, algSwitch);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, algSwitch);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1763,7 +1873,7 @@ bool SparkFun_Bio_Sensor_Hub::whrmFastAlgoControl(uint8_t algSwitch) {
 
 }
 
-// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALM
+// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALGO
 // (0x03)
 // This function enables (one) or disables (zero) the electrocardiogram 
 // (ECG) algorithm.
@@ -1772,7 +1882,7 @@ bool SparkFun_Bio_Sensor_Hub::ecgAlgoControl(uint8_t enable) {
   if( enable != 0 || enable != 1)
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_ECG_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_ECG_ALGO, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1781,7 +1891,7 @@ bool SparkFun_Bio_Sensor_Hub::ecgAlgoControl(uint8_t enable) {
 }
 
 
-// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALM
+// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALGO
 // (0x04)
 // This function enables (one) or disables (zero) the blood pressure trending 
 // (BPT) algorithm.
@@ -1792,7 +1902,7 @@ bool SparkFun_Bio_Sensor_Hub::bptAlgoControl(uint8_t enable) {
   else
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_BPT_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_BPT_ALGO, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1800,7 +1910,7 @@ bool SparkFun_Bio_Sensor_Hub::bptAlgoControl(uint8_t enable) {
 
 }
 
-// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALM
+// Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALGO
 // (0x05)
 // This function enables (one) or disables (zero) the WSP02 algorithm..
 bool SparkFun_Bio_Sensor_Hub::wsp02AlgoControl(uint8_t enable) {
@@ -1808,7 +1918,7 @@ bool SparkFun_Bio_Sensor_Hub::wsp02AlgoControl(uint8_t enable) {
   if( enable != 0 || enable != 1)
     return false; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WSP02_ALM, enable);
+  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WSP02_ALGO, enable);
   if (statusByte == SUCCESS)
     return true;
   else
@@ -1898,7 +2008,7 @@ version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 
 }
 
-// Family Byte: IDENTITY (0xFF), Index Byte: READ_ALM_VERS (0x07)
+// Family Byte: IDENTITY (0xFF), Index Byte: READ_ALGO_VERS (0x07)
 version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
   version libAlgoVers; 
@@ -2118,7 +2228,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
 }
 
-uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t* array )
+uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t array[] )
 {
 
   uint8_t returnByte;
@@ -2139,7 +2249,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
   for(uint8_t i = 0; i < _numOfReads; i++){
     array[i] = _i2cPort->read(); 
   }
-  return array; // If good then return the actual byte. 
+  return array; // If good then return the array. 
 
 }
 // This function handles all read commands or stated another way, all information

@@ -38,20 +38,16 @@ const int mfioPin = 5;
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioData body;  
+ledData led;  
 // ^^^^^^^^^
 // What's this!? This is a type (like int, byte, long) unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
-// specific information on your heartrate and blood oxygen levels. BioData is
-// actually a specific kind of type, known as a "struct". 
-// You can choose another variable name other than "body", like "blood", or
-// "readings", but I chose "body". Using this "body" varible in the 
-// following way gives us access to the following data: 
-// body.heartrate - Heartrate
-// body.confidence - Confidence in the heartrate value
-// body.oxygen - Blood oxygen level
-// body.status - Has a finger been sensed?
-
+// specific information on the LED count value of the sensor. "ledData" is 
+// actually a specific kind of type, known as a "struct". I think "led" is a
+// good variable name for the ledData type, but you can choose whatever. 
+// When used in the following way it gives access to the corresponding data:
+// led.irLed  - Infrared LED counts. 
+// led.redLed - Red LED counts. 
 
 void setup(){
 
@@ -63,7 +59,7 @@ void setup(){
     Serial.println("Sensor started!");
  
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.beginBpm();
+  int error = bioHub.beginMaxSensor();
   if(!error){
     Serial.println("Sensor configured.");
   }
@@ -72,26 +68,16 @@ void setup(){
     Serial.print("Error: "); 
     Serial.println(error); 
   }
-  // Data lags a bit behind the sensor, if you're finger is on the sensor when
-  // it's being configured this delay will give some time for the data to catch
-  // up. 
-  delay(4000); 
-  
-  
 }
 
 void loop(){
 
-    // Information from the readBpm function will be saved to our "body"
+    // Information from the readSensor function will be saved to our "led"
     // variable.  
-    body = bioHub.readBpm();
-    Serial.print("Heartrate: ");
-    Serial.println(body.heartRate); 
-    Serial.print("Confidence: ");
-    Serial.println(body.confidence); 
-    Serial.print("Oxygen: ");
-    Serial.println(body.oxygen); 
-    Serial.print("Status: ");
-    Serial.println(body.status); 
+    led = bioHub.readSensor();
+    Serial.print("Infrared LED counts: ");
+    Serial.println(led.irLed); 
+    Serial.print("Red LED counts: ");
+    Serial.println(led.redLed); 
     delay(250); // Slowing it down, we don't need to break our necks here.
 }
