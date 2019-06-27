@@ -11,11 +11,15 @@
 #define APP_MODE               0x00
 #define BOOTLOADER_MODE        0x08
 #define NO_WRITE               0x00 
-#define INCORR_PARAM           0xFF
+#define INCORR_PARAM           0xEE
 
 #define CONFIGURATION_REGISTER 0x0A
-#define WIDTH_MASK             0xFC
-#define SAMP_MASK              0x1C
+#define PULSE_MASK             0xFC
+#define READ_PULSE_MASK        0x03
+#define SAMP_MASK              0xE3
+#define READ_SAMP_MASK         0x1C
+#define ADC_MASK               0x3F
+#define READ_ADC_MASK          0xC0
 
 #define CMD_DELAY             2  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
@@ -544,22 +548,47 @@ class SparkFun_Bio_Sensor_Hub
   // are modified to the same width. This will affect the number of samples that
   // can be collected and will also affect the ADC resolution.
   // Width(us) - Resolution -  Sample Rate
-  // Default is 69us - 15 resolution - 50 samples per second.
+  // Default: 69us - 15 resolution - 50 samples per second.
   //  69us     -    15      -   <= 3200 (fastest - least resolution)
   //  118us    -    16      -   <= 1600
   //  215us    -    17      -   <= 1600
   //  411us    -    18      -   <= 1000 (slowest - highest resolution)
-  uint8_t setPulseWidth(uint8_t width);
+  uint8_t setPulseWidth(uint16_t width);
+
+  // This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
+  // MAX30101 Sensor. It returns one of the four settings in microseconds. 
+  uint8_t readPulseWidth();
 
   // This function changes the sample rate of the MAX30101 sensor. The sample
   // rate is affected by the set pulse width of the MAX30101 LEDs. 
-  // Default is 69us - 15 resolution - 50 samples per second.
+  // Default: 69us - 15 resolution - 50 samples per second.
   // Width(us) - Resolution -  Sample Rate
   //  69us     -    15      -   <= 3200 (fastest - least resolution)
   //  118us    -    16      -   <= 1600
   //  215us    -    17      -   <= 1600
   //  411us    -    18      -   <= 1000 (slowest - highest resolution)
-  uint8_t setSampleRate(uint8_t sampRate);
+  //  Samples Options:
+  //  50, 100, 200, 400, 800, 1000, 1600, 3200
+  uint8_t setSampleRate(uint16_t sampRate);
+
+  // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+  // This functions sets the dynamic range of the MAX30101's ADC. The function
+  // accepts the higher range as a parameter. 
+  // Default Range: 7.81pA - 2048nA
+  // Possible Ranges: 
+  // 7.81pA  - 2048nA
+  // 15.63pA - 4096nA
+  // 32.25pA - 8192nA
+  // 62.5pA  - 16384nA
+  uint8_t setAdcRange(uint16_t adcVal);
+
+  // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+  // This function returns the set ADC range of the MAX30101 sensor. 
+  uint16_t readAdcRange();
+
+  // This function reads the CONFIGURATION_REGISTER (0x0A), bits [4:2] from the
+  // MAX30101 Sensor. It returns one of the 8 possible sample rates. 
+  uint16_t readSampleRate();
 
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
@@ -578,38 +607,38 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX86140. 
-  bool max86140Control(uint8_t senSwitch);
+  uint8_t max86140Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30205. 
-  bool max30205Control(uint8_t senSwitch); 
+  uint8_t max30205Control(uint8_t senSwitch); 
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30001. 
-  bool max30001Control(uint8_t senSwitch);
+  uint8_t max30001Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01).
   // This function enables the MAX30101. 
-  bool max30101Control(uint8_t senSwitch);
+  uint8_t max30101Control(uint8_t senSwitch);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
   // Byte: accelSwitch (parameter - 0x00 or 0x01). 
   // This function enables the ACCELEROMETER. 
-  bool accelControl(uint8_t accelSwitch);
+  uint8_t accelControl(uint8_t accelSwitch);
 
   // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
   // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
-  bool setOutputMode(uint8_t outputType);
+  uint8_t setOutputMode(uint8_t outputType);
 
   // Family Byte: OUTPUT_FORMAT, Index Byte: SET_THRESHOLD, Write byte: intThres
   // (parameter - value betwen 0 and 0xFF).
   // This function changes the threshold for the FIFO interrupt bit/pin. The
   // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
   // (begin). 
-  bool setFIFOThreshold(uint8_t intThresh);   
+  uint8_t setFIFOThreshold(uint8_t intThresh);   
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
   // Byte: NONE
@@ -634,35 +663,35 @@ class SparkFun_Bio_Sensor_Hub
   // This function writes the given register value at the given register address
   // for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
   // or non-successful write.  
-  bool writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
+  uint8_t writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30205 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  bool writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
+  uint8_t writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30001 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  bool writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
+  uint8_t writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30101 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  bool writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
+  uint8_t writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the Accelerometer and returns a boolean indicating a successful or
   // non-successful write. 
-  bool writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
+  uint8_t writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
   
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
   // Register Address
@@ -760,90 +789,90 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets the target percentage of the full-scale ADC range that
   // the automatic gain control algorithm uses. It takes a paramater of zero to 
   // 100 percent. 
-  bool configALGOrange(uint8_t perc);
+  uint8_t configALGOrange(uint8_t perc);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
   // This function changes the step size toward the target for the AGC algorithm. 
   // It takes a paramater of zero to 100 percent. 
-  bool configALGOStepSize(uint8_t step);
+  uint8_t configALGOStepSize(uint8_t step);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
   // This function changes the sensitivity of the AGC algorithm.
-  bool configALGOsensitivity(uint8_t sense);
+  uint8_t configALGOsensitivity(uint8_t sense);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  bool configALGOsamples(uint8_t avg);
+  uint8_t configALGOsamples(uint8_t avg);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
   // This function sets the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMsampRate(uint16_t samp);
+  uint8_t configWHRMsampRate(uint16_t samp);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
   // This function sets the maximum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMaxHeight(uint16_t maxHeight);
+  uint8_t configWHRMMaxHeight(uint16_t maxHeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
   // This function sets the maximum weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMaxWeight(uint16_t maxWeight);
+  uint8_t configWHRMMaxWeight(uint16_t maxWeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMaxAge(uint8_t maxAge);
+  uint8_t configWHRMMaxAge(uint8_t maxAge);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMinHeight(uint16_t minHeight);
+  uint8_t configWHRMMinHeight(uint16_t minHeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMinWeight(uint16_t minWeight);
+  uint8_t configWHRMMinWeight(uint16_t minWeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
   // This function sets the minimum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMMinAge(uint8_t minAge);
+  uint8_t configWHRMMinAge(uint8_t minAge);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
   // This function sets the default height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMDefHeight(uint16_t defHeight);
+  uint8_t configWHRMDefHeight(uint16_t defHeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
   // This function sets the default weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMDefWeight(uint16_t defWeight);
+  uint8_t configWHRMDefWeight(uint16_t defWeight);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
   // This function sets the default age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMDefAge(uint8_t defAge);
+  uint8_t configWHRMDefAge(uint8_t defAge);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  bool configWHRMBPM(uint8_t bpm);
+  uint8_t configWHRMBPM(uint8_t bpm);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
@@ -1181,36 +1210,36 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AGC_ALGO (0x00)
   // This function enables (one) or disables (zero) the automatic gain control algorithm. 
-  bool acgAlgoControl(uint8_t enable);
+  uint8_t acgAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AEC_ALGO (0x01)
   // This function enables (one) or disables (zero) the automatic exposure
   // control (AEC) algorithm.
-  bool aecAlgoControl(uint8_t enable);
+  uint8_t aecAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_WHRM_ALGO (0x02)
   // This function enables (one) or disables (zero) the wrist heart rate monitor
   // algorithm.
-  bool whrmFastAlgoControl(uint8_t algSwitch);
+  uint8_t whrmFastAlgoControl(uint8_t algSwitch);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALGO
   // (0x03)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  bool ecgAlgoControl(uint8_t enable);
+  uint8_t ecgAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALGO
   // (0x04)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  bool bptAlgoControl(uint8_t enable);
+  uint8_t bptAlgoControl(uint8_t enable);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALGO
   // (0x05)
   // This function enables (one) or disables (zero) the WSP02 algorithm..
-  bool wsp02AlgoControl(uint8_t enable);
+  uint8_t wsp02AlgoControl(uint8_t enable);
 
   // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02),
   // Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 

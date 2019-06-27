@@ -35,16 +35,23 @@
 const int resPin = 4;
 const int mfioPin = 5;
 
+int width = 411; 
+int samples = 400; 
+int pulseWidthVal;
+int sampleVal;
+
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
+bioData body; 
 ledData led;  
 // ^^^^^^^^^
-// What's this!? This is a type (like int, byte, long) unique to the SparkFun
+// What's this!? This is a type (like "int", "byte", "long") unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
-// specific information on the LED count value of the sensor. "ledData" is 
+// specific information on the LED count values of the sensor. "ledData" is 
 // actually a specific kind of type, known as a "struct". I think "led" is a
-// good variable name for the ledData type, but you can choose whatever. 
+// good variable name for the ledData type, but you can choose whichever makes
+// more sense. 
 // When used in the following way it gives access to the corresponding data:
 // led.irLed  - Infrared LED counts. 
 // led.redLed - Red LED counts. 
@@ -57,9 +64,9 @@ void setup(){
   int result = bioHub.begin();
   if (!result)
     Serial.println("Sensor started!");
- 
+
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.beginMaxSensor();
+  int error = bioHub.beginSensorBpm();
   if(!error){
     Serial.println("Sensor configured.");
   }
@@ -67,7 +74,41 @@ void setup(){
     Serial.println("Error configuring sensor.");
     Serial.print("Error: "); 
     Serial.println(error); 
+    while(1);
   }
+
+  error = bioHub.setPulseWidth(width);
+  if (!error){
+    Serial.println("Pulse Width Set.");
+  }
+  else {
+    Serial.println("Could not set Pulse Width.");
+    Serial.print("Error: "); 
+    Serial.println(error); 
+    while(1);
+  }
+
+  pulseWidthVal = bioHub.readPulseWidth();
+  Serial.print("Pulse width is set to: ");
+  Serial.println(pulseWidthVal); 
+
+  error = bioHub.setSampleRate(samples); 
+  if (!error){
+    Serial.println("Sample Rate Set.");
+  }
+  else {
+    Serial.println("Could not set Sample Rate!");
+    Serial.print("Error: "); 
+    Serial.println(error); 
+    while(1);
+  }
+
+  sampleVal = bioHub.readSampleRate();
+  Serial.print("Sample rate is set to: ");
+  Serial.println(sampleVal); 
+
+  delay(4000);
+
 }
 
 void loop(){
@@ -75,9 +116,18 @@ void loop(){
     // Information from the readSensor function will be saved to our "led"
     // variable.  
     led = bioHub.readSensor();
+    body = bioHub.readBpm();
     Serial.print("Infrared LED counts: ");
     Serial.println(led.irLed); 
     Serial.print("Red LED counts: ");
     Serial.println(led.redLed); 
-    delay(250); // Slowing it down, we don't need to break our necks here.
+    Serial.print("Heartrate: ");
+    Serial.println(body.heartRate); 
+    Serial.print("Confidence: ");
+    Serial.println(body.confidence); 
+    Serial.print("Blood Oxygen: ");
+    Serial.println(body.oxygen); 
+    Serial.print("Status: ");
+    Serial.println(body.status); 
+    delay(500); // Slowing it down, we don't need to break our necks here.
 }
