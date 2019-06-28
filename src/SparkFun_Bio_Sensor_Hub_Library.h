@@ -21,7 +21,7 @@
 #define ADC_MASK               0x3F
 #define READ_ADC_MASK          0xC0
 
-#define CMD_DELAY             2  //milliseconds
+#define CMD_DELAY             3  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
 #define MAX30101_LED_ARRAY   12 // 4 values of 24 bit LED values
 
@@ -557,7 +557,7 @@ class SparkFun_Bio_Sensor_Hub
 
   // This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
   // MAX30101 Sensor. It returns one of the four settings in microseconds. 
-  uint8_t readPulseWidth();
+  uint16_t readPulseWidth();
 
   // This function changes the sample rate of the MAX30101 sensor. The sample
   // rate is affected by the set pulse width of the MAX30101 LEDs. 
@@ -663,35 +663,35 @@ class SparkFun_Bio_Sensor_Hub
   // This function writes the given register value at the given register address
   // for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
   // or non-successful write.  
-  uint8_t writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
+  void writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30205 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  uint8_t writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30001 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  uint8_t writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30101 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  uint8_t writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
+  void writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the Accelerometer and returns a boolean indicating a successful or
   // non-successful write. 
-  uint8_t writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
   
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
   // Register Address

@@ -74,10 +74,24 @@ void setup(){
     Serial.println("Error configuring sensor.");
     Serial.print("Error: "); 
     Serial.println(error); 
-    while(1);
   }
 
+  sampleVal = bioHub.readSampleRate();
+  pulseWidthVal = bioHub.readPulseWidth();
+  Serial.print("Pulse width is set to: ");
+  Serial.println(pulseWidthVal); 
+  Serial.print("Samples: ");
+  Serial.println(sampleVal);
   error = bioHub.setPulseWidth(width);
+  error = bioHub.setSampleRate(samples); 
+  sampleVal = bioHub.readSampleRate();
+  pulseWidthVal = bioHub.readPulseWidth();
+  Serial.print("Pulse width is set to: ");
+  Serial.println(pulseWidthVal); 
+  Serial.print("Samples: ");
+  Serial.println(sampleVal);
+  while(1);
+
   if (!error){
     Serial.println("Pulse Width Set.");
   }
@@ -85,14 +99,9 @@ void setup(){
     Serial.println("Could not set Pulse Width.");
     Serial.print("Error: "); 
     Serial.println(error); 
-    while(1);
   }
 
-  pulseWidthVal = bioHub.readPulseWidth();
-  Serial.print("Pulse width is set to: ");
-  Serial.println(pulseWidthVal); 
 
-  error = bioHub.setSampleRate(samples); 
   if (!error){
     Serial.println("Sample Rate Set.");
   }
@@ -100,13 +109,13 @@ void setup(){
     Serial.println("Could not set Sample Rate!");
     Serial.print("Error: "); 
     Serial.println(error); 
-    while(1);
   }
 
   sampleVal = bioHub.readSampleRate();
   Serial.print("Sample rate is set to: ");
   Serial.println(sampleVal); 
 
+  while(1);
   delay(4000);
 
 }

@@ -279,20 +279,19 @@ uint8_t SparkFun_Bio_Sensor_Hub::setPulseWidth(uint16_t width){
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= PULSE_MASK; // Mask bits to change. 
   regVal |= bits; // Add bits
-  statusByte = writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
-
-  if(statusByte != SUCCESS) return statusByte;
-  else return SUCCESS; 
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
 
 }
 
 // This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
 // MAX30101 Sensor. It returns one of the four settings in microseconds. 
-uint8_t SparkFun_Bio_Sensor_Hub::readPulseWidth(){
+uint16_t SparkFun_Bio_Sensor_Hub::readPulseWidth(){
 
   uint8_t regVal; 
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  Serial.println("Read Pulse Width: "); 
+  Serial.println(regVal, BIN); 
   regVal &= READ_PULSE_MASK;
 
   if      (regVal == 0) return 69; 
@@ -319,24 +318,25 @@ uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint16_t sampRate){
   uint8_t regVal; 
 
   // Make sure the correct sample rate was picked
-  if      (sampRate <= 50)   bits = 0; 
-  else if (sampRate <= 100)  bits = 1; 
-  else if (sampRate <= 200)  bits = 2; 
-  else if (sampRate <= 400)  bits = 3; 
-  else if (sampRate <= 800)  bits = 4; 
-  else if (sampRate <= 1000) bits = 5; 
-  else if (sampRate <= 1600) bits = 6; 
-  else if (sampRate <= 3200) bits = 7; 
+  if      (sampRate == 50)   bits = 0; 
+  else if (sampRate == 100)  bits = 1; 
+  else if (sampRate == 200)  bits = 2; 
+  else if (sampRate == 400)  bits = 3; 
+  else if (sampRate == 800)  bits = 4; 
+  else if (sampRate == 1000) bits = 5; 
+  else if (sampRate == 1600) bits = 6; 
+  else if (sampRate == 3200) bits = 7; 
   else     return INCORR_PARAM;
 
+  Serial.print("Bits: ");
+  Serial.println(bits);
   // Get current register value so that nothing is overwritten.
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= SAMP_MASK; // Mask bits to change. 
   regVal |= (bits << 2); // Add bits but shift them first to correct position.
-  statusByte = writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
-
-  if (statusByte != SUCCESS) return statusByte;
-  else return SUCCESS; 
+  Serial.print("Register after bits have been shifted: ");
+  Serial.println(regVal, BIN);
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
 
 }
 
@@ -347,6 +347,8 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSampleRate(){
   uint8_t regVal; 
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  Serial.println("Read Sample Rate: "); 
+  Serial.println(regVal, BIN);
   regVal &= READ_SAMP_MASK;
   regVal = (regVal >> 2); // shift our bits to the front of the line. 
 
@@ -387,9 +389,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
   regVal &= ADC_MASK; 
   regVal |= adcVal; 
   
-  statusByte = writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
-  if (statusByte != SUCCESS) return statusByte;
-  else return SUCCESS;
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
 
 }
 
@@ -634,13 +634,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesExternalSensor() {
 // This function writes the given register value at the given register address
 // for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
 // or non-successful write.  
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal) {
+void SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX86140, regAddr, regVal);
-  if( writeStat != SUCCESS) 
-    return writeStat; 
-  else
-    return SUCCESS; 
+  writeByte(WRITE_REGISTER, WRITE_MAX86140, regAddr, regVal);
+
 }
 
 // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
@@ -648,13 +645,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX861X(uint8_t regAddr, uint8_t r
 // This function writes the given register value at the given register address
 // for the MAX30205 sensor and returns a boolean indicating a successful or
 // non-successful write. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal) {
+void SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal) {
  
-  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30205, regAddr, regVal);
-  if( writeStat != SUCCESS) 
-    return writeStat; 
-  else
-    return SUCCESS; 
+  writeByte(WRITE_REGISTER, WRITE_MAX30205, regAddr, regVal);
+
 }
 
 // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
@@ -662,13 +656,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30205(uint8_t regAddr, uint8_t 
 // This function writes the given register value at the given register address
 // for the MAX30001 sensor and returns a boolean indicating a successful or
 // non-successful write. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal) {
+void SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal) {
   
-  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
-  if(writeStat != SUCCESS) 
-    return writeStat; 
-  else
-    return SUCCESS; 
+  writeByte(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
+
 }
 
 // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
@@ -676,13 +667,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30001(uint8_t regAddr, uint8_t 
 // This function writes the given register value at the given register address
 // for the MAX30101 sensor and returns a boolean indicating a successful or
 // non-successful write. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal) {
+void SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
-  if( writeStat != SUCCESS) 
-    return writeStat; 
-  else
-    return SUCCESS; 
+  writeByte(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
+
 }
 
 // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
@@ -690,13 +678,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t 
 // This function writes the given register value at the given register address
 // for the Accelerometer and returns a boolean indicating a successful or
 // non-successful write. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal) {
+void SparkFun_Bio_Sensor_Hub::writeRegisterAccel(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t writeStat = writeByte(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
-  if( writeStat != SUCCESS) 
-    return writeStat; 
-  else
-    return SUCCESS; 
+  writeByte(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
+
 }
 
 // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
@@ -743,7 +728,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterMAX30101(uint8_t regAddr) {
 
 }
 
-// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_ACCELEROMETER (0x04), Write Byte: 
 // Register Address
 // This function reads the given register address for the MAX30101 Sensor and
 // returns the values at that register. 
