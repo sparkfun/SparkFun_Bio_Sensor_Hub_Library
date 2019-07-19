@@ -190,7 +190,7 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   uint8_t statusChauf; // The status chauffeur captures return values. 
   statusChauf = readSensorHubStatus();
   if(statusChauf == 1) // Communication Error
-    return; 
+    return statusChauf; 
 
   numSamplesOutFIFO(); 
 
@@ -228,24 +228,24 @@ ledData SparkFun_Bio_Sensor_Hub::readSensor(){
   uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
 
   // Value of LED one....
-  libLedFifo.irLed = long(data[0]) << 16; 
-  libLedFifo.irLed |= long(data[1]) << 8; 
+  libLedFifo.irLed = uint32_t(data[0]) << 16; 
+  libLedFifo.irLed |= uint32_t(data[1]) << 8; 
   libLedFifo.irLed |= data[2]; 
 
   // Value of LED two...
-  libLedFifo.redLed = long(data[3]) << 16; 
-  libLedFifo.redLed |= long(data[4]) << 8; 
+  libLedFifo.redLed = uint32_t(data[3]) << 16; 
+  libLedFifo.redLed |= uint32_t(data[4]) << 8; 
   libLedFifo.redLed |= data[5]; 
 
   // While it's not used in the MAX30101, but it may be used in other sensors,
   // in which case this will still be useful.
-  libLedFifo.ledThree = long(data[6]) << 16; 
-  libLedFifo.ledThree |= long(data[7]) << 8; 
+  libLedFifo.ledThree = uint32_t(data[6]) << 16; 
+  libLedFifo.ledThree |= uint32_t(data[7]) << 8; 
   libLedFifo.ledThree |= data[8]; 
 
   // Value of LED three....
-  libLedFifo.greenLed = long(data[9]) << 16; 
-  libLedFifo.greenLed |= long(data[10]) << 8; 
+  libLedFifo.greenLed = uint32_t(data[9]) << 16; 
+  libLedFifo.greenLed |= uint32_t(data[10]) << 8; 
   libLedFifo.greenLed |= data[11]; 
 
   return libLedFifo;
@@ -290,8 +290,6 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPulseWidth(){
   uint8_t regVal; 
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
-  Serial.println("Read Pulse Width: "); 
-  Serial.println(regVal, BIN); 
   regVal &= READ_PULSE_MASK;
 
   if      (regVal == 0) return 69; 
@@ -328,14 +326,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint16_t sampRate){
   else if (sampRate == 3200) bits = 7; 
   else     return INCORR_PARAM;
 
-  Serial.print("Bits: ");
-  Serial.println(bits);
   // Get current register value so that nothing is overwritten.
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= SAMP_MASK; // Mask bits to change. 
   regVal |= (bits << 2); // Add bits but shift them first to correct position.
-  Serial.print("Register after bits have been shifted: ");
-  Serial.println(regVal, BIN);
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
 
 }
@@ -347,8 +341,6 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSampleRate(){
   uint8_t regVal; 
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
-  Serial.println("Read Sample Rate: "); 
-  Serial.println(regVal, BIN);
   regVal &= READ_SAMP_MASK;
   regVal = (regVal >> 2); // shift our bits to the front of the line. 
 
@@ -449,16 +441,16 @@ uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype() {
 // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
 // and the Revision Byte. 
 // INCOMPLETE
-long SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
+uint32_t SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 
-  long bootVers = 0;
+  uint32_t bootVers = 0;
   uint8_t* revNum = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4);   
 
   if( revNum[1] != SUCCESS )
     return ERR_UNKNOWN; 
   else {
-    bootVers |= (long(revNum[1]) << 16);
-    bootVers |= (long(revNum[2]) << 8); 
+    bootVers |= (uint32_t(revNum[1]) << 16);
+    bootVers |= (uint32_t(revNum[2]) << 8); 
     bootVers |= revNum[3]; 
     return bootVers;
   }
@@ -1110,9 +1102,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::configWHRMBPM(uint8_t bpm) {
 // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
 // This function takes three values that are used as the Sp02 coefficients.
 // These three values are multiplied by 100,000; default values are in order: 159584, -3465966, and 11268987.   
-bool SparkFun_Bio_Sensor_Hub::configWHRMCoef(long coef1, long coef2, long coef3) {
+bool SparkFun_Bio_Sensor_Hub::configWHRMCoef(int32_t coef1, int32_t coef2, int32_t coef3) {
 
-  long coefArr[3] = {coef1, coef2, coef3};
+  uint32_t coefArr[3] = {coef1, coef2, coef3};
 
   uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF, MAXIMFAST_COEF_ID, coefArr); 
   delete[] coefArr;
@@ -1339,9 +1331,9 @@ bool SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
 // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
 // This function sets the given Sp02 coefficients for the blood pressure trending
 // algorithm. 
-bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long spCoef1, long spCoef2, long spCoef3 ) {
+bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(int32_t spCoef1, int32_t spCoef2, int32_t spCoef3 ) {
   
-  long coefArr[3] = { spCoef1, spCoef2, spCoef3 };
+  uint32_t coefArr[3] = { spCoef1, spCoef2, spCoef3 };
 
   uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_BPT_SPO2_COEF, BPT_SP02_COEF_ID, coefArr);
   delete[] coefArr;
@@ -1356,9 +1348,9 @@ bool SparkFun_Bio_Sensor_Hub::adjustBPTcoef(long spCoef1, long spCoef2, long spC
 // (0x05), Write Byte: WSP02_COEF_ID (0x00)
 // This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
 // algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
-bool SparkFun_Bio_Sensor_Hub::adjustWSP02Coef(long wspCoef1, long wspCoef2, long wspCoef3 ) {
+bool SparkFun_Bio_Sensor_Hub::adjustWSP02Coef(int32_t wspCoef1, int32_t wspCoef2, int32_t wspCoef3 ) {
   
-  long coefArr[3] = { wspCoef1, wspCoef2, wspCoef3 };
+  uint32_t coefArr[3] = { wspCoef1, wspCoef2, wspCoef3 };
 
   uint16_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_WSPO2_COEF, WSP02_COEF_ID, coefArr);
   delete[] coefArr;
@@ -1455,7 +1447,7 @@ bool SparkFun_Bio_Sensor_Hub::enableWSP02MotDetPer(uint16_t detPer) {
 // SET_WSP02_THRESH (0x05), Write Byte: WSP02_MOT_THRESH_ID (0x06)
 // This function changes the motion threshold for the WSp02 algorithm. The
 // given number is multiplied by 100,000. 
-bool SparkFun_Bio_Sensor_Hub::setWSP02MotThresh(long threshVal) {
+bool SparkFun_Bio_Sensor_Hub::setWSP02MotThresh(uint32_t threshVal) {
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
@@ -1687,9 +1679,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWHRMBPM() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
 // READ_MAX_FAST_COEF (0x02), Write Byte: READ_MAX_FAST_COEF_ID (0x0B)
 // This function reads the maximum age for the wrist heart rate monitor
-// (WHRM) algorithm. It returns three long integers that are 
+// (WHRM) algorithm. It returns three uint32_t integers that are 
 // multiplied by 100,000.
-signed long*  SparkFun_Bio_Sensor_Hub::readWHRMCoef(signed long coefArr[3]) {
+int32_t*  SparkFun_Bio_Sensor_Hub::readWHRMCoef(int32_t coefArr[3]) {
  
   uint8_t numOfReads = 12; // 3 coefficients * 4 bytes  
   readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, numOfReads, coefArr ); 
@@ -1777,9 +1769,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::readPPGSource() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_COEF (0x05), Write Byte: READ_WSP02_COEF_ID (0x00)
 // This function reads the coefficiencts used for the WSP02 algorithm. It
-// returns the three long integers that are multiplied by 100,000 that are used
+// returns the three uint32_t integers that are multiplied by 100,000 that are used
 // as the coefficients. 
-signed long* SparkFun_Bio_Sensor_Hub::readWSP02Coef(signed long coefArr[3]) {
+int32_t* SparkFun_Bio_Sensor_Hub::readWSP02Coef(int32_t coefArr[3]) {
   
   uint8_t numOfReads = 12; // 3 coefficients * 4 bytes  
   // The array is populated in the read function. 
@@ -1844,11 +1836,11 @@ uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
 
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_MOT_THRESH
 // (0x05), Write Byte: READ_WSP02_MOT_THRESH (0x06)
-// This function reads the long integer that is the motion threshold times
+// This function reads the uint32_t integer that is the motion threshold times
 // 100,000. 
-long SparkFun_Bio_Sensor_Hub::readMotThresh() {
+uint32_t SparkFun_Bio_Sensor_Hub::readMotThresh() {
   
-  long motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
+  uint32_t motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
   return motThresh; 
 
 }
@@ -2153,7 +2145,9 @@ bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
 // are two steps demonstrated in this function. First a write to the MCU
 // indicating what you want to do, a delay, and then a read to confirm positive
 // transmission. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte) {
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+                                                                uint8_t _writeByte)
+{
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
@@ -2174,7 +2168,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // are two steps demonstrated in this function. First a write to the MCU
 // indicating what you want to do, a delay, and then a read to confirm positive
 // transmission. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _val) {
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+                                           uint8_t _writeByte, uint16_t _val) 
+{
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
@@ -2195,7 +2191,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // to the registers of downward sensors and so also requires a
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _writeVal)
+uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+                                           uint8_t _writeByte, uint8_t _writeVal)
 {
 
   _i2cPort->beginTransmission(_address);     
@@ -2216,7 +2213,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // to the registers of downward sensors and so also requires a
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
-uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, long _writeVal[3])
+uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
+                                                uint8_t _writeByte, uint32_t _writeVal[3])
 {
 
   _i2cPort->beginTransmission(_address);     
@@ -2274,7 +2272,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 // write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
-uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByte,\
+                                           uint8_t _writeByte, uint8_t _numOfReads )
 {
 
   uint8_t returnByte;
@@ -2300,7 +2299,8 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
 }
 
-uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t array[] )
+uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte,\
+                                                uint8_t _numOfReads, uint8_t array[] )
 {
 
   uint8_t returnByte;
@@ -2330,7 +2330,8 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 16 bit integer instead of 8. 
-uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte,\
+                                              uint8_t _writeByte,  uint8_t _numOfReads )
 {
 
    uint16_t returnByte;
@@ -2362,12 +2363,13 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // a write byte and then then delays 60 microseconds, during which the MAX32664 
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
-// that it returns a 4 byte (long) integer instead of 8. 
-long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads )
+// that it returns a 4 byte (uint32_t) integer instead of 8. 
+uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\ 
+                                               uint8_t _writeByte,  uint8_t _numOfReads )
 {
 
-   long returnByte;
-   long statusByte; 
+   uint32_t returnByte;
+   uint32_t statusByte; 
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
@@ -2396,8 +2398,10 @@ long SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexBy
 // a write byte and then then delays 60 microseconds, during which the MAX32664 
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
-// except it returns three long bytes instead of one. 
-long* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads, signed long* array )
+// except it returns three uint32_t bytes instead of one. 
+uint32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
+                                                     uint8_t _writeByte,  uint8_t _numOfReads,\
+                                                     int32_t* array)
 {
 
    uint8_t statusByte; 

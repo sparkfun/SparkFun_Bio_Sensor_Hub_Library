@@ -553,7 +553,7 @@ class SparkFun_Bio_Sensor_Hub
   //  118us    -    16      -   <= 1600
   //  215us    -    17      -   <= 1600
   //  411us    -    18      -   <= 1000 (slowest - highest resolution)
-  uint8_t setPulseWidth(uint16_t width);
+  uint8_t setPulseWidth(uint16_t);
 
   // This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
   // MAX30101 Sensor. It returns one of the four settings in microseconds. 
@@ -569,7 +569,7 @@ class SparkFun_Bio_Sensor_Hub
   //  411us    -    18      -   <= 1000 (slowest - highest resolution)
   //  Samples Options:
   //  50, 100, 200, 400, 800, 1000, 1600, 3200
-  uint8_t setSampleRate(uint16_t sampRate);
+  uint8_t setSampleRate(uint16_t);
 
   // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
   // This functions sets the dynamic range of the MAX30101's ADC. The function
@@ -580,7 +580,7 @@ class SparkFun_Bio_Sensor_Hub
   // 15.63pA - 4096nA
   // 32.25pA - 8192nA
   // 62.5pA  - 16384nA
-  uint8_t setAdcRange(uint16_t adcVal);
+  uint8_t setAdcRange(uint16_t);
 
   // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
   // This function returns the set ADC range of the MAX30101 sensor. 
@@ -602,43 +602,43 @@ class SparkFun_Bio_Sensor_Hub
   // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
   // and the Revision Byte. 
   // INCOMPLETE
-  long getBootloaderInf();
+  uint32_t getBootloaderInf();
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX86140. 
-  uint8_t max86140Control(uint8_t senSwitch);
+  uint8_t max86140Control(uint8_t);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30205 (0x01), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30205. 
-  uint8_t max30205Control(uint8_t senSwitch); 
+  uint8_t max30205Control(uint8_t); 
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
   // This function enables the MAX30001. 
-  uint8_t max30001Control(uint8_t senSwitch);
+  uint8_t max30001Control(uint8_t);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01).
   // This function enables the MAX30101. 
-  uint8_t max30101Control(uint8_t senSwitch);
+  uint8_t max30101Control(uint8_t);
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
   // Byte: accelSwitch (parameter - 0x00 or 0x01). 
   // This function enables the ACCELEROMETER. 
-  uint8_t accelControl(uint8_t accelSwitch);
+  uint8_t accelControl(uint8_t);
 
   // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
   // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
-  uint8_t setOutputMode(uint8_t outputType);
+  uint8_t setOutputMode(uint8_t);
 
   // Family Byte: OUTPUT_FORMAT, Index Byte: SET_THRESHOLD, Write byte: intThres
   // (parameter - value betwen 0 and 0xFF).
   // This function changes the threshold for the FIFO interrupt bit/pin. The
   // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
   // (begin). 
-  uint8_t setFIFOThreshold(uint8_t intThresh);   
+  uint8_t setFIFOThreshold(uint8_t);   
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
   // Byte: NONE
@@ -663,65 +663,65 @@ class SparkFun_Bio_Sensor_Hub
   // This function writes the given register value at the given register address
   // for the MAX86140 and MAX86141 Sensor and returns a boolean indicating a successful 
   // or non-successful write.  
-  void writeRegisterMAX861X(uint8_t regAddr, uint8_t regVal); 
+  void writeRegisterMAX861X(uint8_t, uint8_t); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30205 (0x01), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30205 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  void writeRegisterMAX30205(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterMAX30205(uint8_t, uint8_t);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30001 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  void writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterMAX30001(uint8_t, uint8_t);
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the MAX30101 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  void writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal); 
+  void writeRegisterMAX30101(uint8_t, uint8_t); 
 
   // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
   // for the Accelerometer and returns a boolean indicating a successful or
   // non-successful write. 
-  void writeRegisterAccel(uint8_t regAddr, uint8_t regVal);
+  void writeRegisterAccel(uint8_t, uint8_t );
   
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX86140 (0x00), Write Byte: 
   // Register Address
   // This function reads the given register address for the MAX86140 and MAX8641
   // Sensors and returns the values at that register. 
-  uint8_t readRegisterMAX8614X(uint8_t regAddr);
+  uint8_t readRegisterMAX8614X(uint8_t );
 
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30205 (0x01), Write Byte: 
   // Register Address
   // This function reads the given register address for the MAX30205 Sensor and
   // returns the values at that register. 
-  uint8_t readRegisterMAX30205(uint8_t regAddr);
+  uint8_t readRegisterMAX30205(uint8_t);
 
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30001 (0x02), Write Byte: 
   // Register Address
   // This function reads the given register address for the MAX30001 Sensor and
   // returns the values at that register. 
-  uint8_t readRegisterMAX30001(uint8_t regAddr);
+  uint8_t readRegisterMAX30001(uint8_t);
 
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
   // Register Address
   // This function reads the given register address for the MAX30101 Sensor and
   // returns the values at that register. 
-  uint8_t readRegisterMAX30101(uint8_t regAddr);
+  uint8_t readRegisterMAX30101(uint8_t);
   
   // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
   // Register Address
   // This function reads the given register address for the MAX30101 Sensor and
   // returns the values at that register. 
-  uint8_t readRegisterAccel(uint8_t regAddr);
+  uint8_t readRegisterAccel(uint8_t);
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX86140 (0x00)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
@@ -758,7 +758,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function returns all registers and register values sequentially of the
   // MAX86140/1 Sensors: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX86140(uint8_t* regArray, uint8_t totalRegBytes);
+  uint8_t* dumpRegisterMAX86140(uint8_t*, uint8_t);
   
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30205 (0x01)
   // This function returns all registers and register values sequentially of the
@@ -770,7 +770,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function returns all registers and register values sequentially of the
   // MAX30001 sensor: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX30001(uint8_t* regArray, uint8_t totalRegBytes);
+  uint8_t* dumpRegisterMAX30001(uint8_t*, uint8_t);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
   // This function returns all registers and register values sequentially of the
@@ -782,238 +782,238 @@ class SparkFun_Bio_Sensor_Hub
   // This function returns all registers and register values sequentially of the
   // Accelerometer: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterAccelerometer(uint8_t* regArray, uint8_t totalRegBytes);
+  uint8_t* dumpRegisterAccelerometer(uint8_t*, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
   // This function sets the target percentage of the full-scale ADC range that
   // the automatic gain control algorithm uses. It takes a paramater of zero to 
   // 100 percent. 
-  uint8_t configALGOrange(uint8_t perc);
+  uint8_t configALGOrange(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
   // This function changes the step size toward the target for the AGC algorithm. 
   // It takes a paramater of zero to 100 percent. 
-  uint8_t configALGOStepSize(uint8_t step);
+  uint8_t configALGOStepSize(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
   // This function changes the sensitivity of the AGC algorithm.
-  uint8_t configALGOsensitivity(uint8_t sense);
+  uint8_t configALGOsensitivity(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  uint8_t configALGOsamples(uint8_t avg);
+  uint8_t configALGOsamples(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
   // This function sets the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMsampRate(uint16_t samp);
+  uint8_t configWHRMsampRate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
   // This function sets the maximum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxHeight(uint16_t maxHeight);
+  uint8_t configWHRMMaxHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
   // This function sets the maximum weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxWeight(uint16_t maxWeight);
+  uint8_t configWHRMMaxWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxAge(uint8_t maxAge);
+  uint8_t configWHRMMaxAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinHeight(uint16_t minHeight);
+  uint8_t configWHRMMinHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinWeight(uint16_t minWeight);
+  uint8_t configWHRMMinWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
   // This function sets the minimum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinAge(uint8_t minAge);
+  uint8_t configWHRMMinAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
   // This function sets the default height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefHeight(uint16_t defHeight);
+  uint8_t configWHRMDefHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
   // This function sets the default weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefWeight(uint16_t defWeight);
+  uint8_t configWHRMDefWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
   // This function sets the default age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefAge(uint8_t defAge);
+  uint8_t configWHRMDefAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMBPM(uint8_t bpm);
+  uint8_t configWHRMBPM(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
   // This function takes three values that are used as the Sp02 coefficients.
-  bool configWHRMCoef(long coef1, long coef2, long coef3);
+  bool configWHRMCoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
   // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
   // This function enables or disables automatic exposure control (AEC). The
   // function takes the parameter zero for disable and one for enable. 
-  bool autoExpCont(uint8_t enable);
+  bool autoExpCont(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SKIN_CONTACT_DET (0x02), Write Byte: WHRM_SCD_ID (0x0C)
   // This function enables or disables skin contact detection. The
   // function takes the parameter zero for disable and one for enable. 
-  bool skinDetectControl(uint8_t enable);
+  bool skinDetectControl(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
   // This function sets target photo detector current period in seconds.
-  bool adjustPhotoDet(uint16_t per);
+  bool adjustPhotoDet(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
   // This function sets the skin contract detect debounce window. It's not clear
   // if this is in seconds or not in the datasheet.
-  bool setSCDWindow(uint16_t time);
+  bool setSCDWindow(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
   // This function sets motion magnitude threshold in 0.1g
-  bool setMotionMag(uint16_t mag);
+  bool setMotionMag(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
   // This function changes the minimum photodetector currrent in 0.1mA
   // increments. 
-  bool changePDCurrent(uint16_t curr);
+  bool changePDCurrent(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_WHRM_PPG (0x02), Write Byte: WHRM_PPG_PD_ID (0x11)
   // This function changes the source of the photoplethysmography (PPG) signal for 
   // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
   // one - PD2, and three - PD1 and PD2.
-  bool changePPGSource(uint8_t pd);
+  bool changePPGSource(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
   // The function configure the blood pressure trending (BPT) algorithm for
   // the users that are on blood pressure medicine. The parameter accepts the
   // value of zero (not using) or one (using). 
-  bool bptMedicine(uint8_t onbpm);
+  bool bptMedicine(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_DIASTOLIC (0x04), Write Byte: BPT_DIASTOLIC_ID (0x01)
   // This funciton writes the three givin diastolic BP byte values needed by the
   // calibration procedure.  
-  bool setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t val3);
+  bool setDiastolicVal(uint8_t, uint8_t, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_SYSTOLIC (0x04), Write Byte: BPT_SYSTOLIC_ID (0x02)
   // This funciton writes the three givin systolic BP byte values needed by the
   // calibration procedure.  
-  bool setSystolicVal(uint8_t val1, uint8_t val2, uint8_t val3);
+  bool setSystolicVal(uint8_t, uint8_t, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
   // (0x04), Write Byte: BPT_DATE_ID (0x04)
   // This function sets the estimation date with the given month/day integer. 
-  bool setBPTEstimationDate(uint16_t monthDay);
+  bool setBPTEstimationDate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_REST
   // (0x04), Write Byte: BPT_RESTING_ID (0x05)
   // This function adjusts the blood pressure trending algorithm for a user that
   // is resting (zero) or not resting (one). 
-  bool setUserResting(uint8_t resting);
+  bool setUserResting(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_SPO2_COEF
   // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
   // This function sets the given Sp02 coefficients for the blood pressure trending
   // algorithm. 
-  bool adjustBPTcoef(long spCoef1, long spCoef2, long spCoef3 );
+  bool adjustBPTcoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSPO2_COEF
   // (0x05), Write Byte: WSP02_COEF_ID (0x00)
   // This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
   // algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
-  bool adjustWSP02Coef(long wspCoef1, long wspCoef2, long wspCoef3 );
+  bool adjustWSP02Coef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_SRATE
   // (0x05), Write Byte: WSP02_SAMPLE_RATE_ID (0x01)
   // This function changes the wrist Sp02 sample rate to 100Hz (zero) or 25Hz
   // (one).
-  bool changeWSP02SampRate(uint8_t rate);
+  bool changeWSP02SampRate(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_RUN
   // (0x05), Write Byte: WSP02_RUN_MODE_ID (0x02)
   // This function changes the writs Sp02 algorithm run mode from continuous
   // (zero), from/to one-shot (one).
-  bool changeWSP02RunMode(uint8_t mode);
+  bool changeWSP02RunMode(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_AGC
   // (0x05), Write Byte: WSP02_AGC_MODE_ID (0x03)
   // This function changes the wrist Sp02 algorithm's AGC mode. You can disable
   // it (zero) or enable it (one). 
-  bool changeWSP02AGCMode(uint8_t enable);
+  bool changeWSP02AGCMode(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_MOT_DETECT (0x05), Write Byte: WSP02_MOT_DTCT_ID (0x04)
   // This function enables (one) or disables (zero) motion detect.
-  bool enableWSP02MotDet(uint8_t enable);
+  bool enableWSP02MotDet(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_DTCT_PER (0x05), Write Byte: WSP02_MOT_DTCT_PER_ID (0x05)
   // This function changes the period of the motion detect and though the
   // datasheet does not specify, I assume is in seconds. 
-  bool enableWSP02MotDetPer(uint16_t detPer);
+  bool enableWSP02MotDetPer(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_THRESH (0x05), Write Byte: WSP02_MOT_THRESH_ID (0x06)
   // This function changes the motion threshold for the WSp02 algorithm. The
   // given number is multiplied by 100,000. 
-  bool setWSP02MotThresh(long threshVal);
+  bool setWSP02MotThresh(uint32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_AGC_TOUT
   // (0x05), Write Byte: WSP02_AGC_TO_ID (0x07)
   // This function changes the timeout period of the wrist Sp02 AGC algorithm. The
   // paramter should be given in seconds. 
-  bool setWSP02AGCTimeout(uint8_t toVal);
+  bool setWSP02AGCTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_ALG_TOUT
   // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
   // This function changes the timeout period of the wrist Sp02 algorithm. The
   // paramter should be given in seconds. 
-  bool setWSP02ALGOTimeout(uint8_t toVal);
+  bool setWSP02ALGOTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_PPG_SIG
   // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
   // This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
   // The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-  bool setWSP02PPGSource(uint8_t pd);
+  bool setWSP02PPGSource(uint8_t);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
@@ -1107,10 +1107,10 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_MAX_FAST_COEF (0x02), Write Byte: READ_MAX_FAST_COEF_ID (0x0B)
   // This function reads the maximum age for the wrist heart rate monitor
-  // (WHRM) algorithm. It returns three long integers that are 
+  // (WHRM) algorithm. It returns three uint32_t integers that are 
   // multiplied by 100,000.
   // INCOMPLETE
-  signed long* readWHRMCoef(signed long coefArr[3]);
+  int32_t* readWHRMCoef(int32_t coefArr[3]);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_AEC_EN (0x02), Write Byte: READ_WHRM_AEC_EN_ID (0x0B)
@@ -1155,9 +1155,9 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_COEF (0x05), Write Byte: READ_WSP02_COEF_ID (0x00)
   // This function reads the coefficiencts used for the WSP02 algorithm. It
-  // returns the three long integers that are multiplied by 100,000 that are used
+  // returns the three uint32_t integers that are multiplied by 100,000 that are used
   // as the coefficients. 
-  signed long* readWSP02Coef(signed long coefArr[3]);
+  int32_t* readWSP02Coef(int32_t coefArr[3]);
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_SAMP_RATE(0x05), Write Byte: READ_WSP02_SAMP_RATE_ID (0x01)
@@ -1187,9 +1187,9 @@ class SparkFun_Bio_Sensor_Hub
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_MOT_THRESH
   // (0x05), Write Byte: READ_WSP02_MOT_THRESH (0x06)
-  // This function reads the long integer that is the motion threshold times
+  // This function reads the uint32_t integer that is the motion threshold times
   // 100,000. 
-  long readMotThresh();
+  uint32_t readMotThresh();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
   // (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
@@ -1210,40 +1210,40 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AGC_ALGO (0x00)
   // This function enables (one) or disables (zero) the automatic gain control algorithm. 
-  uint8_t acgAlgoControl(uint8_t enable);
+  uint8_t acgAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AEC_ALGO (0x01)
   // This function enables (one) or disables (zero) the automatic exposure
   // control (AEC) algorithm.
-  uint8_t aecAlgoControl(uint8_t enable);
+  uint8_t aecAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_WHRM_ALGO (0x02)
   // This function enables (one) or disables (zero) the wrist heart rate monitor
   // algorithm.
-  uint8_t whrmFastAlgoControl(uint8_t algSwitch);
+  uint8_t whrmFastAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_ECG_ALGO
   // (0x03)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  uint8_t ecgAlgoControl(uint8_t enable);
+  uint8_t ecgAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_BPT_ALGO
   // (0x04)
   // This function enables (one) or disables (zero) the electrocardiogram 
   // (ECG) algorithm.
-  uint8_t bptAlgoControl(uint8_t enable);
+  uint8_t bptAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALGO
   // (0x05)
   // This function enables (one) or disables (zero) the WSP02 algorithm..
-  uint8_t wsp02AlgoControl(uint8_t enable);
+  uint8_t wsp02AlgoControl(uint8_t);
 
   // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02),
   // Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 
-  bool setNumPages(uint8_t totalPages);
+  bool setNumPages(uint8_t);
 
   // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
   // Returns true on successful communication.
@@ -1265,7 +1265,7 @@ class SparkFun_Bio_Sensor_Hub
   uint8_t _mfioPin;
   uint8_t _address; 
   uint8_t _calibData[608];
-  long _writeCoefArr[3];
+  uint32_t _writeCoefArr[3];
   
   // I-squared-C Class----
   TwoWire *_i2cPort;
@@ -1286,12 +1286,12 @@ class SparkFun_Bio_Sensor_Hub
   // are two steps demonstrated in this function. First a write to the MCU
   // indicating what you want to do, a delay, and then a read to confirm positive
   // transmission. 
-  uint8_t writeByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte );
+  uint8_t writeByte( uint8_t, uint8_t, uint8_t);
 
   // This function sends is simliar to the one above and sends info to the MAX32664 
   // but takes an additional uint8_t as a paramter. Again there is the write
   // of the specific bytes followed by a read to confirm positive transmission. 
-  uint8_t writeByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _writeVal );
+  uint8_t writeByte( uint8_t, uint8_t, uint8_t, uint8_t);
 
   // This function is the same as the function above and uses the given family, 
   // index, and write byte, but also takes a 16 bit integer as a paramter to communicate
@@ -1299,26 +1299,26 @@ class SparkFun_Bio_Sensor_Hub
   // are two steps demonstrated in this function. First a write to the MCU
   // indicating what you want to do, a delay, and then a read to confirm positive
   // transmission. 
-  uint8_t writeByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint16_t _val);
+  uint8_t writeByte(uint8_t, uint8_t, uint8_t, uint16_t);
 
   // This function sends information to the MAX32664 to specifically write values
   // to the registers of downward sensors and so also requires a
   // register address and register value as parameters. Again there is the write
   // of the specific bytes followed by a read to confirm positive transmission. 
-  uint8_t writeLongBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, long _writeVal[3]);
+  uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, uint32_t _writeVal[3]);
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
   // information. An I-squared-C request is then issued, and the information is read and returned.
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t, uint8_t, uint8_t); 
 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
   // then issued, and the information is read and returned. 
-  uint8_t readByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads ); 
+  uint8_t readByte( uint8_t, uint8_t, uint8_t, uint8_t); 
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1326,25 +1326,25 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  uint16_t readIntByte( uint8_t, uint8_t, uint8_t, uint8_t);
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
-  // that it returns a 4 byte (long) integer instead of 8. 
-  long readLongByte( uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads );
+  // that it returns a 4 byte (uint32_t) integer instead of 8. 
+  uint32_t readLongByte( uint8_t, uint8_t, uint8_t, uint8_t);
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
   // a write byte and then then delays 60 microseconds, during which the MAX32664 
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
-  // except it returns three long bytes instead of one. 
-  long* readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte, uint8_t _numOfReads, signed long* array );
+  // except it returns three uint32_t bytes instead of one. 
+  uint32_t* readMultipleBytes(uint8_t, uint8_t, uint8_t, uint8_t, int32_t*);
 
   // Needs comment - INCOMPLETE
-  uint8_t* readFillArray(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads, uint8_t array[]);
+  uint8_t* readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);
 };
 #endif

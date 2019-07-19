@@ -40,6 +40,8 @@ int samples = 400;
 int pulseWidthVal;
 int sampleVal;
 
+int widthArray[] = {69, 118, 215, 411};
+int sampleArray[] = {50, 100, 200, 400, 800, 1000, 1600, 3200};
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
@@ -76,20 +78,26 @@ void setup(){
     Serial.println(error); 
   }
 
-  sampleVal = bioHub.readSampleRate();
-  pulseWidthVal = bioHub.readPulseWidth();
-  Serial.print("Pulse width is set to: ");
-  Serial.println(pulseWidthVal); 
-  Serial.print("Samples: ");
-  Serial.println(sampleVal);
-  error = bioHub.setPulseWidth(width);
-  error = bioHub.setSampleRate(samples); 
-  sampleVal = bioHub.readSampleRate();
-  pulseWidthVal = bioHub.readPulseWidth();
-  Serial.print("Pulse width is set to: ");
-  Serial.println(pulseWidthVal); 
-  Serial.print("Samples: ");
-  Serial.println(sampleVal);
+  for( int i = 0; i <= 3; i++ )
+  {
+    Serial.print("Setting width: ");
+    Serial.println(widthArray[i]);
+    bioHub.setPulseWidth(widthArray[i]);
+    delay(10);
+    pulseWidthVal = bioHub.readPulseWidth();
+    Serial.print("Pulse Width");
+    Serial.println(pulseWidthVal);
+    for (int i = 0; i <= 7; i++){
+      Serial.print("Setting Sample Rate: ");
+      Serial.println(sampleArray[i]);
+      bioHub.setSampleRate(sampleArray[i]);
+      delay(10);
+      sampleVal = bioHub.readSampleRate();
+      Serial.print("Sample Rate: ");
+      Serial.println(sampleVal);
+    }
+  }
+
   while(1);
 
   if (!error){
