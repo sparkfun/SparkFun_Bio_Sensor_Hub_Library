@@ -1,8 +1,7 @@
-#ifndef _SPARKFUN_BIO_MAX3001_H_
-#define _SPARKFUN_BIO_MAX3001_H_
+#ifndef _SPARKFUN_BIO_MAX30101_H_
+#define _SPARKFUN_BIO_MAX30101_H_
 
 #include <Wire.h>
-#include <SPI.h>
 #include <Arduino.h>
 
 #define WRITE_FIFO_INPUT_BYTE  0x04
@@ -471,7 +470,7 @@ enum IDENTITY_INDEX_BYTES {
 
 };
 
-class SparkFun_Bio_MAX3001
+class SparkFun_Bio_MAX30101
 {
   public:  
   // Variables ------------
@@ -479,7 +478,7 @@ class SparkFun_Bio_MAX3001
   uint8_t senArr[MAX30101_LED_ARRAY];
 
   // Constructor ----------
-  SparkFun_Bio_MAX3001(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
+  SparkFun_Bio_MAX30101(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
 
   // Functions ------------
   
@@ -512,6 +511,84 @@ class SparkFun_Bio_MAX3001
   // INCOMPLETE
   uint8_t setOperatingMode(uint8_t selection); 
   
+  // This function sets very basic settings to get sensor and biometric data.
+  // The biometric data includes data about heartrate, the confidence
+  // level, SpO2 levels, and whether the sensor has detected a finger or not. 
+  uint8_t beginBpm();
+  
+  // This function sets very basic settings to get LED count values from the MAX30101.
+  // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+  // and Green. 
+  uint8_t beginMaxSensor();
+  
+  // This function sets very basic settings to get sensor and biometric data.
+  // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+  // and Green. The biometric data includes data about heartrate, the confidence
+  // level, SpO2 levels, and whether the sensor has detected a finger or not. 
+  // Of note, the number of samples is set to one. 
+  uint8_t beginSensorBpm();
+
+  // This function takes the 8 bytes from the FIFO buffer related to the wrist
+  // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
+  // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
+  // "wrist" though the sensor only works with the finger. The data is loaded
+  // into the whrmFifo and returned.  
+  bioData readBpm();
+
+  // This function takes 9 bytes of LED values from the MAX30101 associated with 
+  // the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
+  // related to the wrist heart rate algortihm: heart rate (uint16_t), confidence (uint8_t), 
+  // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
+  // is stated as "wrist" though the sensor only works with the finger. The data is loaded
+  // into the whrmFifo and returned.  
+  ledData readSensor();
+
+  // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
+  // are modified to the same width. This will affect the number of samples that
+  // can be collected and will also affect the ADC resolution.
+  // Width(us) - Resolution -  Sample Rate
+  // Default: 69us - 15 resolution - 50 samples per second.
+  //  69us     -    15      -   <= 3200 (fastest - least resolution)
+  //  118us    -    16      -   <= 1600
+  //  215us    -    17      -   <= 1600
+  //  411us    -    18      -   <= 1000 (slowest - highest resolution)
+  uint8_t setPulseWidth(uint16_t);
+
+  // This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
+  // MAX30101 Sensor. It returns one of the four settings in microseconds. 
+  uint16_t readPulseWidth();
+
+  // This function changes the sample rate of the MAX30101 sensor. The sample
+  // rate is affected by the set pulse width of the MAX30101 LEDs. 
+  // Default: 69us - 15 resolution - 50 samples per second.
+  // Width(us) - Resolution -  Sample Rate
+  //  69us     -    15      -   <= 3200 (fastest - least resolution)
+  //  118us    -    16      -   <= 1600
+  //  215us    -    17      -   <= 1600
+  //  411us    -    18      -   <= 1000 (slowest - highest resolution)
+  //  Samples Options:
+  //  50, 100, 200, 400, 800, 1000, 1600, 3200
+  uint8_t setSampleRate(uint16_t);
+
+  // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+  // This functions sets the dynamic range of the MAX30101's ADC. The function
+  // accepts the higher range as a parameter. 
+  // Default Range: 7.81pA - 2048nA
+  // Possible Ranges: 
+  // 7.81pA  - 2048nA
+  // 15.63pA - 4096nA
+  // 32.25pA - 8192nA
+  // 62.5pA  - 16384nA
+  uint8_t setAdcRange(uint16_t);
+
+  // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+  // This function returns the set ADC range of the MAX30101 sensor. 
+  uint16_t readAdcRange();
+
+  // This function reads the CONFIGURATION_REGISTER (0x0A), bits [4:2] from the
+  // MAX30101 Sensor. It returns one of the 8 possible sample rates. 
+  uint16_t readSampleRate();
+
   // Family Byte: IDENTITY (0x01), Index Byte: READ_MCU_TYPE, Write Byte: NONE
   // The following function returns a byte that signifies the microcontoller that
   // is in communcation with your host microcontroller. Returns 0x00 for the
@@ -524,11 +601,16 @@ class SparkFun_Bio_MAX3001
   // and the Revision Byte. 
   uint32_t getBootloaderInf();
 
-  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
-  // Byte: senSwitch (parameter - 0x00 or 0x01). 
-  // This function enables the MAX30001. 
-  uint8_t max30001Control(uint8_t);
-  
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
+  // Byte: senSwitch (parameter - 0x00 or 0x01).
+  // This function enables the MAX30101. 
+  uint8_t max30101Control(uint8_t);
+
+  // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
+  // Byte: accelSwitch (parameter - 0x00 or 0x01). 
+  // This function enables the ACCELEROMETER. 
+  uint8_t accelControl(uint8_t);
+
   // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
   // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
   uint8_t setOutputMode(uint8_t);
@@ -549,30 +631,63 @@ class SparkFun_Bio_MAX3001
   // Byte: NONE
   // This function returns the data in the FIFO. 
   uint8_t* getDataOutFIFO(uint8_t data[]);
-  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
+
+  // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+  // Byte: NONE
+  // This function adds support for the acceleromter that is NOT included on
+  // SparkFun's product, The Family Registery of 0x13 and 0x14 is skipped for now. 
+  uint8_t numSamplesExternalSensor();
+
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
   // Register Address and Register Value
   // This function writes the given register value at the given register address
-  // for the MAX30001 sensor and returns a boolean indicating a successful or
+  // for the MAX30101 sensor and returns a boolean indicating a successful or
   // non-successful write. 
-  void writeRegisterMAX30001(uint8_t, uint8_t);
+  void writeRegisterMAX30101(uint8_t, uint8_t); 
 
-  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30001 (0x02), Write Byte: 
+  // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
+  // Register Address and Register Value
+  // This function writes the given register value at the given register address
+  // for the Accelerometer and returns a boolean indicating a successful or
+  // non-successful write. 
+  void writeRegisterAccel(uint8_t, uint8_t );
+  
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
   // Register Address
-  // This function reads the given register address for the MAX30001 Sensor and
+  // This function reads the given register address for the MAX30101 Sensor and
   // returns the values at that register. 
-  uint8_t readRegisterMAX30001(uint8_t);
+  uint8_t readRegisterMAX30101(uint8_t);
   
-  // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30001 (0x02)
+  // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+  // Register Address
+  // This function reads the given register address for the MAX30101 Sensor and
+  // returns the values at that register. 
+  uint8_t readRegisterAccel(uint8_t);
+
+  // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
-  // MAX30001 sensor. It returns the number of bytes in a word for the sensor
+  // MAX30101 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesMAX30001();
-  
-  // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30001 (0x02)
+  sensorAttributes getAFEAttributesMAX30101();
+
+  // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
+  // RETRIEVE_AFE_ACCELEROMETER (0x04)
+  // This function retrieves the attributes of the AFE (Analog Front End) of the
+  // Accelerometer. It returns the number of bytes in a word for the sensor
+  // and the number of registers available. 
+  sensorAttributes getAFEAttributesAccelerometer();
+
+  // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
   // This function returns all registers and register values sequentially of the
-  // MAX30001 sensor: register zero and register value zero to register n and 
+  // MAX30101 sensor: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX30001(uint8_t*, uint8_t);
+  uint8_t* dumpRegisterMAX30101(uint8_t regArray[255]);
+
+  // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
+  // This function returns all registers and register values sequentially of the
+  // Accelerometer: register zero and register value zero to register n and 
+  // register value n.
+  uint8_t* dumpRegisterAccelerometer(uint8_t*, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
@@ -597,7 +712,78 @@ class SparkFun_Bio_MAX3001
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
   uint8_t configALGOsamples(uint8_t);
-  
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
+  // This function sets the sample rate for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMsampRate(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
+  // This function sets the maximum height for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMaxHeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
+  // This function sets the maximum weight for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMaxWeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
+  // This function sets the maximum age for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMaxAge(uint8_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
+  // This function sets the minimum height for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMinHeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
+  // This function sets the minimum height for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMinWeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
+  // This function sets the minimum age for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMMinAge(uint8_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
+  // This function sets the default height for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMDefHeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
+  // This function sets the default weight for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMDefWeight(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
+  // This function sets the default age for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMDefAge(uint8_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
+  // This function sets the maximum age for the wrist heart rate monitor
+  // (WHRM) algorithm. 
+  uint8_t configWHRMBPM(uint8_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+  // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
+  // This function takes three values that are used as the Sp02 coefficients.
+  bool configWHRMCoef(int32_t, int32_t, int32_t);
+
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
   // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
   // This function enables or disables automatic exposure control (AEC). The
@@ -611,6 +797,11 @@ class SparkFun_Bio_MAX3001
   bool skinDetectControl(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+  // SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
+  // This function sets target photo detector current period in seconds.
+  bool adjustPhotoDet(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
   // This function sets the skin contract detect debounce window. It's not clear
   // if this is in seconds or not in the datasheet.
@@ -620,6 +811,27 @@ class SparkFun_Bio_MAX3001
   // SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
   // This function sets motion magnitude threshold in 0.1g
   bool setMotionMag(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+  // SET_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
+  // This function changes the minimum photodetector currrent in 0.1mA
+  // increments. 
+  bool changePDCurrent(uint16_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+  // SET_WHRM_PPG (0x02), Write Byte: WHRM_PPG_PD_ID (0x11)
+  // This function changes the source of the photoplethysmography (PPG) signal for 
+  // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
+  // one - PD2, and three - PD1 and PD2.
+  bool changePPGSource(uint8_t);
+
+  // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+  // SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
+  // The function configure the blood pressure trending (BPT) algorithm for
+  // the users that are on blood pressure medicine. The parameter accepts the
+  // value of zero (not using) or one (using). 
+  bool bptMedicine(uint8_t);
+
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_DIASTOLIC (0x04), Write Byte: BPT_DIASTOLIC_ID (0x01)
   // This funciton writes the three givin diastolic BP byte values needed by the

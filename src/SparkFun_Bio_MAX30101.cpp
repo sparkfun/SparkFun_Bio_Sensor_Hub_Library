@@ -18,9 +18,9 @@ kk
 */
 
 
-#include "SparkFun_Bio_MAX3001.h"
+#include "SparkFun_Bio_MAX30101_Library.h"
 
-SparkFun_Bio_MAX3001::SparkFun_Bio_MAX3001(uint8_t address, uint8_t resetPin, uint8_t mfioPin ) { 
+SparkFun_Bio_MAX30101::SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ) { 
   
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
@@ -37,7 +37,7 @@ SparkFun_Bio_MAX3001::SparkFun_Bio_MAX3001(uint8_t address, uint8_t resetPin, ui
 // in application mode and will return two bytes, the first 0x00 is a 
 // successful communcation byte, followed by 0x00 which is the byte indicating 
 // which mode the IC is in. 
-uint8_t SparkFun_Bio_MAX3001::begin( TwoWire &wirePort ) {
+uint8_t SparkFun_Bio_MAX30101::begin( TwoWire &wirePort ) {
 
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
@@ -61,7 +61,7 @@ uint8_t SparkFun_Bio_MAX3001::begin( TwoWire &wirePort ) {
 // in bootloader mode and will return two bytes, the first 0x00 is a 
 // successful communcation byte, followed by 0x08 which is the byte indicating 
 // that the board is in bootloader mode. 
-uint8_t SparkFun_Bio_MAX3001::beginBootloader( TwoWire &wirePort ) {
+uint8_t SparkFun_Bio_MAX30101::beginBootloader( TwoWire &wirePort ) {
 
   _i2cPort = &wirePort; 
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
@@ -83,20 +83,330 @@ uint8_t SparkFun_Bio_MAX3001::beginBootloader( TwoWire &wirePort ) {
 
 // Family Byte: HUB_STATUS (0x00), Index Byte: 0x00, No Write Byte.
 // The following function checks the status of the FIFO. 
-uint8_t SparkFun_Bio_MAX3001::readSensorHubStatus(){
+uint8_t SparkFun_Bio_MAX30101::readSensorHubStatus(){
   
   uint8_t status = readByte(0x00, 0x00, 1); // Just family and index byte. 
   return status; // Will return 0x00
 
 }
 
+// This function sets very basic settings to get sensor and biometric data.
+// The biometric data includes data about heartrate, the confidence
+// level, SpO2 levels, and whether the sensor has detected a finger or not. 
+uint8_t SparkFun_Bio_MAX30101::beginBpm(){
+
+  uint8_t statusChauf = 0;
+  
+  readRegisterMAX30101(0x07); // Recommended 
+
+  statusChauf = setOutputMode(ALGO_DATA); // Just the data
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired.
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = max30101Control(ENABLE); 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = whrmFastAlgoControl(ENABLE); 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+  
+  delay(1000);
+  return SUCCESS; 
+
+}
+
+// This function sets very basic settings to get LED count values from the MAX30101.
+// Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+// and Green. 
+uint8_t SparkFun_Bio_MAX30101::beginMaxSensor(){
+
+  uint8_t statusChauf; // Our status chauffeur
+  readRegisterMAX30101(0x07); // Recommended 
+
+  statusChauf = setOutputMode(SENSOR_DATA); // Just the sensor data (LED)
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = whrmFastAlgoControl(ENABLE); //Enable algorithm
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+  
+  delay(1000);
+  return SUCCESS; 
+
+}
+// This function sets very basic settings to get sensor and biometric data.
+// Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
+// and Green. The biometric data includes data about heartrate, the confidence
+// level, SpO2 levels, and whether the sensor has detected a finger or not. 
+// Of note, the number of samples is set to one. 
+uint8_t SparkFun_Bio_MAX30101::beginSensorBpm(){
+
+  uint8_t statusChauf; // Our status chauffeur
+  readRegisterMAX30101(0x07); // Recommended 
+
+  statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = whrmFastAlgoControl(ENABLE); //Enable algorithm
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+  
+  delay(1000);
+  return SUCCESS; 
+
+}
+
+// This function takes the 8 bytes from the FIFO buffer related to the wrist
+// heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
+// and the finger detected status (uint8_t). Note that the the algorithm is stated as 
+// "wrist" though the sensor only works with the finger. The data is loaded
+// into the whrmFifo and returned.  
+bioData SparkFun_Bio_MAX30101::readBpm(){
+
+  bioData libBpm; 
+  uint8_t statusChauf; // The status chauffeur captures return values. 
+  statusChauf = readSensorHubStatus();
+  if(statusChauf == 1) // Communication Error
+    return statusChauf; 
+
+  numSamplesOutFIFO(); 
+
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+
+  // Heart Rate formatting
+  libBpm.heartRate = (uint16_t(data[0]) << 8); 
+  libBpm.heartRate |= (data[1]); 
+  libBpm.heartRate = libBpm.heartRate/10; 
+
+  // Confidence formatting
+  libBpm.confidence = data[2]; 
+
+  //Blood oxygen level formatting
+  libBpm.oxygen = uint16_t(data[3]) << 8;
+  libBpm.oxygen |= data[4]; 
+  libBpm.oxygen = libBpm.oxygen/10;
+
+  //"Machine State" - has a finger been detected?
+  libBpm.status = data[5];
+
+  return libBpm;
+
+}
+
+// This function takes 9 bytes of LED values from the MAX30101 associated with 
+// the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
+// related to the wrist heart rate algortihm: heart rate (uint16_t), confidence (uint8_t), 
+// SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
+// is stated as "wrist" though the sensor only works with the finger. The data is loaded
+// into the whrmFifo and returned.  
+ledData SparkFun_Bio_MAX30101::readSensor(){ 
+
+  ledData libLedFifo; 
+  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
+
+  // Value of LED one....
+  libLedFifo.irLed = uint32_t(data[0]) << 16; 
+  libLedFifo.irLed |= uint32_t(data[1]) << 8; 
+  libLedFifo.irLed |= data[2]; 
+
+  // Value of LED two...
+  libLedFifo.redLed = uint32_t(data[3]) << 16; 
+  libLedFifo.redLed |= uint32_t(data[4]) << 8; 
+  libLedFifo.redLed |= data[5]; 
+
+  // While it's not used in the MAX30101, but it may be used in other sensors,
+  // in which case this will still be useful.
+  libLedFifo.ledThree = uint32_t(data[6]) << 16; 
+  libLedFifo.ledThree |= uint32_t(data[7]) << 8; 
+  libLedFifo.ledThree |= data[8]; 
+
+  // Value of LED three....
+  libLedFifo.greenLed = uint32_t(data[9]) << 16; 
+  libLedFifo.greenLed |= uint32_t(data[10]) << 8; 
+  libLedFifo.greenLed |= data[11]; 
+
+  return libLedFifo;
+
+}
+
+// This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
+// are modified to the same width. This will affect the number of samples that
+// can be collected and will also affect the ADC resolution. 
+// Default: 69us - 15 resolution - 50 samples per second.
+// Register: 0x0A, bits [1:0]
+// Width(us) - Resolution -  Sample Rate
+//  69us     -    15      -   <= 3200 (fastest - least resolution)
+//  118us    -    16      -   <= 1600
+//  215us    -    17      -   <= 1600
+//  411us    -    18      -   <= 1000 (slowest - highest resolution)
+uint8_t SparkFun_Bio_MAX30101::setPulseWidth(uint16_t width){
+
+  uint8_t bits; 
+  uint8_t statusByte;
+  uint8_t regVal;
+
+  // Make sure the correct pulse width is selected. 
+  if      (width == 69) bits = 0;
+  else if (width == 118) bits = 1;
+  else if (width == 215) bits = 2;
+  else if (width == 411) bits = 3;
+  else  return INCORR_PARAM;
+ 
+  // Get current register value so that nothing is overwritten.
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= PULSE_MASK; // Mask bits to change. 
+  regVal |= bits; // Add bits
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
+
+}
+
+// This function reads the CONFIGURATION_REGISTER (0x0A), bits [1:0] from the
+// MAX30101 Sensor. It returns one of the four settings in microseconds. 
+uint16_t SparkFun_Bio_MAX30101::readPulseWidth(){
+
+  uint8_t regVal; 
+
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= READ_PULSE_MASK;
+
+  if      (regVal == 0) return 69; 
+  else if (regVal == 1) return 118; 
+  else if (regVal == 2) return 215; 
+  else if (regVal == 3) return 411; 
+  else return ERR_UNKNOWN;
+
+}
+
+// This function changes the sample rate of the MAX30101 sensor. The sample
+// rate is affected by the set pulse width of the MAX30101 LEDs. 
+// Default: 69us - 15 resolution - 50 samples per second.
+// Register: 0x0A, bits [4:2]
+// Width(us) - Resolution -  Sample Rate
+//  69us     -    15      -   <= 3200 (fastest - least resolution)
+//  118us    -    16      -   <= 1600
+//  215us    -    17      -   <= 1600
+//  411us    -    18      -   <= 1000 (slowest - highest resolution)
+uint8_t SparkFun_Bio_MAX30101::setSampleRate(uint16_t sampRate){
+
+  uint8_t bits; 
+  uint8_t statusByte;
+  uint8_t regVal; 
+
+  // Make sure the correct sample rate was picked
+  if      (sampRate == 50)   bits = 0; 
+  else if (sampRate == 100)  bits = 1; 
+  else if (sampRate == 200)  bits = 2; 
+  else if (sampRate == 400)  bits = 3; 
+  else if (sampRate == 800)  bits = 4; 
+  else if (sampRate == 1000) bits = 5; 
+  else if (sampRate == 1600) bits = 6; 
+  else if (sampRate == 3200) bits = 7; 
+  else     return INCORR_PARAM;
+
+  // Get current register value so that nothing is overwritten.
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= SAMP_MASK; // Mask bits to change. 
+  regVal |= (bits << 2); // Add bits but shift them first to correct position.
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
+
+}
+
+// This function reads the CONFIGURATION_REGISTER (0x0A), bits [4:2] from the
+// MAX30101 Sensor. It returns one of the 8 possible sample rates. 
+uint16_t SparkFun_Bio_MAX30101::readSampleRate(){
+
+  uint8_t regVal; 
+
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= READ_SAMP_MASK;
+  regVal = (regVal >> 2); // shift our bits to the front of the line. 
+
+  if      (regVal == 0) return 50; 
+  else if (regVal == 1) return 100; 
+  else if (regVal == 2) return 200; 
+  else if (regVal == 3) return 400; 
+  else if (regVal == 4) return 800; 
+  else if (regVal == 5) return 1000; 
+  else if (regVal == 6) return 1600; 
+  else if (regVal == 7) return 3200; 
+  else return ERR_UNKNOWN;
+
+}
+
+// MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+// This functions sets the dynamic range of the MAX30101's ADC. The function
+// accepts the higher range as a parameter. 
+// Default Range: 7.81pA - 2048nA
+// Possible Ranges: 
+// 7.81pA  - 2048nA
+// 15.63pA - 4096nA
+// 32.25pA - 8192nA
+// 62.5pA  - 16384nA
+uint8_t SparkFun_Bio_MAX30101::setAdcRange(uint16_t adcVal){
+
+  uint8_t statusByte;
+  uint8_t regVal; 
+  uint8_t bits;
+
+  if      (adcVal <= 2048)  bits = 0; 
+  else if (adcVal <= 4096)  bits = 1;
+  else if (adcVal <= 8192)  bits = 2;
+  else if (adcVal <= 16384) bits = 3;
+  else return INCORR_PARAM;
+
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= ADC_MASK; 
+  regVal |= adcVal; 
+  
+  writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
+
+}
+
+// MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
+// This function returns the set ADC range of the MAX30101 sensor. 
+uint16_t SparkFun_Bio_MAX30101::readAdcRange(){
+
+  uint8_t regVal; 
+  regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
+  regVal &= READ_ADC_MASK; 
+  regVal = (regVal >> 5); // Shift our bits to the front of the line. 
+  
+  if      (regVal == 0) return 2048; 
+  else if (regVal == 1) return 4096; 
+  else if (regVal == 2) return 8192; 
+  else if (regVal == 3) return 16384; 
+  else     return ERR_UNKNOWN; 
+}
 
 // Family Byte: SET_DEVICE_MODE (0x01), Index Byte: 0x01, Write Byte: 0x00
 // The following function is an alternate way to set the mode of the of
 // MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
 // well as reset. 
 // INCOMPLETE
-uint8_t SparkFun_Bio_MAX3001::setOperatingMode(uint8_t selection) {
+uint8_t SparkFun_Bio_MAX30101::setOperatingMode(uint8_t selection) {
    
     // Must be one of the three....
     if (selection == EXIT_BOOTLOADER || selection == RESET || selection == ENTER_BOOTLOADER)
@@ -132,7 +442,7 @@ uint8_t SparkFun_Bio_MAX3001::getMCUtype() {
 // This function checks the version number of the bootloader on the chip and
 // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
 // and the Revision Byte. 
-uint32_t SparkFun_Bio_MAX3001::getBootloaderInf() {
+uint32_t SparkFun_Bio_MAX30101::getBootloaderInf() {
 
   uint32_t bootVers = 0;
   uint8_t* revNum = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4);   
@@ -148,28 +458,47 @@ uint32_t SparkFun_Bio_MAX3001::getBootloaderInf() {
 
 }
 
-// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30001 (0x02), Write
-// Byte: senSwitch (parameter - 0x00 or 0x01). 
-// This function enables the MAX30001. 
-uint8_t SparkFun_Bio_MAX3001::max30001Control(uint8_t senSwitch) {
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX30101 (0x03), Write
+// Byte: senSwitch  (parameter - 0x00 or 0x01).
+// This function enables the MAX30101. 
+uint8_t SparkFun_Bio_MAX30101::max30101Control(uint8_t senSwitch) {
 
-  if(senSwitch != 0 || senSwitch != 1)
+  if(senSwitch == 0 || senSwitch == 1) 
     { }
-  else
+  else  
     return INCORR_PARAM; 
 
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30001, senSwitch);
-  if( statusByte == SUCCESS ) 
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, senSwitch);
+  if( statusByte != SUCCESS ) 
     return statusByte; 
   else
-    return SUCCESS;
+    return SUCCESS; 
+
+}
+
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
+// Byte: accepts (parameter - 0x00 or 0x01). 
+// This function enables the Accelerometer. 
+uint8_t SparkFun_Bio_MAX30101::accelControl(uint8_t accelSwitch) {
+
+  if(accelSwitch != 0 || accelSwitch != 1)
+    { }
+  else
+    return INCORR_PARAM; 
+  
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, accelSwitch);
+  if( statusByte != SUCCESS ) 
+    return statusByte; 
+  else
+    return SUCCESS; 
 
 }
 
 // Family Byte: OUTPUT_FORMAT (0x10), Index Byte: SET_FORMAT (0x00), 
 // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
-uint8_t SparkFun_Bio_MAX3001::setOutputMode(uint8_t outputType) {
+uint8_t SparkFun_Bio_MAX30101::setOutputMode(uint8_t outputType) {
 
   if (outputType < PAUSE || outputType > SENSOR_ALGO_COUNTER) // Bytes between 0x00 and 0x07
     return INCORR_PARAM; 
@@ -189,7 +518,7 @@ uint8_t SparkFun_Bio_MAX3001::setOutputMode(uint8_t outputType) {
 // This function changes the threshold for the FIFO interrupt bit/pin. The
 // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
 // (begin). 
-uint8_t SparkFun_Bio_MAX3001::setFIFOThreshold(uint8_t intThresh) {
+uint8_t SparkFun_Bio_MAX30101::setFIFOThreshold(uint8_t intThresh) {
 
   if( intThresh < 0 || intThresh > 255)
     return INCORR_PARAM; 
@@ -207,7 +536,7 @@ uint8_t SparkFun_Bio_MAX3001::setFIFOThreshold(uint8_t intThresh) {
 // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
 // Byte: NONE
 // This function returns the number of samples available in the FIFO. 
-uint8_t SparkFun_Bio_MAX3001::numSamplesOutFIFO() {
+uint8_t SparkFun_Bio_MAX30101::numSamplesOutFIFO() {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, 1); 
   return sampAvail;
@@ -217,7 +546,7 @@ uint8_t SparkFun_Bio_MAX3001::numSamplesOutFIFO() {
 // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
 // Byte: NONE
 // This function returns the data in the FIFO. 
-uint8_t* SparkFun_Bio_MAX3001::getDataOutFIFO(uint8_t data[]) {
+uint8_t* SparkFun_Bio_MAX30101::getDataOutFIFO(uint8_t data[]) {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
   uint8_t* dataAvail = readFillArray(READ_DATA_OUTPUT, READ_DATA, sampAvail, data); 
@@ -225,52 +554,116 @@ uint8_t* SparkFun_Bio_MAX3001::getDataOutFIFO(uint8_t data[]) {
 
 }
 
-// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30001 (0x02), Write Bytes:
-// Register Address and Register Value
-// This function writes the given register value at the given register address
-// for the MAX30001 sensor and returns a boolean indicating a successful or
-// non-successful write. 
-void SparkFun_Bio_MAX3001::writeRegisterMAX30001(uint8_t regAddr, uint8_t regVal) {
-  
-  writeByte(WRITE_REGISTER, WRITE_MAX30001, regAddr, regVal);
+// Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
+// Byte: NONE
+// This function adds support for the acceleromter that is NOT included on
+// SparkFun's product, The Family Registery of 0x13 and 0x14 is skipped for now. 
+uint8_t SparkFun_Bio_MAX30101::numSamplesExternalSensor() {
+
+  uint8_t sampAvail = readByte(READ_DATA_INPUT, SAMPLE_SIZE, ACCELEROMETER, 1); 
+  return sampAvail;
 
 }
 
-// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30001 (0x02), Write Byte: 
-// Register Address
-// This function reads the given register address for the MAX30001 Sensor and
-// returns the values at that register. 
-uint8_t SparkFun_Bio_MAX3001::readRegisterMAX30001(uint8_t regAddr) {
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAX30101 (0x03), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAX30101 sensor and returns a boolean indicating a successful or
+// non-successful write. 
+void SparkFun_Bio_MAX30101::writeRegisterMAX30101(uint8_t regAddr, uint8_t regVal) {
 
-  uint8_t regCont = readByte(READ_REGISTER, READ_MAX30001, regAddr, 1); 
+  writeByte(WRITE_REGISTER, WRITE_MAX30101, regAddr, regVal);
+
+}
+
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the Accelerometer and returns a boolean indicating a successful or
+// non-successful write. 
+void SparkFun_Bio_MAX30101::writeRegisterAccel(uint8_t regAddr, uint8_t regVal) {
+
+  writeByte(WRITE_REGISTER, WRITE_ACCELEROMETER, regAddr, regVal);
+
+}
+
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30101 Sensor and
+// returns the values at that register. 
+uint8_t SparkFun_Bio_MAX30101::readRegisterMAX30101(uint8_t regAddr) {
+
+  uint8_t regCont = readByte(READ_REGISTER, READ_MAX30101, regAddr, 1); 
   return regCont;
 
 }
 
-// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30001 (0x02)
-// This function retrieves the attributes of the AFE (Analog Front End) of the
-// MAX30001 sensor. It returns the number of bytes in a word for the sensor
-// and the number of registers available. 
-sensorAttributes SparkFun_Bio_MAX3001::getAFEAttributesMAX30001() {
+// Family Byte: READ_REGISTER (0x41), Index Byte: READ_ACCELEROMETER (0x04), Write Byte: 
+// Register Address
+// This function reads the given register address for the MAX30101 Sensor and
+// returns the values at that register. 
+uint8_t SparkFun_Bio_MAX30101::readRegisterAccel(uint8_t regAddr) {
 
+  uint8_t regCont = readByte(READ_REGISTER, READ_ACCELEROMETER, regAddr, 1); 
+  return regCont;
+
+}
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// MAX30101 sensor. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+sensorAttributes SparkFun_Bio_MAX30101::getAFEAttributesMAX30101() {
+  
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
-  uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30001, 2, tempArray);
+  uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, tempArray);
   maxAttr.byteWord = tempPoint[0];
   maxAttr.availRegisters = tempPoint[1];
   delete[] tempArray; 
   return maxAttr;
 
+    
 }
-// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30001 (0x02)
-// This function returns all registers and register values sequentially of the
-// MAX30001 sensor: register zero and register value zero to register n and 
-// register value n.
-uint8_t* SparkFun_Bio_MAX3001::dumpRegisterMAX30001(uint8_t* regArray, uint8_t totalRegBytes) {
-  
-  uint8_t* regPoint = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30001, totalRegBytes, regArray); //Fake read amount
-  return regPoint;
 
+
+// Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
+// RETRIEVE_AFE_ACCELEROMETER (0x04)
+// This function retrieves the attributes of the AFE (Analog Front End) of the
+// Accelerometer. It returns the number of bytes in a word for the sensor
+// and the number of registers available. 
+sensorAttributes SparkFun_Bio_MAX30101::getAFEAttributesAccelerometer() {
+
+  sensorAttributes maxAttr; 
+  uint8_t tempArray[2]; 
+  uint8_t* tempPoint = readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 2, tempArray);
+  maxAttr.byteWord = tempPoint[0];
+  maxAttr.availRegisters = tempPoint[1];
+  delete[] tempArray; 
+  return maxAttr;
+    
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
+// This function returns all registers and register values sequentially of the
+// MAX30101 sensor: register zero and register value zero to register n and 
+// register value n.
+uint8_t* SparkFun_Bio_MAX30101::dumpRegisterMAX30101(uint8_t regArray[255]) {
+ 
+  uint8_t totalRegBytes = 255; 
+  uint8_t* regPoint  = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, totalRegBytes, regArray); 
+  return regPoint;  
+
+}
+
+// Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
+// This function returns all registers and register values sequentially of the
+// Accelerometer: register zero and register value zero to register n and 
+// register value n.
+uint8_t* SparkFun_Bio_MAX30101::dumpRegisterAccelerometer(uint8_t* regArray, uint8_t totalRegBytes) {
+ 
+  uint8_t* regPoint = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_ACCELEROMETER, totalRegBytes, regArray); //Fake read amount
+  return regPoint; 
 
 }
 
@@ -279,7 +672,7 @@ uint8_t* SparkFun_Bio_MAX3001::dumpRegisterMAX30001(uint8_t* regArray, uint8_t t
 // This function sets the target percentage of the full-scale ADC range that
 // the automatic gain control algorithm uses. It takes a paramater of zero to 
 // 100 percent. 
-uint8_t SparkFun_Bio_MAX3001::configALGOrange(uint8_t perc) {
+uint8_t SparkFun_Bio_MAX30101::configALGOrange(uint8_t perc) {
 
   if( perc < 0 || perc > 100)
     return INCORR_PARAM; 
@@ -297,7 +690,7 @@ uint8_t SparkFun_Bio_MAX3001::configALGOrange(uint8_t perc) {
 // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
 // This function changes the step size toward the target for the AGC algorithm. 
 // It takes a paramater of zero to 100 percent. 
-uint8_t SparkFun_Bio_MAX3001::configALGOStepSize(uint8_t step) {
+uint8_t SparkFun_Bio_MAX30101::configALGOStepSize(uint8_t step) {
 
   if( step < 0 || step > 100)
     return  INCORR_PARAM; 
@@ -314,7 +707,7 @@ uint8_t SparkFun_Bio_MAX3001::configALGOStepSize(uint8_t step) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
 // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
 // This function changes the sensitivity of the AGC algorithm.
-uint8_t SparkFun_Bio_MAX3001::configALGOsensitivity(uint8_t sense) {
+uint8_t SparkFun_Bio_MAX30101::configALGOsensitivity(uint8_t sense) {
 
   if( sense < 0 || sense > 100 )
     return INCORR_PARAM; 
@@ -332,7 +725,7 @@ uint8_t SparkFun_Bio_MAX3001::configALGOsensitivity(uint8_t sense) {
 // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-uint8_t SparkFun_Bio_MAX3001::configALGOsamples(uint8_t avg) {
+uint8_t SparkFun_Bio_MAX30101::configALGOsamples(uint8_t avg) {
 
   if( avg < 0 || avg > 255 )
     return INCORR_PARAM; 
@@ -346,11 +739,182 @@ uint8_t SparkFun_Bio_MAX3001::configALGOsamples(uint8_t avg) {
 
 }
 
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
+// This function sets the sample rate for the wrist heart rate monitor
+// (WHRM) algorithm. Compatible with the MAX86141 AFE and KX-122 accelerometer. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMsampRate(uint16_t samp) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_SAMPLE_WHRM, WHRM_SAMP_RATE_ID, samp); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
+// This function sets the maximum height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMaxHeight(uint16_t maxHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_HEIGHT, WHRM_MAX_HEIGHT_ID, maxHeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
+// This function sets the maximum weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMaxWeight(uint16_t maxWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_WEIGHT, SET_WHRM_MAX_WEIGHT, maxWeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
+// This function sets the maximum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMaxAge(uint8_t maxAge) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MAX_AGE, WHRM_MAX_AGE_ID, maxAge); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
+// This function sets the minimum height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMinHeight(uint16_t minHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_HEIGHT, WHRM_MIN_HEIGHT_ID, minHeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_WEIGHT (0x02), Write Byte: WHRM_MIN_WEIGHT_ID (0x05)
+// This function sets the minimum weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMinWeight(uint16_t minWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_WEIGHT, WHRM_MIN_WEIGHT_ID, minWeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
+// This function sets the minimum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMMinAge(uint8_t minAge) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_AGE, WHRM_MIN_AGE_ID, minAge); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
+// This function sets the default height for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMDefHeight(uint16_t defHeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_HEIGHT, WHRM_DEF_HEIGHT_ID, defHeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
+// This function sets the default weight for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMDefWeight(uint16_t defWeight) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_WEIGHT, WHRM_DEF_WEIGHT_ID, defWeight); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
+// This function sets the default age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMDefAge(uint8_t defAge) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_DEFAULT_AGE, WHRM_DEF_AGE_ID, defAge); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
+// This function sets the maximum age for the wrist heart rate monitor
+// (WHRM) algorithm. 
+uint8_t SparkFun_Bio_MAX30101::configWHRMBPM(uint8_t bpm) {
+
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_BPM, WHRM_BPM_INIT, bpm); 
+  if( statusByte != SUCCESS)
+    return statusByte; 
+  else 
+    return SUCCESS; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
+// SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
+// This function takes three values that are used as the Sp02 coefficients.
+// These three values are multiplied by 100,000; default values are in order: 159584, -3465966, and 11268987.   
+bool SparkFun_Bio_MAX30101::configWHRMCoef(int32_t coef1, int32_t coef2, int32_t coef3) {
+
+  uint32_t coefArr[3] = {coef1, coef2, coef3};
+
+  uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF, MAXIMFAST_COEF_ID, coefArr); 
+  delete[] coefArr;
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
 // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
 // This function enables or disables automatic exposure control (AEC). The
 // function takes the parameter zero for disable and one for enable. 
-bool SparkFun_Bio_MAX3001::autoExpCont(uint8_t enable) {
+bool SparkFun_Bio_MAX30101::autoExpCont(uint8_t enable) {
   
   if( enable != 0 || enable != 1)
     return false; 
@@ -368,7 +932,7 @@ bool SparkFun_Bio_MAX3001::autoExpCont(uint8_t enable) {
 // SET_SKIN_CONTACT_DET (0x02), Write Byte: WHRM_SCD_ID (0x0C)
 // This function enables or disables skin contact detection. The
 // function takes the parameter zero for disable and one for enable. 
-bool SparkFun_Bio_MAX3001::skinDetectControl(uint8_t enable) {
+bool SparkFun_Bio_MAX30101::skinDetectControl(uint8_t enable) {
   
   if( enable != 0 || enable != 1)
     return false; 
@@ -383,10 +947,24 @@ bool SparkFun_Bio_MAX3001::skinDetectControl(uint8_t enable) {
 }
 
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
+// SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
+// This function sets target photo detector current period in seconds.
+bool SparkFun_Bio_MAX30101::adjustPhotoDet(uint16_t per) {
+  
+  uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_PHOTO_DETECT, WHRM_PD_ID, per);
+
+  if( statusByte == SUCCESS)
+    return true; 
+  else 
+    return false; 
+
+}
+
+// Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
 // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
 // This function sets the skin contract detect debounce window. It's not clear
 // if this is in seconds or not in the datasheet.
-bool SparkFun_Bio_MAX3001::setSCDWindow(uint16_t time) {
+bool SparkFun_Bio_MAX30101::setSCDWindow(uint16_t time) {
   
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_SCD_DEBOUNCE, WHRM_SCD_DEBOUNCE_ID, time);
 
@@ -400,7 +978,7 @@ bool SparkFun_Bio_MAX3001::setSCDWindow(uint16_t time) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
 // SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
 // This function sets motion magnitude threshold in 0.1g
-bool SparkFun_Bio_MAX3001::setMotionMag(uint16_t mag) {
+bool SparkFun_Bio_MAX30101::setMotionMag(uint16_t mag) {
   
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_THRESH, WHRM_MOTION_ID, mag);
 
@@ -415,7 +993,7 @@ bool SparkFun_Bio_MAX3001::setMotionMag(uint16_t mag) {
 // SET_WHRM_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
 // This function changes the minimum photodetector currrent in 0.1mA
 // increments. 
-bool SparkFun_Bio_MAX3001::changePDCurrent(uint16_t curr) {
+bool SparkFun_Bio_MAX30101::changePDCurrent(uint16_t curr) {
   
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WHRM_MIN_PD, WHRM_MIN_PD_ID, curr);
 
@@ -431,7 +1009,7 @@ bool SparkFun_Bio_MAX3001::changePDCurrent(uint16_t curr) {
 // This function changes the source of the photoplethysmography (PPG) signal for 
 // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
 // one - PD2, and three - PD1 and PD2.
-bool SparkFun_Bio_MAX3001::changePPGSource(uint8_t pd) {
+bool SparkFun_Bio_MAX30101::changePPGSource(uint8_t pd) {
 
   if( pd < 0 || pd > 3)
     return false; 
@@ -450,7 +1028,7 @@ bool SparkFun_Bio_MAX3001::changePPGSource(uint8_t pd) {
 // The function configure the blood pressure trending (BPT) algorithm for
 // the users that are on blood pressure medicine. The parameter accepts the
 // value of zero (not using) or one (using). 
-bool SparkFun_Bio_MAX3001::bptMedicine(uint8_t onbpm) {
+bool SparkFun_Bio_MAX30101::bptMedicine(uint8_t onbpm) {
 
   if( onbpm != 0 || onbpm != 1)
     return false; 
@@ -468,7 +1046,7 @@ bool SparkFun_Bio_MAX3001::bptMedicine(uint8_t onbpm) {
 // SET_BPT_DIASTOLIC (0x04), Write Byte: BPT_DIASTOLIC_ID (0x01)
 // This funciton writes the three givin diastolic BP byte values needed by the
 // calibration procedure.  
-bool SparkFun_Bio_MAX3001::setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
+bool SparkFun_Bio_MAX30101::setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
   
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
@@ -493,7 +1071,7 @@ bool SparkFun_Bio_MAX3001::setDiastolicVal(uint8_t val1, uint8_t val2, uint8_t v
 // SET_BPT_SYSTOLIC (0x04), Write Byte: BPT_SYSTOLIC_ID (0x02)
 // This funciton writes the three givin systolic BP byte values needed by the
 // calibration procedure.  
-bool SparkFun_Bio_MAX3001::setSystolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
+bool SparkFun_Bio_MAX30101::setSystolicVal(uint8_t val1, uint8_t val2, uint8_t val3) {
   
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
@@ -517,7 +1095,7 @@ bool SparkFun_Bio_MAX3001::setSystolicVal(uint8_t val1, uint8_t val2, uint8_t va
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
 // (0x04), Write Byte: BPT_DATE_ID (0x04)
 // This function sets the estimation date with the given month/day integer. 
-bool SparkFun_Bio_MAX3001::setBPTEstimationDate(uint16_t monthDay) {
+bool SparkFun_Bio_MAX30101::setBPTEstimationDate(uint16_t monthDay) {
 
   uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_EST_DATE, BPT_DATE_ID, monthDay);
   if (statusByte == SUCCESS)
@@ -531,7 +1109,7 @@ bool SparkFun_Bio_MAX3001::setBPTEstimationDate(uint16_t monthDay) {
 // (0x04), Write Byte: BPT_RESTING_ID (0x05)
 // This function adjusts the blood pressure trending algorithm for a user that
 // is resting (zero) or not resting (one). 
-bool SparkFun_Bio_MAX3001::setUserResting(uint8_t resting) {
+bool SparkFun_Bio_MAX30101::setUserResting(uint8_t resting) {
 
   if( resting != 0 || resting != 1)
     return false; 
@@ -548,7 +1126,7 @@ bool SparkFun_Bio_MAX3001::setUserResting(uint8_t resting) {
 // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
 // This function sets the given Sp02 coefficients for the blood pressure trending
 // algorithm. 
-bool SparkFun_Bio_MAX3001::adjustBPTcoef(int32_t spCoef1, int32_t spCoef2, int32_t spCoef3 ) {
+bool SparkFun_Bio_MAX30101::adjustBPTcoef(int32_t spCoef1, int32_t spCoef2, int32_t spCoef3 ) {
   
   uint32_t coefArr[3] = { spCoef1, spCoef2, spCoef3 };
 
@@ -565,7 +1143,7 @@ bool SparkFun_Bio_MAX3001::adjustBPTcoef(int32_t spCoef1, int32_t spCoef2, int32
 // (0x05), Write Byte: WSP02_COEF_ID (0x00)
 // This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
 // algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
-bool SparkFun_Bio_MAX3001::adjustWSP02Coef(int32_t wspCoef1, int32_t wspCoef2, int32_t wspCoef3 ) {
+bool SparkFun_Bio_MAX30101::adjustWSP02Coef(int32_t wspCoef1, int32_t wspCoef2, int32_t wspCoef3 ) {
   
   uint32_t coefArr[3] = { wspCoef1, wspCoef2, wspCoef3 };
 
@@ -583,7 +1161,7 @@ bool SparkFun_Bio_MAX3001::adjustWSP02Coef(int32_t wspCoef1, int32_t wspCoef2, i
 // (0x05), Write Byte: WSP02_SAMPLE_RATE_ID (0x01)
 // This function changes the wrist Sp02 sample rate to 100Hz (zero) or 25Hz
 // (one).
-bool SparkFun_Bio_MAX3001::changeWSP02SampRate(uint8_t rate) {
+bool SparkFun_Bio_MAX30101::changeWSP02SampRate(uint8_t rate) {
 
   if( rate != 0 || rate != 1)
     return false; 
@@ -600,7 +1178,7 @@ bool SparkFun_Bio_MAX3001::changeWSP02SampRate(uint8_t rate) {
 // (0x05), Write Byte: WSP02_RUN_MODE_ID (0x02)
 // This function changes the writs Sp02 algorithm run mode from continuous
 // (zero), from/to one-shot (one).
-bool SparkFun_Bio_MAX3001::changeWSP02RunMode(uint8_t mode) {
+bool SparkFun_Bio_MAX30101::changeWSP02RunMode(uint8_t mode) {
 
   if( mode != 0 || mode != 1)
     return false; 
@@ -617,7 +1195,7 @@ bool SparkFun_Bio_MAX3001::changeWSP02RunMode(uint8_t mode) {
 // (0x05), Write Byte: WSP02_AGC_MODE_ID (0x03)
 // This function changes the wrist Sp02 algorithm's AGC mode. You can disable
 // it (zero) or enable it (one). 
-bool SparkFun_Bio_MAX3001::changeWSP02AGCMode(uint8_t enable) {
+bool SparkFun_Bio_MAX30101::changeWSP02AGCMode(uint8_t enable) {
 
   if( enable != 0 || enable != 1)
     return false; 
@@ -633,7 +1211,7 @@ bool SparkFun_Bio_MAX3001::changeWSP02AGCMode(uint8_t enable) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
 // SET_WSP02_MOT_DETECT (0x05), Write Byte: WSP02_MOT_DTCT_ID (0x04)
 // This function enables (one) or disables (zero) motion detect.
-bool SparkFun_Bio_MAX3001::enableWSP02MotDet(uint8_t enable) {
+bool SparkFun_Bio_MAX30101::enableWSP02MotDet(uint8_t enable) {
 
   if( enable != 0 || enable != 1)
     return false; 
@@ -650,7 +1228,7 @@ bool SparkFun_Bio_MAX3001::enableWSP02MotDet(uint8_t enable) {
 // SET_WSP02_DTCT_PER (0x05), Write Byte: WSP02_MOT_DTCT_PER_ID (0x05)
 // This function changes the period of the motion detect and though the
 // datasheet does not specify, I assume is in seconds. 
-bool SparkFun_Bio_MAX3001::enableWSP02MotDetPer(uint16_t detPer) {
+bool SparkFun_Bio_MAX30101::enableWSP02MotDetPer(uint16_t detPer) {
 
   uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WSP02_DTCT_PER, WSP02_MOT_DTCT_PER_ID, detPer);
   if (statusByte == SUCCESS)
@@ -664,7 +1242,7 @@ bool SparkFun_Bio_MAX3001::enableWSP02MotDetPer(uint16_t detPer) {
 // SET_WSP02_THRESH (0x05), Write Byte: WSP02_MOT_THRESH_ID (0x06)
 // This function changes the motion threshold for the WSp02 algorithm. The
 // given number is multiplied by 100,000. 
-bool SparkFun_Bio_MAX3001::setWSP02MotThresh(uint32_t threshVal) {
+bool SparkFun_Bio_MAX30101::setWSP02MotThresh(uint32_t threshVal) {
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(CHANGE_ALGORITHM_CONFIG);    
@@ -690,7 +1268,7 @@ bool SparkFun_Bio_MAX3001::setWSP02MotThresh(uint32_t threshVal) {
 // (0x05), Write Byte: WSP02_AGC_TO_ID (0x07)
 // This function changes the timeout period of the wrist Sp02 AGC algorithm. The
 // paramter should be given in seconds. 
-bool SparkFun_Bio_MAX3001::setWSP02AGCTimeout(uint8_t toVal) {
+bool SparkFun_Bio_MAX30101::setWSP02AGCTimeout(uint8_t toVal) {
 
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_AGC_TOUT, WSP02_AGC_TO_ID, toVal );
   if( statusByte == SUCCESS )
@@ -704,7 +1282,7 @@ bool SparkFun_Bio_MAX3001::setWSP02AGCTimeout(uint8_t toVal) {
 // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
 // This function changes the timeout period of the wrist Sp02 algorithm. The
 // paramter should be given in seconds. 
-bool SparkFun_Bio_MAX3001::setWSP02ALGOTimeout(uint8_t toVal) {
+bool SparkFun_Bio_MAX30101::setWSP02ALGOTimeout(uint8_t toVal) {
 
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_ALG_TOUT, WSP02_ALGO_TO_ID, toVal );
   if( statusByte == SUCCESS )
@@ -717,7 +1295,7 @@ bool SparkFun_Bio_MAX3001::setWSP02ALGOTimeout(uint8_t toVal) {
 // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
 // This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
 // The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-bool SparkFun_Bio_MAX3001::setWSP02PPGSource(uint8_t pd) {
+bool SparkFun_Bio_MAX30101::setWSP02PPGSource(uint8_t pd) {
   
   if( pd != 1 || pd != 2 )
     return false; 
@@ -734,7 +1312,7 @@ bool SparkFun_Bio_MAX3001::setWSP02PPGSource(uint8_t pd) {
 // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
 // This function reads and returns the currently set target percentage 
 // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
-uint8_t SparkFun_Bio_MAX3001::readALGOrange() {
+uint8_t SparkFun_Bio_MAX30101::readALGOrange() {
 
   uint8_t range = readByte(READ_ALGORITHM_CONFIG, READ_AGC_PERCENTAGE, READ_AGC_PERC_ID, 2); 
   return range; 
@@ -745,7 +1323,7 @@ uint8_t SparkFun_Bio_MAX3001::readALGOrange() {
 // READ_AGC_STEP_SIZE (0x00), Write Byte: READ_AGC_STEP_SIZE_ID (0x01) 
 // This function returns the step size toward the target for the AGC algorithm. 
 // It returns a value between zero and 100 percent. 
-uint8_t SparkFun_Bio_MAX3001::readALGOStepSize() {
+uint8_t SparkFun_Bio_MAX30101::readALGOStepSize() {
 
   uint8_t stepSize = readByte(READ_ALGORITHM_CONFIG, READ_AGC_STEP_SIZE, READ_AGC_STEP_SIZE_ID, 2); 
   return stepSize;
@@ -754,7 +1332,7 @@ uint8_t SparkFun_Bio_MAX3001::readALGOStepSize() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
 // READ_AGC_SENSITIVITY_ID (0x00), Write Byte: READ_AGC_SENSITIVITY_ID (0x02)
 // This function returns the sensitivity (percentage) of the automatic gain control. 
-uint8_t SparkFun_Bio_MAX3001::readALGOsensitivity() {
+uint8_t SparkFun_Bio_MAX30101::readALGOsensitivity() {
 
   uint8_t sensitivity = readByte(READ_ALGORITHM_CONFIG, READ_AGC_SENSITIVITY, READ_AGC_SENSITIVITY_ID, 2); 
   return sensitivity; 
@@ -765,7 +1343,7 @@ uint8_t SparkFun_Bio_MAX3001::readALGOsensitivity() {
 // READ_AGC_NUM_SAMPLES (0x00), Write Byte: READ_AGC_NUM_SAMPLES_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-uint8_t SparkFun_Bio_MAX3001::readALGOsamples() {
+uint8_t SparkFun_Bio_MAX30101::readALGOsamples() {
 
   uint8_t samples = readByte(READ_ALGORITHM_CONFIG, READ_AGC_NUM_SAMPLES, READ_AGC_NUM_SAMPLES_ID, 2); 
   return samples; 
@@ -776,7 +1354,7 @@ uint8_t SparkFun_Bio_MAX3001::readALGOsamples() {
 // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
 // This function reads the sample rate for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWHRMsampRate() {
+uint8_t SparkFun_Bio_MAX30101::readWHRMsampRate() {
 
   uint8_t sampRate = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_SAMPLE_RATE, READ_WHRM_SAMPLE_RATE_ID, 2); 
   return sampRate;
@@ -787,7 +1365,7 @@ uint8_t SparkFun_Bio_MAX3001::readWHRMsampRate() {
 // READ_WHRM_MAX_HEIGHT (0x02), Write Byte: READ_WHRM_MAX_HEIGHT_ID (0x01)
 // This function reads the maximum height for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMMaxHeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMMaxHeight() {
 
   uint16_t maxHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_HEIGHT, READ_WHRM_MAX_HEIGHT_ID, 3); 
   return maxHeight; 
@@ -798,7 +1376,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMMaxHeight() {
 // READ_WHRM_MAX_WEIGHT (0x02), Write Byte: READ_WHRM_MAX_WEIGHT_ID (0x02)
 // This function reads the maximum weight for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMMaxWeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMMaxWeight() {
 
   uint16_t maxWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_WEIGHT, READ_WHRM_MAX_WEIGHT_ID, 3); 
   return maxWeight; 
@@ -809,7 +1387,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMMaxWeight() {
 // READ_WHRM_MAX_AGE (0x02), Write Byte: READ_MAX_AGE_ID (0x03)
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWHRMMaxAge() {
+uint8_t SparkFun_Bio_MAX30101::readWHRMMaxAge() {
 
   uint8_t maxAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_AGE, READ_WHRM_MAX_AGE_ID, 3); 
   return maxAge; 
@@ -820,7 +1398,7 @@ uint8_t SparkFun_Bio_MAX3001::readWHRMMaxAge() {
 // READ_WHRM_MIN_HEIGHT (0x02), Write Byte: READ_WHRM_MIN_HEIGHT_ID (0x04)
 // This function reads the minimum height for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMMinHeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMMinHeight() {
 
   uint16_t minAge = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_HEIGHT, READ_WHRM_MIN_HEIGHT_ID, 3); 
   return minAge; 
@@ -831,7 +1409,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMMinHeight() {
 // READ_WHRM_MIN_WEIGHT (0x02), Write Byte: READ_WHRM_MIN_WEIGHT_ID (0x05)
 // This function reads the minimum weight for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMMinWeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMMinWeight() {
 
   uint16_t minWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_WEIGHT, READ_WHRM_MIN_WEIGHT_ID, 3); 
   return minWeight;
@@ -842,7 +1420,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMMinWeight() {
 // READ_WHRM_MIN_AGE (0x02), Write Byte: READ_WHRM_MIN_AGE_ID (0x06)
 // This function reads the minimum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWHRMMinAge() {
+uint8_t SparkFun_Bio_MAX30101::readWHRMMinAge() {
 
   uint8_t minAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_AGE, READ_WHRM_MIN_AGE_ID, 2); 
   return minAge;
@@ -853,7 +1431,7 @@ uint8_t SparkFun_Bio_MAX3001::readWHRMMinAge() {
 // READ_WHRM_DEF_HEIGHT (0x02), Write Byte: READ_WHRM_DEF_HEIGHT_ID (0x07)
 // This function reads the default height for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMDefHeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMDefHeight() {
 
   uint16_t defHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_HEIGHT, READ_WHRM_DEF_HEIGHT_ID, 3); 
   return defHeight; 
@@ -864,7 +1442,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMDefHeight() {
 // READ_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: READ_WHRM_DEF_WEIGHT_ID (0x08)
 // This function reads the default weight for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint16_t SparkFun_Bio_MAX3001::readWHRMDefWeight() {
+uint16_t SparkFun_Bio_MAX30101::readWHRMDefWeight() {
 
   uint16_t defWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_WEIGHT, READ_WHRM_DEF_WEIGHT_ID, 3); 
   return defWeight;
@@ -875,7 +1453,7 @@ uint16_t SparkFun_Bio_MAX3001::readWHRMDefWeight() {
 // READ_WHRM_DEFAULT_AGE (0x02), Write Byte: READ_WHRM_DEF_AGE_ID (0x09)
 // This function returns the default age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWHRMDefAge() {
+uint8_t SparkFun_Bio_MAX30101::readWHRMDefAge() {
 
   uint8_t defAge = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_AGE, READ_WHRM_DEF_AGE_ID, 2); 
   return defAge;
@@ -886,7 +1464,7 @@ uint8_t SparkFun_Bio_MAX3001::readWHRMDefAge() {
 // READ_WHRM_INIT_HR (0x02), Write Byte: READ_WHRM_INIT_HR_ID (0x0A)
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWHRMBPM() {
+uint8_t SparkFun_Bio_MAX30101::readWHRMBPM() {
 
   uint8_t bpm = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_INIT_HR, READ_WHRM_INIT_HR_ID, 2); 
   return bpm; 
@@ -898,7 +1476,7 @@ uint8_t SparkFun_Bio_MAX3001::readWHRMBPM() {
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. It returns three uint32_t integers that are 
 // multiplied by 100,000.
-int32_t*  SparkFun_Bio_MAX3001::readWHRMCoef(int32_t coefArr[3]) {
+int32_t*  SparkFun_Bio_MAX30101::readWHRMCoef(int32_t coefArr[3]) {
  
   uint8_t numOfReads = 12; // 3 coefficients * 4 bytes  
   readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, numOfReads, coefArr ); 
@@ -912,7 +1490,7 @@ int32_t*  SparkFun_Bio_MAX3001::readWHRMCoef(int32_t coefArr[3]) {
 // READ_WHRM_AEC_EN (0x02), Write Byte: READ_WHRM_AEC_EN_ID (0x0B)
 // This function reads whether or not the automatic exposure control(AEC) is
 // disabled (zero) or enabled (one). 
-uint8_t SparkFun_Bio_MAX3001::readAutoExpCont() {
+uint8_t SparkFun_Bio_MAX30101::readAutoExpCont() {
   
   uint8_t enable = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_AEC_EN, READ_WHRM_AEC_EN_ID , 2);
   return enable; 
@@ -923,7 +1501,7 @@ uint8_t SparkFun_Bio_MAX3001::readAutoExpCont() {
 // READ_WHRM_SCD_EN (0x02), Write Byte: READ_WHRM_SCD_EN_ID (0x0C)
 // This function reads wehther or not the skin contact detection is enabled or
 // disabled. 
-uint8_t SparkFun_Bio_MAX3001::readSkinDetect() {
+uint8_t SparkFun_Bio_MAX30101::readSkinDetect() {
   
   uint8_t enable = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_EN, READ_WHRM_SCD_EN_ID, 2 );
   return enable; 
@@ -933,7 +1511,7 @@ uint8_t SparkFun_Bio_MAX3001::readSkinDetect() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WHRM_PD_PRD (0x02), Write Byte: READ_WHRM_PD_PRD_ID (0x0D)
 // This function reads the current period of the photo detector in seconds.
-uint16_t SparkFun_Bio_MAX3001::readPhotoDetPer() {
+uint16_t SparkFun_Bio_MAX30101::readPhotoDetPer() {
   
   uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PRD, READ_WHRM_PD_PRD_ID, 3 );
   return seconds; 
@@ -944,7 +1522,7 @@ uint16_t SparkFun_Bio_MAX3001::readPhotoDetPer() {
 // READ_WHRM_SCD_DEB (0x02), Write Byte: READ_WHRM_SCD_DEB_ID (0x0E)
 // This function reads the skin contract detect debounce window. It's not clear
 // if this is in seconds when reading the datasheet. 
-uint16_t SparkFun_Bio_MAX3001::readSCDWindow() {
+uint16_t SparkFun_Bio_MAX30101::readSCDWindow() {
   
   uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID, 3);
   return seconds; 
@@ -954,7 +1532,7 @@ uint16_t SparkFun_Bio_MAX3001::readSCDWindow() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WHRM_MOT_MAG (0x02), Write Byte: READ_WHRM_MOT_MAG_ID (0x0F)
 // This function reads the motion magnitude threshold in 0.1g increments. 
-uint16_t SparkFun_Bio_MAX3001::readMotionMag() {
+uint16_t SparkFun_Bio_MAX30101::readMotionMag() {
   
   uint16_t thresh = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_MOT_MAG, READ_WHRM_MOT_MAG_ID, 3);
   return thresh; 
@@ -964,7 +1542,7 @@ uint16_t SparkFun_Bio_MAX3001::readMotionMag() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WHRM_PD_MIN (0x02), Write Byte: READ_WHRM_PD_MIN_ID (0x10)
 // This function reads the set minimum photodetector currrent in 0.1mA.
-uint16_t SparkFun_Bio_MAX3001::readPDCurrent() {
+uint16_t SparkFun_Bio_MAX30101::readPDCurrent() {
   
   uint16_t minCurr = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_MIN, READ_WHRM_PD_MIN_ID, 3);
   return minCurr; 
@@ -976,7 +1554,7 @@ uint16_t SparkFun_Bio_MAX3001::readPDCurrent() {
 // This function reads the current source of the photoplethysmography (PPG) signal for 
 // the photodetector (PD). It will return one of three values: zero - PD1, 
 // one - PD2, and three - PD1 and PD2.
-uint8_t SparkFun_Bio_MAX3001::readPPGSource() {
+uint8_t SparkFun_Bio_MAX30101::readPPGSource() {
 
   uint8_t ppgSource = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PPG, READ_WHRM_PD_PPG_ID, 2 );
   return ppgSource; 
@@ -988,7 +1566,7 @@ uint8_t SparkFun_Bio_MAX3001::readPPGSource() {
 // This function reads the coefficiencts used for the WSP02 algorithm. It
 // returns the three uint32_t integers that are multiplied by 100,000 that are used
 // as the coefficients. 
-int32_t* SparkFun_Bio_MAX3001::readWSP02Coef(int32_t coefArr[3]) {
+int32_t* SparkFun_Bio_MAX30101::readWSP02Coef(int32_t coefArr[3]) {
   
   uint8_t numOfReads = 12; // 3 coefficients * 4 bytes  
   // The array is populated in the read function. 
@@ -1003,7 +1581,7 @@ int32_t* SparkFun_Bio_MAX3001::readWSP02Coef(int32_t coefArr[3]) {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_SAMP_RATE(0x05), Write Byte: READ_WSP02_SAMP_RATE_ID (0x01)
 // This function reads the WSP02 sample rate; returned in Hz. 
-uint8_t SparkFun_Bio_MAX3001::readWSP02SampRate() {
+uint8_t SparkFun_Bio_MAX30101::readWSP02SampRate() {
 
   uint8_t sampRate = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_SAMP_RATE, READ_WSP02_SAMP_RATE_ID, 2 ); 
   return sampRate;
@@ -1014,7 +1592,7 @@ uint8_t SparkFun_Bio_MAX3001::readWSP02SampRate() {
 // READ_WSP02_RUN_MODE (0x05), Write Byte: READ_WSP02_RUN_MODE_ID (0x02)
 // This function returns the run mode of the WSP02 algorithm: zer0- continuous
 // or one - One-shot. 
-uint8_t SparkFun_Bio_MAX3001::readWSP02RunMode() {
+uint8_t SparkFun_Bio_MAX30101::readWSP02RunMode() {
 
   uint8_t runMode = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_RUN_MODE, READ_WSP02_RUN_MODE_ID, 2 );  
   return runMode; 
@@ -1024,7 +1602,7 @@ uint8_t SparkFun_Bio_MAX3001::readWSP02RunMode() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_AGC_STAT (0x05), Write Byte: READ_WSP02_AGC_STAT_ID (0x03)
 // This function reads whether AGC mode is enabled or disabled. 
-uint8_t SparkFun_Bio_MAX3001::readAGCmode() {
+uint8_t SparkFun_Bio_MAX30101::readAGCmode() {
 
   uint8_t enable = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_STAT, READ_WSP02_AGC_STAT_ID, 2 );
   return enable; 
@@ -1034,7 +1612,7 @@ uint8_t SparkFun_Bio_MAX3001::readAGCmode() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_MD_STAT (0x05), Write Byte: READ_WSP02_MD_STAT_ID (0x04)
 // This function checks whether motion detection is enable (one) or not (zero). 
-uint8_t SparkFun_Bio_MAX3001::readMotionDetect() {
+uint8_t SparkFun_Bio_MAX30101::readMotionDetect() {
 
   uint8_t motionDetect = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_STAT, READ_WSP02_MD_STAT_ID, 2 );
   return motionDetect; 
@@ -1044,7 +1622,7 @@ uint8_t SparkFun_Bio_MAX3001::readMotionDetect() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_MD_PRD (0x05), Write Byte: READ_WSP02_MD_PRD (0x05)
 // This function reads the motion detection period in seconds. 
-uint16_t SparkFun_Bio_MAX3001::readMotionDetecPer() {
+uint16_t SparkFun_Bio_MAX30101::readMotionDetecPer() {
   
   uint16_t detPeriod = readIntByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID, 3 );
   return detPeriod; 
@@ -1055,7 +1633,7 @@ uint16_t SparkFun_Bio_MAX3001::readMotionDetecPer() {
 // (0x05), Write Byte: READ_WSP02_MOT_THRESH (0x06)
 // This function reads the uint32_t integer that is the motion threshold times
 // 100,000. 
-uint32_t SparkFun_Bio_MAX3001::readMotThresh() {
+uint32_t SparkFun_Bio_MAX30101::readMotThresh() {
   
   uint32_t motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
   return motThresh; 
@@ -1066,7 +1644,7 @@ uint32_t SparkFun_Bio_MAX3001::readMotThresh() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
 // (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
 // This function reads the time out period of the AGC for the WSp02 Algorithm. 
-uint8_t SparkFun_Bio_MAX3001::readWSP02AGCTimeOut() {
+uint8_t SparkFun_Bio_MAX30101::readWSP02AGCTimeOut() {
 
   uint8_t timeOut = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_TO, READ_WSP02_AGC_TO_ID, 2 );
   return timeOut;
@@ -1076,7 +1654,7 @@ uint8_t SparkFun_Bio_MAX3001::readWSP02AGCTimeOut() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_ALGTHM_TO 
 // (0x05), Write Byte: READ_WSP02_ALGTHM_TO_ID (0x08)
 // This function returns the timeout period of the WSp02 Algorithm.
-uint8_t SparkFun_Bio_MAX3001::readWSP02AlgTimeOut() {
+uint8_t SparkFun_Bio_MAX30101::readWSP02AlgTimeOut() {
 
   uint8_t timeOut = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_ALGTHM_TO, READ_WSP02_ALGTHM_TO_ID, 2 );
   return timeOut; 
@@ -1087,7 +1665,7 @@ uint8_t SparkFun_Bio_MAX3001::readWSP02AlgTimeOut() {
 // (0x05), Write Byte: READ_WSP02_PD_PPG_ID (0x03)
 // This function reads the source of the photoplethysmogorphy: 0x01 = PD1 or
 // 0x02 = PD2.  
-uint8_t SparkFun_Bio_MAX3001::readWSP02PPGSource() {
+uint8_t SparkFun_Bio_MAX30101::readWSP02PPGSource() {
 
   uint8_t ppgSource = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_PD_PPG, READ_WSP02_PD_PPG_ID, 2 );
   return ppgSource;
@@ -1097,7 +1675,7 @@ uint8_t SparkFun_Bio_MAX3001::readWSP02PPGSource() {
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
 // ENABLE_AGC_ALGO (0x00)
 // This function enables (one) or disables (zero) the automatic gain control algorithm. 
-uint8_t SparkFun_Bio_MAX3001::acgAlgoControl(uint8_t enable) {
+uint8_t SparkFun_Bio_MAX30101::acgAlgoControl(uint8_t enable) {
 
   if( enable == 0 || enable == 1)
     { }
@@ -1116,7 +1694,7 @@ uint8_t SparkFun_Bio_MAX3001::acgAlgoControl(uint8_t enable) {
 // ENABLE_AEC_ALGO (0x01)
 // This function enables (one) or disables (zero) the automatic exposure
 // control (AEC) algorithm.
-uint8_t SparkFun_Bio_MAX3001::aecAlgoControl(uint8_t enable) {
+uint8_t SparkFun_Bio_MAX30101::aecAlgoControl(uint8_t enable) {
 
   if( enable == 0 || enable == 1)
     { }
@@ -1135,7 +1713,7 @@ uint8_t SparkFun_Bio_MAX3001::aecAlgoControl(uint8_t enable) {
 // ENABLE_WHRM_ALGO (0x02)
 // This function enables (one) or disables (zero) the wrist heart rate monitor
 // algorithm.
-uint8_t SparkFun_Bio_MAX3001::whrmFastAlgoControl(uint8_t algSwitch) {
+uint8_t SparkFun_Bio_MAX30101::whrmFastAlgoControl(uint8_t algSwitch) {
 
   if( algSwitch == 0 || algSwitch == 1)
     { }
@@ -1154,7 +1732,7 @@ uint8_t SparkFun_Bio_MAX3001::whrmFastAlgoControl(uint8_t algSwitch) {
 // (0x03)
 // This function enables (one) or disables (zero) the electrocardiogram 
 // (ECG) algorithm.
-uint8_t SparkFun_Bio_MAX3001::ecgAlgoControl(uint8_t enable) {
+uint8_t SparkFun_Bio_MAX30101::ecgAlgoControl(uint8_t enable) {
 
   if( enable == 0 || enable == 1)
     { }
@@ -1174,7 +1752,7 @@ uint8_t SparkFun_Bio_MAX3001::ecgAlgoControl(uint8_t enable) {
 // (0x04)
 // This function enables (one) or disables (zero) the blood pressure trending 
 // (BPT) algorithm.
-uint8_t SparkFun_Bio_MAX3001::bptAlgoControl(uint8_t enable) {
+uint8_t SparkFun_Bio_MAX30101::bptAlgoControl(uint8_t enable) {
 
   if( enable == 0 || enable == 1)
     { }
@@ -1192,7 +1770,7 @@ uint8_t SparkFun_Bio_MAX3001::bptAlgoControl(uint8_t enable) {
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte: ENABLE_WSP02_ALGO
 // (0x05)
 // This function enables (one) or disables (zero) the WSP02 algorithm..
-uint8_t SparkFun_Bio_MAX3001::wsp02AlgoControl(uint8_t enable) {
+uint8_t SparkFun_Bio_MAX30101::wsp02AlgoControl(uint8_t enable) {
   
   if( enable == 0 || enable == 1)
     { }
@@ -1208,13 +1786,13 @@ uint8_t SparkFun_Bio_MAX3001::wsp02AlgoControl(uint8_t enable) {
 }
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_INIT_VECTOR_BYTES (0x00)
-//void SparkFun_Bio_MAX3001::setInitBytes
+//void SparkFun_Bio_MAX30101::setInitBytes
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_AUTH_BYTES (0x01)
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SET_NUM_PAGES (0x02),
 // Write Bytes: 0x00 - Number of pages at byte 0x44 from .msbl file. 
-bool SparkFun_Bio_MAX3001::setNumPages(uint8_t totalPages) {
+bool SparkFun_Bio_MAX30101::setNumPages(uint8_t totalPages) {
 
   uint8_t statusByte = writeByte( BOOTLOADER_FLASH, SET_NUM_PAGES, 0x00, totalPages );
   return statusByte; 
@@ -1223,7 +1801,7 @@ bool SparkFun_Bio_MAX3001::setNumPages(uint8_t totalPages) {
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: ERASE_FLASH (0x03)
 // Returns true on successful communication.
-bool SparkFun_Bio_MAX3001::eraseFlash() {
+bool SparkFun_Bio_MAX30101::eraseFlash() {
 
   // This is a unique write in that it does not have a relevant write byte.
   _i2cPort->beginTransmission(_address);
@@ -1243,7 +1821,7 @@ bool SparkFun_Bio_MAX3001::eraseFlash() {
 
 // Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SEND_PAGE_VALUE (0x04)
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
-version SparkFun_Bio_MAX3001::readBootloaderVers(){
+version SparkFun_Bio_MAX30101::readBootloaderVers(){
 
   version booVers; //BOO!
   _i2cPort->beginTransmission(_address);
@@ -1267,7 +1845,7 @@ version SparkFun_Bio_MAX3001::readBootloaderVers(){
 
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: PAGE_SIZE (0x01)
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
-version SparkFun_Bio_MAX3001::readSensorHubVersion(){
+version SparkFun_Bio_MAX30101::readSensorHubVersion(){
 
   version bioHubVers; 
   _i2cPort->beginTransmission(_address);
@@ -1290,7 +1868,7 @@ version SparkFun_Bio_MAX3001::readSensorHubVersion(){
 }
 
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALGO_VERS (0x07)
-version SparkFun_Bio_MAX3001::readAlgorithmVersion(){
+version SparkFun_Bio_MAX30101::readAlgorithmVersion(){
 
   version libAlgoVers; 
   _i2cPort->beginTransmission(_address);
@@ -1321,7 +1899,7 @@ version SparkFun_Bio_MAX3001::readAlgorithmVersion(){
 // This function takes the 608 data points acquired by the calibration
 // procedure and feeds them into the blood pressure trending
 // algorithm. 
-bool SparkFun_Bio_MAX3001::calibrateBPTAlm(){
+bool SparkFun_Bio_MAX30101::calibrateBPTAlm(){
  
   uint8_t statusByte; 
   _i2cPort->beginTransmission(_address);     
@@ -1362,7 +1940,7 @@ bool SparkFun_Bio_MAX3001::calibrateBPTAlm(){
 // are two steps demonstrated in this function. First a write to the MCU
 // indicating what you want to do, a delay, and then a read to confirm positive
 // transmission. 
-uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t SparkFun_Bio_MAX30101::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
                                                                 uint8_t _writeByte)
 {
 
@@ -1385,7 +1963,7 @@ uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,
 // are two steps demonstrated in this function. First a write to the MCU
 // indicating what you want to do, a delay, and then a read to confirm positive
 // transmission. 
-uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t SparkFun_Bio_MAX30101::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
                                            uint8_t _writeByte, uint16_t _val) 
 {
 
@@ -1408,7 +1986,7 @@ uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,
 // to the registers of downward sensors and so also requires a
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
-uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t SparkFun_Bio_MAX30101::writeByte(uint8_t _familyByte, uint8_t _indexByte,\
                                            uint8_t _writeByte, uint8_t _writeVal)
 {
 
@@ -1430,7 +2008,7 @@ uint8_t SparkFun_Bio_MAX3001::writeByte(uint8_t _familyByte, uint8_t _indexByte,
 // to the registers of downward sensors and so also requires a
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
-uint8_t SparkFun_Bio_MAX3001::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t SparkFun_Bio_MAX30101::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
                                                 uint8_t _writeByte, uint32_t _writeVal[3])
 {
 
@@ -1457,7 +2035,7 @@ uint8_t SparkFun_Bio_MAX3001::writeLongBytes(uint8_t _familyByte, uint8_t _index
 // requests. It starts a request by writing the family byte an index byte, and
 // then delays 60 microseconds, during which the MAX32664 retrieves the requested 
 // information. An I-squared-C request is then issued, and the information is read.
-uint8_t SparkFun_Bio_MAX3001::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
+uint8_t SparkFun_Bio_MAX30101::readByte(uint8_t _familyByte, uint8_t _indexByte, uint8_t _numOfReads )
 {
 
   uint8_t returnByte;
@@ -1489,7 +2067,7 @@ uint8_t SparkFun_Bio_MAX3001::readByte(uint8_t _familyByte, uint8_t _indexByte, 
 // write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
-uint8_t  SparkFun_Bio_MAX3001::readByte(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t  SparkFun_Bio_MAX30101::readByte(uint8_t _familyByte, uint8_t _indexByte,\
                                            uint8_t _writeByte, uint8_t _numOfReads )
 {
 
@@ -1516,7 +2094,7 @@ uint8_t  SparkFun_Bio_MAX3001::readByte(uint8_t _familyByte, uint8_t _indexByte,
 
 }
 
-uint8_t* SparkFun_Bio_MAX3001::readFillArray(uint8_t _familyByte, uint8_t _indexByte,\
+uint8_t* SparkFun_Bio_MAX30101::readFillArray(uint8_t _familyByte, uint8_t _indexByte,\
                                                 uint8_t _numOfReads, uint8_t array[] )
 {
 
@@ -1547,7 +2125,7 @@ uint8_t* SparkFun_Bio_MAX3001::readFillArray(uint8_t _familyByte, uint8_t _index
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 16 bit integer instead of 8. 
-uint16_t SparkFun_Bio_MAX3001::readIntByte(uint8_t _familyByte, uint8_t _indexByte,\
+uint16_t SparkFun_Bio_MAX30101::readIntByte(uint8_t _familyByte, uint8_t _indexByte,\
                                               uint8_t _writeByte,  uint8_t _numOfReads )
 {
 
@@ -1581,7 +2159,7 @@ uint16_t SparkFun_Bio_MAX3001::readIntByte(uint8_t _familyByte, uint8_t _indexBy
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 4 byte (uint32_t) integer instead of 8. 
-uint32_t SparkFun_Bio_MAX3001::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\ 
+uint32_t SparkFun_Bio_MAX30101::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\ 
                                                uint8_t _writeByte,  uint8_t _numOfReads )
 {
 
@@ -1616,7 +2194,7 @@ uint32_t SparkFun_Bio_MAX3001::readLongByte(uint8_t _familyByte, uint8_t _indexB
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
 // except it returns three uint32_t bytes instead of one. 
-uint32_t* SparkFun_Bio_MAX3001::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
+uint32_t* SparkFun_Bio_MAX30101::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
                                                      uint8_t _writeByte,  uint8_t _numOfReads,\
                                                      int32_t* array)
 {

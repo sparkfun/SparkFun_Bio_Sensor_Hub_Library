@@ -1,8 +1,7 @@
-#ifndef _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H
-#define _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H
+#ifndef _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H_
+#define _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H_
 
 #include <Wire.h>
-#include <SPI.h>
 #include <Arduino.h>
 
 #define WRITE_FIFO_INPUT_BYTE  0x04
