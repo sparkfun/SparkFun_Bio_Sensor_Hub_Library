@@ -20,7 +20,7 @@
 #define ADC_MASK               0x3F
 #define READ_ADC_MASK          0xC0
 
-#define CMD_DELAY             3  //milliseconds
+#define CMD_DELAY             5  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
 #define MAX30101_LED_ARRAY   12 // 4 values of 24 bit LED values
 
@@ -43,6 +43,19 @@ struct ledData {
   uint32_t greenLed; // MAX30101 multiLED mode
 
 }; 
+
+struct bioLedData {
+
+  uint32_t irLed; 
+  uint32_t redLed; 
+  uint32_t ledThree; 
+  uint32_t greenLed; // MAX30101 multiLED mode
+  uint16_t heartRate; // LSB = 0.1bpm
+  uint8_t  confidence; // 0-100% LSB = 1%
+  uint16_t oxygen; // 0-100% LSB = 1%
+  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
+
+};
 
 struct version {
   // 3 bytes total
@@ -476,6 +489,7 @@ class SparkFun_Bio_Sensor_Hub
   // Variables ------------
   uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
   uint8_t senArr[MAX30101_LED_ARRAY];
+  uint8_t bpmSenArr[WHRM_ARRAY_SIZE + MAX30101_LED_ARRAY];
 
   // Constructor ----------
   SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
@@ -543,6 +557,8 @@ class SparkFun_Bio_Sensor_Hub
   // into the whrmFifo and returned.  
   ledData readSensor();
 
+  bioLedData readSensorBpm();
+
   // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
   // are modified to the same width. This will affect the number of samples that
   // can be collected and will also affect the ADC resolution.
@@ -599,7 +615,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function checks the version number of the bootloader on the chip and
   // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
   // and the Revision Byte. 
-  uint32_t getBootloaderInf();
+  int32_t getBootloaderInf();
 
   // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAX86140 (0x00), Write
   // Byte: senSwitch (parameter - 0x00 or 0x01). 
@@ -1337,7 +1353,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This function is very similar to the one above
   // except it returns three uint32_t bytes instead of one. 
-  uint32_t* readMultipleBytes(uint8_t, uint8_t, uint8_t, uint8_t, int32_t*);
+  int32_t* readMultipleBytes(uint8_t, uint8_t, uint8_t, uint8_t, int32_t*);
 
   // Needs comment - INCOMPLETE
   uint8_t* readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);

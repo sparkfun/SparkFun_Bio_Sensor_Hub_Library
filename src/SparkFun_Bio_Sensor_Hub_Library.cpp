@@ -189,28 +189,32 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   bioData libBpm; 
   uint8_t statusChauf; // The status chauffeur captures return values. 
   statusChauf = readSensorHubStatus();
-  if(statusChauf == 1) // Communication Error
-    return statusChauf; 
+  if(statusChauf == 1){ // Communication Error
+    libBpm.heartRate = 0; 
+    libBpm.confidence = 0; 
+    libBpm.oxygen = 0; 
+    return libBpm; 
+  }
 
   numSamplesOutFIFO(); 
 
-  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
 
   // Heart Rate formatting
-  libBpm.heartRate = (uint16_t(data[0]) << 8); 
-  libBpm.heartRate |= (data[1]); 
+  libBpm.heartRate = (uint16_t(bpmArr[0]) << 8); 
+  libBpm.heartRate |= (bpmArr[1]); 
   libBpm.heartRate = libBpm.heartRate/10; 
 
   // Confidence formatting
-  libBpm.confidence = data[2]; 
+  libBpm.confidence = bpmArr[2]; 
 
   //Blood oxygen level formatting
-  libBpm.oxygen = uint16_t(data[3]) << 8;
-  libBpm.oxygen |= data[4]; 
+  libBpm.oxygen = uint16_t(bpmArr[3]) << 8;
+  libBpm.oxygen |= bpmArr[4]; 
   libBpm.oxygen = libBpm.oxygen/10;
 
   //"Machine State" - has a finger been detected?
-  libBpm.status = data[5];
+  libBpm.status = bpmArr[5];
 
   return libBpm;
 
@@ -225,33 +229,79 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
 ledData SparkFun_Bio_Sensor_Hub::readSensor(){ 
 
   ledData libLedFifo; 
-  uint8_t* data =  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
+  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
 
   // Value of LED one....
-  libLedFifo.irLed = uint32_t(data[0]) << 16; 
-  libLedFifo.irLed |= uint32_t(data[1]) << 8; 
-  libLedFifo.irLed |= data[2]; 
+  libLedFifo.irLed = uint32_t(senArr[0]) << 16; 
+  libLedFifo.irLed |= uint32_t(senArr[1]) << 8; 
+  libLedFifo.irLed |= senArr[2]; 
 
   // Value of LED two...
-  libLedFifo.redLed = uint32_t(data[3]) << 16; 
-  libLedFifo.redLed |= uint32_t(data[4]) << 8; 
-  libLedFifo.redLed |= data[5]; 
+  libLedFifo.redLed = uint32_t(senArr[3]) << 16; 
+  libLedFifo.redLed |= uint32_t(senArr[4]) << 8; 
+  libLedFifo.redLed |= senArr[5]; 
 
   // While it's not used in the MAX30101, but it may be used in other sensors,
   // in which case this will still be useful.
-  libLedFifo.ledThree = uint32_t(data[6]) << 16; 
-  libLedFifo.ledThree |= uint32_t(data[7]) << 8; 
-  libLedFifo.ledThree |= data[8]; 
+  libLedFifo.ledThree = uint32_t(senArr[6]) << 16; 
+  libLedFifo.ledThree |= uint32_t(senArr[7]) << 8; 
+  libLedFifo.ledThree |= senArr[8]; 
 
   // Value of LED three....
-  libLedFifo.greenLed = uint32_t(data[9]) << 16; 
-  libLedFifo.greenLed |= uint32_t(data[10]) << 8; 
-  libLedFifo.greenLed |= data[11]; 
+  libLedFifo.greenLed = uint32_t(senArr[9]) << 16; 
+  libLedFifo.greenLed |= uint32_t(senArr[10]) << 8; 
+  libLedFifo.greenLed |= senArr[11]; 
 
   return libLedFifo;
 
 }
 
+// This function takes the information of both the LED value and the biometric
+// data from the MAX32664's FIFO.
+bioLedData SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
+
+  bioLedData libLedBpm; 
+  readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY + WHRM_ARRAY_SIZE, bpmSenArr); 
+
+  // Value of LED one....
+  libLedBpm.irLed = uint32_t(bpmSenArr[0]) << 16; 
+  libLedBpm.irLed |= uint32_t(bpmSenArr[1]) << 8; 
+  libLedBpm.irLed |= bpmSenArr[2]; 
+
+  // Value of LED two...
+  libLedBpm.redLed = uint32_t(bpmSenArr[3]) << 16; 
+  libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
+  libLedBpm.redLed |= bpmSenArr[5]; 
+
+  // While it's not used in the MAX30101, but it may be used in other sensors,
+  // in which case this will still be useful.
+  libLedBpm.ledThree = uint32_t(bpmSenArr[6]) << 16; 
+  libLedBpm.ledThree |= uint32_t(bpmSenArr[7]) << 8; 
+  libLedBpm.ledThree |= bpmSenArr[8]; 
+
+  // Value of LED three....
+  libLedBpm.greenLed = uint32_t(bpmSenArr[9]) << 16; 
+  libLedBpm.greenLed |= uint32_t(bpmSenArr[10]) << 8; 
+  libLedBpm.greenLed |= bpmSenArr[11]; 
+
+  // Heart rate formatting
+  libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
+  libLedBpm.heartRate |= (bpmSenArr[13]); 
+  libLedBpm.heartRate = libLedBpm.heartRate/10; 
+
+  // Confidence formatting
+  libLedBpm.confidence = bpmSenArr[14]; 
+
+  //Blood oxygen level formatting
+  libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
+  libLedBpm.oxygen |= bpmSenArr[16]; 
+  libLedBpm.oxygen = libLedBpm.oxygen/10;
+
+  //"Machine State" - has a finger been detected?
+  libLedBpm.status = bpmSenArr[17];
+  return libLedBpm;
+
+}
 // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
 // are modified to the same width. This will affect the number of samples that
 // can be collected and will also affect the ADC resolution. 
@@ -342,7 +392,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSampleRate(){
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= READ_SAMP_MASK;
-  regVal = (regVal >> 2); // shift our bits to the front of the line. 
+  regVal = (regVal >> 2); 
 
   if      (regVal == 0) return 50; 
   else if (regVal == 1) return 100; 
@@ -428,13 +478,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
 // The following function returns a byte that signifies the microcontoller that
 // is in communcation with your host microcontroller. Returns 0x00 for the
 // MAX32625 and 0x01 for the MAX32660/MAX32664. 
-uint8_t SparkFun_Bio_MAX3001::getMCUtype() { 
+uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype() { 
 
   uint8_t returnByte = readByte(IDENTITY, READ_MCU_TYPE, NO_WRITE, 2);  
-  if( returnBye != SUCCESS)
+  if( returnByte != SUCCESS)
     return ERR_UNKNOWN;
   else
-    return mcu;
+    return returnByte;
 
 }
 
@@ -442,16 +492,17 @@ uint8_t SparkFun_Bio_MAX3001::getMCUtype() {
 // This function checks the version number of the bootloader on the chip and
 // returns a four bytes: Major version Byte, Minor version Byte, Space Byte,
 // and the Revision Byte. 
-uint32_t SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
+int32_t SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 
-  uint32_t bootVers = 0;
-  uint8_t* revNum = readByte(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4);   
+  int32_t bootVers = 0;
+  int32_t* revNum;
+  readMultipleBytes(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4, revNum);   
 
   if( revNum[1] != SUCCESS )
     return ERR_UNKNOWN; 
   else {
-    bootVers |= (uint32_t(revNum[1]) << 16);
-    bootVers |= (uint32_t(revNum[2]) << 8); 
+    bootVers |= (int32_t(revNum[1]) << 16);
+    bootVers |= (int32_t(revNum[2]) << 8); 
     bootVers |= revNum[3]; 
     return bootVers;
   }
@@ -821,7 +872,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
 // register value n.
 uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX86140(uint8_t* regArray, uint8_t totalRegBytes){
   
-  uint8_t* regPoint = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX86140, totalRegBytes, regArray); //Fake read amount
+  uint8_t* regPoint = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX86140, totalRegBytes, regArray); //Fake read amount
   return regPoint;
 
 }
@@ -833,7 +884,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX86140(uint8_t* regArray, uint8_
 uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30205(uint8_t regArray[8]) {
   
   uint8_t totalRegBytes = 8;
-  uint8_t* regPoint = readByte(DUMP_REGISTERS, DUMP_REGISTER_MAX30205, totalRegBytes, regArray); //Fake read amount
+  uint8_t* regPoint = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30205, totalRegBytes, regArray); //Fake read amount
   return regPoint;
 
 }
@@ -2038,8 +2089,12 @@ version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
   _i2cPort->requestFrom(_address, 4); 
   uint8_t statusByte = _i2cPort->read();
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
-    return; // Just return
+  if (!statusByte) { // Pass through if SUCCESS (0x00). 
+    booVers.major = 0; 
+    booVers.minor = 0; 
+    booVers.revision = 0; 
+    return booVers; 
+  }
 
   booVers.major = _i2cPort->read();
   booVers.minor = _i2cPort->read();
@@ -2062,8 +2117,12 @@ version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 
   _i2cPort->requestFrom(_address, 4); 
   uint8_t statusByte = _i2cPort->read();
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
-    return; // Just return
+  if (!statusByte){ // Pass through if SUCCESS (0x00). 
+    bioHubVers.major = 0; 
+    bioHubVers.minor = 0; 
+    bioHubVers.revision = 0; 
+    return bioHubVers; 
+  }
 
   bioHubVers.major = _i2cPort->read();
   bioHubVers.minor = _i2cPort->read();
@@ -2085,8 +2144,12 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
   _i2cPort->requestFrom(_address, 4); 
   uint8_t statusByte = _i2cPort->read();
-  if( !statusByte ) // Pass through if SUCCESS (0x00). 
-    return; // Just return
+  if (!statusByte){ // Pass through if SUCCESS (0x00). 
+    libAlgoVers.major = 0;
+    libAlgoVers.minor = 0;
+    libAlgoVers.revision = 0;  
+    return libAlgoVers; 
+  }
 
   libAlgoVers.major = _i2cPort->read();
   libAlgoVers.minor = _i2cPort->read();
@@ -2316,8 +2379,12 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read(); // Got it
   _numOfReads--; // One read for status byte, remove one from reads.   
-  if( statusByte )// SUCCESS (0x00)
-    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
+  if( statusByte ){// SUCCESS (0x00)
+    for(uint8_t i = 0; i < _numOfReads; i++){
+      array[i] = 0; 
+    }
+    return array; 
+  }
 
   for(uint8_t i = 0; i < _numOfReads; i++){
     array[i] = _i2cPort->read(); 
@@ -2400,7 +2467,7 @@ uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _ind
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
 // except it returns three uint32_t bytes instead of one. 
-uint32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
+int32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
                                                      uint8_t _writeByte,  uint8_t _numOfReads,\
                                                      int32_t* array)
 {
@@ -2417,8 +2484,15 @@ uint32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_
   _i2cPort->requestFrom(_address, _numOfReads); 
   statusByte = _i2cPort->read();
   _numOfReads--; // One read for status byte.  
-  if( statusByte ) // Pass through if SUCCESS (0x00). 
-    return; 
+  if( statusByte ){ // Pass through if SUCCESS (0x00). 
+    for(uint8_t i = 0; i < _numOfReads; i++){
+      array[i] = 0;  
+      array[i] = 0;
+      array[i] = 0;
+      array[i] = 0;
+    }
+    return array; 
+  }
 
   for(uint8_t i = 0; i < _numOfReads; i++){
     array[i] |= (_i2cPort->read() << 24);

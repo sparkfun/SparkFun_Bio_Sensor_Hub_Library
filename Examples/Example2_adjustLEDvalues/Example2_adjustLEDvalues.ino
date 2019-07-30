@@ -40,12 +40,10 @@ int samples = 400;
 int pulseWidthVal;
 int sampleVal;
 
-int widthArray[] = {69, 118, 215, 411};
-int sampleArray[] = {50, 100, 200, 400, 800, 1000, 1600, 3200};
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioData body; 
+bioLedData body; 
 ledData led;  
 // ^^^^^^^^^
 // What's this!? This is a type (like "int", "byte", "long") unique to the SparkFun
@@ -78,28 +76,7 @@ void setup(){
     Serial.println(error); 
   }
 
-  for( int i = 0; i <= 3; i++ )
-  {
-    Serial.print("Setting width: ");
-    Serial.println(widthArray[i]);
-    bioHub.setPulseWidth(widthArray[i]);
-    delay(10);
-    pulseWidthVal = bioHub.readPulseWidth();
-    Serial.print("Pulse Width");
-    Serial.println(pulseWidthVal);
-    for (int i = 0; i <= 7; i++){
-      Serial.print("Setting Sample Rate: ");
-      Serial.println(sampleArray[i]);
-      bioHub.setSampleRate(sampleArray[i]);
-      delay(10);
-      sampleVal = bioHub.readSampleRate();
-      Serial.print("Sample Rate: ");
-      Serial.println(sampleVal);
-    }
-  }
-
-  while(1);
-
+  error = bioHub.setPulseWidth(width);
   if (!error){
     Serial.println("Pulse Width Set.");
   }
@@ -109,7 +86,11 @@ void setup(){
     Serial.println(error); 
   }
 
+  pulseWidthVal = bioHub.readPulseWidth();
+  Serial.print("Pulse Width: ");
+  Serial.println(pulseWidthVal);
 
+  error = bioHub.setSampleRate(samples);
   if (!error){
     Serial.println("Sample Rate Set.");
   }
@@ -122,9 +103,9 @@ void setup(){
   sampleVal = bioHub.readSampleRate();
   Serial.print("Sample rate is set to: ");
   Serial.println(sampleVal); 
-
-  while(1);
-  delay(4000);
+  
+  // Some time to read your settings.
+  delay(2000);
 
 }
 
@@ -132,12 +113,11 @@ void loop(){
 
     // Information from the readSensor function will be saved to our "led"
     // variable.  
-    led = bioHub.readSensor();
-    body = bioHub.readBpm();
+    body = bioHub.readSensorBpm();
     Serial.print("Infrared LED counts: ");
-    Serial.println(led.irLed); 
+    Serial.println(body.irLed); 
     Serial.print("Red LED counts: ");
-    Serial.println(led.redLed); 
+    Serial.println(body.redLed); 
     Serial.print("Heartrate: ");
     Serial.println(body.heartRate); 
     Serial.print("Confidence: ");
