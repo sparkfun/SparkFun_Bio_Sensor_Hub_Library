@@ -557,6 +557,9 @@ class SparkFun_Bio_Sensor_Hub
   // into the whrmFifo and returned.  
   ledData readSensor();
 
+  // This function takes the information of both the LED value and the biometric
+  // data from the MAX32664's FIFO. In essence it combines the two functions
+  // above into a single function call. 
   bioLedData readSensorBpm();
 
   // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
