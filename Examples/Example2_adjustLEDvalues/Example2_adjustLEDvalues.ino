@@ -1,18 +1,12 @@
 /*
- This example sketch first demonstrates how to retrieve the values of the
- sensor's LEDs: RED, GREEN, and IR. It then shows you how to adjust the pulse
- width of these LEDs. 
- This board requires I-squared-C connections but also connections to the reset
- and mfio pins. When using the device keep LIGHT and CONSISTENT pressure on the
- sensor. Otherwise you may crush the capillaries in your finger which results
- in bad or no results. A summary of the hardware connections are as follows: 
+ A summary of the hardware connections are as follows: 
  SDA -> SDA
  SCL -> SCL
  RESET -> PIN 4
  MFIO -> PIN 5
 
  Author: Elias Santistevan
- Date: 7/2019
+ Date: 8/2019
  SparkFun Electronics
 
  If you run into an error code check the following table to help diagnose your
@@ -35,7 +29,11 @@
 const int resPin = 4;
 const int mfioPin = 5;
 
+// Possible widths: 69, 118, 215, 411us
 int width = 411; 
+// Possible samples: 50, 100, 200, 400, 800, 1000, 1600, 3200 samples/second
+// Not every sample amount is possible with every width; check out our hookup
+// guide for more information.
 int samples = 400; 
 int pulseWidthVal;
 int sampleVal;
@@ -44,17 +42,21 @@ int sampleVal;
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
 bioLedData body; 
-ledData led;  
 // ^^^^^^^^^
 // What's this!? This is a type (like "int", "byte", "long") unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
-// specific information on the LED count values of the sensor. "ledData" is 
-// actually a specific kind of type, known as a "struct". I think "led" is a
-// good variable name for the ledData type, but you can choose whichever makes
-// more sense. 
-// When used in the following way it gives access to the corresponding data:
-// led.irLed  - Infrared LED counts. 
-// led.redLed - Red LED counts. 
+// specific information on the LED count values of the sensor and ALSO the
+// biometric data: heart rate, oxygen levels, and confidence. "bioLedData" is 
+// actually a specific kind of type, known as a "struct". I chose the name
+// "body" but you could use another variable name like "blood", "readings",
+// "ledBody" or whatever. Using the variable in the following way gives the
+// following data: 
+// body.irLed  - Infrared LED counts. 
+// body.redLed - Red LED counts. 
+// body.heartrate - Heartrate
+// body.confidence - Confidence in the heartrate value
+// body.oxygen - Blood oxygen level
+// body.status - Has a finger been sensed?
 
 void setup(){
 
@@ -66,7 +68,7 @@ void setup(){
     Serial.println("Sensor started!");
 
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.beginSensorBpm();
+  int error = bioHub.configSensorBpm(); // Configure Sensor and BPM mode 
   if(!error){
     Serial.println("Sensor configured.");
   }
@@ -76,6 +78,7 @@ void setup(){
     Serial.println(error); 
   }
 
+  // Set pulse width.
   error = bioHub.setPulseWidth(width);
   if (!error){
     Serial.println("Pulse Width Set.");
@@ -86,10 +89,13 @@ void setup(){
     Serial.println(error); 
   }
 
+  // Check that the pulse width was set. 
   pulseWidthVal = bioHub.readPulseWidth();
   Serial.print("Pulse Width: ");
   Serial.println(pulseWidthVal);
 
+  // Set sample rate per second. Remember that not every sample rate is
+  // available with every pulse width. Check hookup guide for more information.  
   error = bioHub.setSampleRate(samples);
   if (!error){
     Serial.println("Sample Rate Set.");
@@ -100,6 +106,7 @@ void setup(){
     Serial.println(error); 
   }
 
+  // Check sample rate.
   sampleVal = bioHub.readSampleRate();
   Serial.print("Sample rate is set to: ");
   Serial.println(sampleVal); 
@@ -111,7 +118,7 @@ void setup(){
 
 void loop(){
 
-    // Information from the readSensor function will be saved to our "led"
+    // Information from the readSensor function will be saved to our "body"
     // variable.  
     body = bioHub.readSensorBpm();
     Serial.print("Infrared LED counts: ");

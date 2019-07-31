@@ -11,7 +11,7 @@
  MFIO -> PIN 5
 
  Author: Elias Santistevan
- Date: 7/2019
+ Date: 8/2019
  SparkFun Electronics
 
  If you run into an error code check the following table to help diagnose your
@@ -37,7 +37,7 @@ const int mfioPin = 5;
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioData body;  
+bioLedData body;  
 // ^^^^^^^^^
 // What's this!? This is a type (like int, byte, long) unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
@@ -60,9 +60,11 @@ void setup(){
   int result = bioHub.begin();
   if (!result)
     Serial.println("Sensor started!");
+  else
+    Serial.println("Could not communicate with the sensor!!!");
  
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.beginBpm();
+  int error = bioHub.configBpm(); // Configuring just the BPM settings. 
   if(!error){
     Serial.println("Sensor configured.");
   }

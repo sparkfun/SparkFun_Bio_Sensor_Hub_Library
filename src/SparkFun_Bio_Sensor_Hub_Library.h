@@ -20,29 +20,12 @@
 #define ADC_MASK               0x3F
 #define READ_ADC_MASK          0xC0
 
+#define CMD_DELAY2            2
 #define CMD_DELAY             5  //milliseconds
 #define WHRM_ARRAY_SIZE       6  // Number of bytes....
 #define MAX30101_LED_ARRAY   12 // 4 values of 24 bit LED values
 
 const uint8_t BIO_ADDRESS = 0x55;
-
-struct bioData {
-  // 6 bytes total
-  uint16_t heartRate; // LSB = 0.1bpm
-  uint8_t  confidence; // 0-100% LSB = 1%
-  uint16_t oxygen; // 0-100% LSB = 1%
-  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
-
-}; 
-
-struct ledData {
-  // 9 bytes total
-  uint32_t irLed; 
-  uint32_t redLed; 
-  uint32_t ledThree; 
-  uint32_t greenLed; // MAX30101 multiLED mode
-
-}; 
 
 struct bioLedData {
 
@@ -54,6 +37,7 @@ struct bioLedData {
   uint8_t  confidence; // 0-100% LSB = 1%
   uint16_t oxygen; // 0-100% LSB = 1%
   uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
+  uint8_t  counter;
 
 };
 
@@ -528,26 +512,26 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets very basic settings to get sensor and biometric data.
   // The biometric data includes data about heartrate, the confidence
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
-  uint8_t beginBpm();
+  uint8_t configBpm();
   
   // This function sets very basic settings to get LED count values from the MAX30101.
   // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
   // and Green. 
-  uint8_t beginMaxSensor();
+  uint8_t configMaxSensor();
   
   // This function sets very basic settings to get sensor and biometric data.
   // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
   // and Green. The biometric data includes data about heartrate, the confidence
   // level, SpO2 levels, and whether the sensor has detected a finger or not. 
   // Of note, the number of samples is set to one. 
-  uint8_t beginSensorBpm();
+  uint8_t configSensorBpm();
 
   // This function takes the 8 bytes from the FIFO buffer related to the wrist
   // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
   // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
   // "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  bioData readBpm();
+  bioLedData readBpm();
 
   // This function takes 9 bytes of LED values from the MAX30101 associated with 
   // the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
@@ -555,7 +539,7 @@ class SparkFun_Bio_Sensor_Hub
   // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
   // is stated as "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  ledData readSensor();
+  bioLedData readSensor();
 
   // This function takes the information of both the LED value and the biometric
   // data from the MAX32664's FIFO. In essence it combines the two functions
@@ -803,95 +787,95 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets the target percentage of the full-scale ADC range that
   // the automatic gain control algorithm uses. It takes a paramater of zero to 
   // 100 percent. 
-  uint8_t configALGOrange(uint8_t);
+  uint8_t setALGOrange(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
   // This function changes the step size toward the target for the AGC algorithm. 
   // It takes a paramater of zero to 100 percent. 
-  uint8_t configALGOStepSize(uint8_t);
+  uint8_t setALGOStepSize(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
   // This function changes the sensitivity of the AGC algorithm.
-  uint8_t configALGOsensitivity(uint8_t);
+  uint8_t setALGOsensitivity(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  uint8_t configALGOsamples(uint8_t);
+  uint8_t setALGOsamples(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
   // This function sets the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMsampRate(uint16_t);
+  uint8_t setWhrmsampRate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
-  // This function sets the maximum height for the wrist heart rate monitor
+  // This function sets the maximum height in cm for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxHeight(uint16_t);
+  uint8_t setWhrmMaxHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_WEIGHT (0x02), Write Byte: WHRM_MAX_WEIGHT_ID (0x02)
-  // This function sets the maximum weight for the wrist heart rate monitor
+  // This function sets the maximum weight in kg for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxWeight(uint16_t);
+  uint8_t setWhrmMaxWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_AGE (0x02), Write Byte: WHRM_MAX_AGE_ID (0x03)
-  // This function sets the maximum age for the wrist heart rate monitor
+  // This function sets the maximum age in years for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMaxAge(uint8_t);
+  uint8_t setWhrmMaxAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinHeight(uint16_t);
+  uint8_t setWhrmMinHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_HEIGHT (0x02), Write Byte: WHRM_MIN_HEIGHT_ID (0x04)
   // This function sets the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinWeight(uint16_t);
+  uint8_t setWhrmMinWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MIN_AGE (0x02), Write Byte: WHRM_MIN_AGE_ID (0x06)
   // This function sets the minimum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMMinAge(uint8_t);
+  uint8_t setWhrmMinAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: WHRM_DEF_HEIGHT_ID (0x07)
   // This function sets the default height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefHeight(uint16_t);
+  uint8_t setWhrmDefHeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: WHRM_DEF_WEIGHT_ID (0x08)
   // This function sets the default weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefWeight(uint16_t);
+  uint8_t setWhrmDefWeight(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_DEFAULT_AGE (0x02), Write Byte: WHRM_DEF_AGE_ID (0x09)
   // This function sets the default age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMDefAge(uint8_t);
+  uint8_t setWhrmDefAge(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t configWHRMBPM(uint8_t);
+  uint8_t setWhrmBPM(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
   // This function takes three values that are used as the Sp02 coefficients.
-  bool configWHRMCoef(int32_t, int32_t, int32_t);
+  bool setWhrmCoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
   // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
@@ -938,20 +922,20 @@ class SparkFun_Bio_Sensor_Hub
   // SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
   // The function configure the blood pressure trending (BPT) algorithm for
   // the users that are on blood pressure medicine. The parameter accepts the
-  // value of zero (not using) or one (using). 
-  bool bptMedicine(uint8_t);
+  // value of false (not using) or true (using). 
+  uint8_t bptMedicine(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_DIASTOLIC (0x04), Write Byte: BPT_DIASTOLIC_ID (0x01)
   // This funciton writes the three givin diastolic BP byte values needed by the
   // calibration procedure.  
-  bool setDiastolicVal(uint8_t, uint8_t, uint8_t);
+  uint8_t setDiastolicVal(uint8_t, uint8_t, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_SYSTOLIC (0x04), Write Byte: BPT_SYSTOLIC_ID (0x02)
   // This funciton writes the three givin systolic BP byte values needed by the
   // calibration procedure.  
-  bool setSystolicVal(uint8_t, uint8_t, uint8_t);
+  uint8_t setSystolicVal(uint8_t, uint8_t, uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
   // (0x04), Write Byte: BPT_DATE_ID (0x04)
@@ -1056,67 +1040,67 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
   // This function reads the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWHRMsampRate();
+  uint8_t readWhrmsampRate();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MAX_HEIGHT (0x02), Write Byte: READ_WHRM_MAX_HEIGHT_ID (0x01)
   // This function reads the maximum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMMaxHeight();
+  uint16_t readWhrmMaxHeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MAX_WEIGHT (0x02), Write Byte: READ_WHRM_MAX_WEIGHT_ID (0x02)
   // This function reads the maximum weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMMaxWeight();
+  uint16_t readWhrmMaxWeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MAX_AGE (0x02), Write Byte: READ_MAX_AGE_ID (0x03)
   // This function reads the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWHRMMaxAge();
+  uint8_t readWhrmMaxAge();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MIN_HEIGHT (0x02), Write Byte: READ_WHRM_MIN_HEIGHT_ID (0x04)
   // This function reads the minimum height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMMinHeight();
+  uint16_t readWhrmMinHeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MIN_WEIGHT (0x02), Write Byte: READ_WHRM_MIN_WEIGHT_ID (0x05)
   // This function reads the minimum weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMMinWeight();
+  uint16_t readWhrmMinWeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MIN_AGE (0x02), Write Byte: READ_WHRM_MIN_AGE_ID (0x06)
   // This function reads the minimum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWHRMMinAge();
+  uint8_t readWhrmMinAge();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_DEFAULT_HEIGHT (0x02), Write Byte: READ_WHRM_DEF_HEIGHT_ID (0x07)
   // This function reads the default height for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMDefHeight();
+  uint16_t readWhrmDefHeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_DEFAULT_WEIGHT (0x02), Write Byte: READ_WHRM_DEF_WEIGHT_ID (0x08)
   // This function reads the default weight for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint16_t readWHRMDefWeight();
+  uint16_t readWhrmDefWeight();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_DEFAULT_AGE (0x02), Write Byte: READ_WHRM_DEF_AGE_ID (0x09)
   // This function returns the default age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWHRMDefAge();
+  uint8_t readWhrmDefAge();
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_INIT_HR (0x02), Write Byte: READ_WHRM_INIT_HR_ID (0x0A)
   // This function reads the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWHRMBPM();
+  uint8_t readWhrmBPM();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_MAX_FAST_COEF (0x02), Write Byte: READ_MAX_FAST_COEF_ID (0x0B)
@@ -1124,7 +1108,7 @@ class SparkFun_Bio_Sensor_Hub
   // (WHRM) algorithm. It returns three uint32_t integers that are 
   // multiplied by 100,000.
   // INCOMPLETE
-  int32_t* readWHRMCoef(int32_t coefArr[3]);
+  int32_t* readWhrmCoef(int32_t coefArr[3]);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_AEC_EN (0x02), Write Byte: READ_WHRM_AEC_EN_ID (0x0B)
@@ -1224,7 +1208,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AGC_ALGO (0x00)
   // This function enables (one) or disables (zero) the automatic gain control algorithm. 
-  uint8_t acgAlgoControl(uint8_t);
+  uint8_t agcAlgoControl(uint8_t);
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AEC_ALGO (0x01)
