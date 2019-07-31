@@ -875,48 +875,48 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
   // This function takes three values that are used as the Sp02 coefficients.
-  bool setWhrmCoef(int32_t, int32_t, int32_t);
+  uint8_t setWhrmCoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_EXPOSURE_CNTRL
   // (0x02), Write Byte: WHRM_AEC_ID (0x0B)
   // This function enables or disables automatic exposure control (AEC). The
   // function takes the parameter zero for disable and one for enable. 
-  bool autoExpCont(uint8_t);
+  uint8_t autoExpCont(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SKIN_CONTACT_DET (0x02), Write Byte: WHRM_SCD_ID (0x0C)
   // This function enables or disables skin contact detection. The
   // function takes the parameter zero for disable and one for enable. 
-  bool skinDetectControl(uint8_t);
+  uint8_t skinDetectControl(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_PHOTO_DETECT (0x02), Write Byte: WHRM_PD_ID (0x0D)
   // This function sets target photo detector current period in seconds.
-  bool adjustPhotoDet(uint16_t);
+  uint8_t adjustPhotoDet(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
   // This function sets the skin contract detect debounce window. It's not clear
   // if this is in seconds or not in the datasheet.
-  bool setSCDWindow(uint16_t);
+  uint8_t setSCDWindow(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
   // This function sets motion magnitude threshold in 0.1g
-  bool setMotionMag(uint16_t);
+  uint8_t setMotionMag(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_MIN_PD (0x02), Write Byte: WHRM_MIN_PD_ID (0x10)
   // This function changes the minimum photodetector currrent in 0.1mA
   // increments. 
-  bool changePDCurrent(uint16_t);
+  uint8_t changePDCurrent(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_WHRM_PPG (0x02), Write Byte: WHRM_PPG_PD_ID (0x11)
   // This function changes the source of the photoplethysmography (PPG) signal for 
   // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
   // one - PD2, and three - PD1 and PD2.
-  bool changePPGSource(uint8_t);
+  uint8_t changePPGSource(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
@@ -940,7 +940,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
   // (0x04), Write Byte: BPT_DATE_ID (0x04)
   // This function sets the estimation date with the given month/day integer. 
-  bool setBPTEstimationDate(uint16_t);
+  uint8_t setBPTEstimationDate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_REST
   // (0x04), Write Byte: BPT_RESTING_ID (0x05)
@@ -952,66 +952,66 @@ class SparkFun_Bio_Sensor_Hub
   // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
   // This function sets the given Sp02 coefficients for the blood pressure trending
   // algorithm. 
-  bool adjustBPTcoef(int32_t, int32_t, int32_t);
+  uint8_t adjustBPTcoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSPO2_COEF
   // (0x05), Write Byte: WSP02_COEF_ID (0x00)
   // This function sets the given wrist Sp02 (WSp02) coefficients for WSp02
   // algorithm. Defaults are in order: 159584, -3465966, and 11268987. 
-  bool adjustWSP02Coef(int32_t, int32_t, int32_t);
+  uint8_t adjustWSP02Coef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_SRATE
   // (0x05), Write Byte: WSP02_SAMPLE_RATE_ID (0x01)
   // This function changes the wrist Sp02 sample rate to 100Hz (zero) or 25Hz
   // (one).
-  bool changeWSP02SampRate(uint8_t);
+  uint8_t changeWSP02SampRate(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_RUN
   // (0x05), Write Byte: WSP02_RUN_MODE_ID (0x02)
   // This function changes the writs Sp02 algorithm run mode from continuous
   // (zero), from/to one-shot (one).
-  bool changeWSP02RunMode(uint8_t);
+  uint8_t changeWSP02RunMode(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_AGC
   // (0x05), Write Byte: WSP02_AGC_MODE_ID (0x03)
   // This function changes the wrist Sp02 algorithm's AGC mode. You can disable
   // it (zero) or enable it (one). 
-  bool changeWSP02AGCMode(uint8_t);
+  uint8_t changeWSP02AGCMode(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_MOT_DETECT (0x05), Write Byte: WSP02_MOT_DTCT_ID (0x04)
   // This function enables (one) or disables (zero) motion detect.
-  bool enableWSP02MotDet(uint8_t);
+  uint8_t enableWSP02MotDet(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_DTCT_PER (0x05), Write Byte: WSP02_MOT_DTCT_PER_ID (0x05)
   // This function changes the period of the motion detect and though the
   // datasheet does not specify, I assume is in seconds. 
-  bool enableWSP02MotDetPer(uint16_t);
+  uint8_t enableWSP02MotDetPer(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WSP02_THRESH (0x05), Write Byte: WSP02_MOT_THRESH_ID (0x06)
   // This function changes the motion threshold for the WSp02 algorithm. The
   // given number is multiplied by 100,000. 
-  bool setWSP02MotThresh(uint32_t);
+  uint8_t setWSP02MotThresh(uint32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_AGC_TOUT
   // (0x05), Write Byte: WSP02_AGC_TO_ID (0x07)
   // This function changes the timeout period of the wrist Sp02 AGC algorithm. The
   // paramter should be given in seconds. 
-  bool setWSP02AGCTimeout(uint8_t);
+  uint8_t setWSP02AGCTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_ALG_TOUT
   // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
   // This function changes the timeout period of the wrist Sp02 algorithm. The
   // paramter should be given in seconds. 
-  bool setWSP02ALGOTimeout(uint8_t);
+  uint8_t setWSP02ALGOTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_PPG_SIG
   // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
   // This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
   // The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-  bool setWSP02PPGSource(uint8_t);
+  uint8_t setWSP02PPGSource(uint8_t);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
