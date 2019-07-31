@@ -946,7 +946,7 @@ class SparkFun_Bio_Sensor_Hub
   // (0x04), Write Byte: BPT_RESTING_ID (0x05)
   // This function adjusts the blood pressure trending algorithm for a user that
   // is resting (zero) or not resting (one). 
-  bool setUserResting(uint8_t);
+  uint8_t setUserResting(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_SPO2_COEF
   // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
@@ -1040,7 +1040,7 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
   // This function reads the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWhrmsampRate();
+  uint16_t readWhrmSampRate();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_MAX_HEIGHT (0x02), Write Byte: READ_WHRM_MAX_HEIGHT_ID (0x01)
@@ -1324,7 +1324,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte( uint8_t, uint8_t, uint8_t, uint8_t);
+  uint16_t readIntByte( uint8_t, uint8_t, uint8_t );
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and

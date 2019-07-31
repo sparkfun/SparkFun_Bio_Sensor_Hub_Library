@@ -116,6 +116,13 @@ void setup(){
     Serial.println("Blood pressure medicine setting NOT set.");
 
   // Set the max height in cm of the persons you'll be monitoring. 
+  if(!bioHub.setUserResting(1))
+    Serial.println("User Resting Setting Set");
+
+  Serial.println(bioHub.readALGOrange());
+  Serial.println(bioHub.readALGOStepSize());
+  Serial.println(bioHub.readWhrmSampRate());
+  // Set the max height in cm of the persons you'll be monitoring. 
   if(!bioHub.setWhrmMaxHeight(177))
     Serial.println("Maximum Height Set!");
   int heightVal = bioHub.readWhrmMaxHeight();

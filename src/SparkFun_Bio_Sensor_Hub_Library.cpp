@@ -1384,16 +1384,16 @@ bool SparkFun_Bio_Sensor_Hub::setBPTEstimationDate(uint16_t monthDay) {
 // (0x04), Write Byte: BPT_RESTING_ID (0x05)
 // This function adjusts the blood pressure trending algorithm for a user that
 // is resting (zero) or not resting (one). 
-bool SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
+uint8_t SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
 
   if( resting != 0 || resting != 1)
     return false; 
 
   uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_REST, BPT_RESTING_ID, resting);
-  if (statusByte == SUCCESS)
-    return true;
+  if (statusByte != SUCCESS)
+    return statusByte;
   else
-    return false;
+    return SUCCESS;
 
 }
 
@@ -1592,7 +1592,7 @@ bool SparkFun_Bio_Sensor_Hub::setWSP02PPGSource(uint8_t pd) {
 // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
 uint8_t SparkFun_Bio_Sensor_Hub::readALGOrange() {
 
-  uint8_t range = readByte(READ_ALGORITHM_CONFIG, READ_AGC_PERCENTAGE, READ_AGC_PERC_ID, 2); 
+  uint8_t range = readByte(READ_ALGORITHM_CONFIG, READ_AGC_PERCENTAGE, READ_AGC_PERC_ID, 1); 
   return range; 
 
 }
@@ -1603,7 +1603,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOrange() {
 // It returns a value between zero and 100 percent. 
 uint8_t SparkFun_Bio_Sensor_Hub::readALGOStepSize() {
 
-  uint8_t stepSize = readByte(READ_ALGORITHM_CONFIG, READ_AGC_STEP_SIZE, READ_AGC_STEP_SIZE_ID, 2); 
+  uint8_t stepSize = readByte(READ_ALGORITHM_CONFIG, READ_AGC_STEP_SIZE, READ_AGC_STEP_SIZE_ID, 1); 
   return stepSize;
 }
 
@@ -1612,7 +1612,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOStepSize() {
 // This function returns the sensitivity (percentage) of the automatic gain control. 
 uint8_t SparkFun_Bio_Sensor_Hub::readALGOsensitivity() {
 
-  uint8_t sensitivity = readByte(READ_ALGORITHM_CONFIG, READ_AGC_SENSITIVITY, READ_AGC_SENSITIVITY_ID, 2); 
+  uint8_t sensitivity = readByte(READ_ALGORITHM_CONFIG, READ_AGC_SENSITIVITY, READ_AGC_SENSITIVITY_ID, 1); 
   return sensitivity; 
 
 }
@@ -1623,7 +1623,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOsensitivity() {
 // It takes a paramater of zero to 255. 
 uint8_t SparkFun_Bio_Sensor_Hub::readALGOsamples() {
 
-  uint8_t samples = readByte(READ_ALGORITHM_CONFIG, READ_AGC_NUM_SAMPLES, READ_AGC_NUM_SAMPLES_ID, 2); 
+  uint8_t samples = readByte(READ_ALGORITHM_CONFIG, READ_AGC_NUM_SAMPLES, READ_AGC_NUM_SAMPLES_ID, 1); 
   return samples; 
 
 }
@@ -1632,9 +1632,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOsamples() {
 // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
 // This function reads the sample rate for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_Sensor_Hub::readWhrmsampRate() {
+uint16_t SparkFun_Bio_Sensor_Hub::readWhrmSampRate() {
 
-  uint8_t sampRate = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_SAMPLE_RATE, READ_WHRM_SAMPLE_RATE_ID, 2); 
+  uint16_t sampRate = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_SAMPLE_RATE, READ_WHRM_SAMPLE_RATE_ID); 
   return sampRate;
 
 }
@@ -1645,7 +1645,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWhrmsampRate() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMaxHeight() {
 
-  uint16_t maxHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_HEIGHT, READ_WHRM_MAX_HEIGHT_ID, 2); 
+  uint16_t maxHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_HEIGHT, READ_WHRM_MAX_HEIGHT_ID); 
   return maxHeight; 
 
 }
@@ -1656,7 +1656,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMaxHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMaxWeight() {
 
-  uint16_t maxWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_WEIGHT, READ_WHRM_MAX_WEIGHT_ID, 2); 
+  uint16_t maxWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MAX_WEIGHT, READ_WHRM_MAX_WEIGHT_ID); 
   return maxWeight; 
 
 }
@@ -1678,7 +1678,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWhrmMaxAge() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMinHeight() {
 
-  uint16_t minAge = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_HEIGHT, READ_WHRM_MIN_HEIGHT_ID, 2); 
+  uint16_t minAge = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_HEIGHT, READ_WHRM_MIN_HEIGHT_ID); 
   return minAge; 
 
 }
@@ -1689,7 +1689,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMinHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmMinWeight() {
 
-  uint16_t minWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_WEIGHT, READ_WHRM_MIN_WEIGHT_ID, 2); 
+  uint16_t minWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_MIN_WEIGHT, READ_WHRM_MIN_WEIGHT_ID); 
   return minWeight;
 
 }
@@ -1711,7 +1711,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWhrmMinAge() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmDefHeight() {
 
-  uint16_t defHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_HEIGHT, READ_WHRM_DEF_HEIGHT_ID, 2); 
+  uint16_t defHeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_HEIGHT, READ_WHRM_DEF_HEIGHT_ID); 
   return defHeight; 
 
 }
@@ -1722,7 +1722,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readWhrmDefHeight() {
 // (WHRM) algorithm. 
 uint16_t SparkFun_Bio_Sensor_Hub::readWhrmDefWeight() {
 
-  uint16_t defWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_WEIGHT, READ_WHRM_DEF_WEIGHT_ID, 2); 
+  uint16_t defWeight = readIntByte(READ_ALGORITHM_CONFIG, READ_WHRM_DEF_WEIGHT, READ_WHRM_DEF_WEIGHT_ID); 
   return defWeight;
 
 }
@@ -1744,7 +1744,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWhrmDefAge() {
 // (WHRM) algorithm. 
 uint8_t SparkFun_Bio_Sensor_Hub::readWhrmBPM() {
 
-  uint8_t bpm = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_INIT_HR, READ_WHRM_INIT_HR_ID, 2); 
+  uint8_t bpm = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_INIT_HR, READ_WHRM_INIT_HR_ID, 1); 
   return bpm; 
 
 }
@@ -1791,7 +1791,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSkinDetect() {
 // This function reads the current period of the photo detector in seconds.
 uint16_t SparkFun_Bio_Sensor_Hub::readPhotoDetPer() {
   
-  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PRD, READ_WHRM_PD_PRD_ID, 3 );
+  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PRD, READ_WHRM_PD_PRD_ID );
   return seconds; 
 
 }
@@ -1802,7 +1802,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPhotoDetPer() {
 // if this is in seconds when reading the datasheet. 
 uint16_t SparkFun_Bio_Sensor_Hub::readSCDWindow() {
   
-  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID, 3);
+  uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID );
   return seconds; 
 
 }
@@ -1812,7 +1812,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSCDWindow() {
 // This function reads the motion magnitude threshold in 0.1g increments. 
 uint16_t SparkFun_Bio_Sensor_Hub::readMotionMag() {
   
-  uint16_t thresh = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_MOT_MAG, READ_WHRM_MOT_MAG_ID, 3);
+  uint16_t thresh = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_MOT_MAG, READ_WHRM_MOT_MAG_ID );
   return thresh; 
 
 }
@@ -1822,7 +1822,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readMotionMag() {
 // This function reads the set minimum photodetector currrent in 0.1mA.
 uint16_t SparkFun_Bio_Sensor_Hub::readPDCurrent() {
   
-  uint16_t minCurr = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_MIN, READ_WHRM_PD_MIN_ID, 3);
+  uint16_t minCurr = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_MIN, READ_WHRM_PD_MIN_ID );
   return minCurr; 
 
 }
@@ -1902,7 +1902,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMotionDetect() {
 // This function reads the motion detection period in seconds. 
 uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
   
-  uint16_t detPeriod = readIntByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID, 3 );
+  uint16_t detPeriod = readIntByte( READ_ALGORITHM_CONFIG, READ_WSP02_MD_PRD, READ_WSP02_MD_PRD_ID );
   return detPeriod; 
 
 }
@@ -2420,11 +2420,12 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
 // and the information is read. This differs from the above read commands in
 // that it returns a 16 bit integer instead of 8. 
 uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte,\
-                                              uint8_t _writeByte,  uint8_t _numOfReads )
+                                              uint8_t _writeByte )
 {
 
    uint16_t returnByte;
    uint8_t statusByte; 
+
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
@@ -2432,17 +2433,14 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
-  _numOfReads++; // Status byte.... 
-  _i2cPort->requestFrom(_address, _numOfReads); 
+  _i2cPort->requestFrom(_address, 3); 
   statusByte = _i2cPort->read();
-  _numOfReads--; // Minus one read after status byte.  
   if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(uint8_t i = 0; i < _numOfReads; i++){
-    returnByte |= (_i2cPort->read() << 8);
-    returnByte |= _i2cPort->read();
-  }
+  returnByte = (_i2cPort->read() << 8);
+  returnByte |= _i2cPort->read();
+
   return returnByte; 
 
 }
