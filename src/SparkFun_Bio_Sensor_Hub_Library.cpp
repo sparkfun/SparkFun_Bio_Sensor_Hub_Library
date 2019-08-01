@@ -103,7 +103,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired.
+  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired.
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
@@ -136,7 +136,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configMaxSensor(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
@@ -166,7 +166,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = setFIFOThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
@@ -201,7 +201,7 @@ bioLedData SparkFun_Bio_Sensor_Hub::readBpm(){
     return libBpm; 
   }
 
-  numSamplesOutFIFO(); 
+  numSamplesOutFifo(); 
 
   readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
 
@@ -484,7 +484,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
 // The following function returns a byte that signifies the microcontoller that
 // is in communcation with your host microcontroller. Returns 0x00 for the
 // MAX32625 and 0x01 for the MAX32660/MAX32664. 
-uint8_t SparkFun_Bio_Sensor_Hub::getMCUtype() { 
+uint8_t SparkFun_Bio_Sensor_Hub::getMcuType() { 
 
   uint8_t returnByte = readByte(IDENTITY, READ_MCU_TYPE, NO_WRITE, 2);  
   if( returnByte != SUCCESS)
@@ -632,7 +632,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 // This function changes the threshold for the FIFO interrupt bit/pin. The
 // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
 // (begin). 
-uint8_t SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
+uint8_t SparkFun_Bio_Sensor_Hub::setFifoThreshold(uint8_t intThresh) {
 
   if( intThresh < 0 || intThresh > 255)
     return INCORR_PARAM; 
@@ -650,7 +650,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setFIFOThreshold(uint8_t intThresh) {
 // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
 // Byte: NONE
 // This function returns the number of samples available in the FIFO. 
-uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
+uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFifo() {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, 1); 
   return sampAvail;
@@ -660,7 +660,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::numSamplesOutFIFO() {
 // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
 // Byte: NONE
 // This function returns the data in the FIFO. 
-uint8_t* SparkFun_Bio_Sensor_Hub::getDataOutFIFO(uint8_t data[]) {
+uint8_t* SparkFun_Bio_Sensor_Hub::getDataOutFifo(uint8_t data[]) {
 
   uint8_t sampAvail = readByte(READ_DATA_OUTPUT, NUM_SAMPLES, NO_WRITE, 1); 
   uint8_t* dataAvail = readFillArray(READ_DATA_OUTPUT, READ_DATA, sampAvail, data); 
@@ -793,7 +793,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 // This function retrieves the attributes of the AFE (Analog Front End) of the
 // MAX8640/1 sensors. It returns the number of bytes in a word for the sensor
 // and the number of registers available. 
-sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
+sensorAttributes SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX86140() {
 
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
@@ -809,7 +809,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX86140() {
 // This function retrieves the attributes of the AFE (Analog Front End) of the
 // MAX30205 sensor. It returns the number of bytes in a word for the sensor
 // and the number of registers available. 
-sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
+sensorAttributes SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30205() {
 
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
@@ -825,7 +825,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30205() {
 // This function retrieves the attributes of the AFE (Analog Front End) of the
 // MAX30001 sensor. It returns the number of bytes in a word for the sensor
 // and the number of registers available. 
-sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
+sensorAttributes SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30001() {
 
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
@@ -841,7 +841,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30001() {
 // This function retrieves the attributes of the AFE (Analog Front End) of the
 // MAX30101 sensor. It returns the number of bytes in a word for the sensor
 // and the number of registers available. 
-sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
+sensorAttributes SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30101() {
   
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
@@ -860,7 +860,7 @@ sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesMAX30101() {
 // This function retrieves the attributes of the AFE (Analog Front End) of the
 // Accelerometer. It returns the number of bytes in a word for the sensor
 // and the number of registers available. 
-sensorAttributes SparkFun_Bio_Sensor_Hub::getAFEAttributesAccelerometer() {
+sensorAttributes SparkFun_Bio_Sensor_Hub::getAfeAttributesAccelerometer() {
 
   sensorAttributes maxAttr; 
   uint8_t tempArray[2]; 
@@ -935,7 +935,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t* regArray, u
 // This function sets the target percentage of the full-scale ADC range that
 // the automatic gain control algorithm uses. It takes a paramater of zero to 
 // 100 percent. 
-uint8_t SparkFun_Bio_Sensor_Hub::setALGOrange(uint8_t perc) {
+uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 
   if( perc < 0 || perc > 100)
     return INCORR_PARAM; 
@@ -953,7 +953,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setALGOrange(uint8_t perc) {
 // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
 // This function changes the step size toward the target for the AGC algorithm. 
 // It takes a paramater of zero to 100 percent. 
-uint8_t SparkFun_Bio_Sensor_Hub::setALGOStepSize(uint8_t step) {
+uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 
   if( step < 0 || step > 100)
     return  INCORR_PARAM; 
@@ -970,7 +970,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setALGOStepSize(uint8_t step) {
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
 // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
 // This function changes the sensitivity of the AGC algorithm.
-uint8_t SparkFun_Bio_Sensor_Hub::setALGOsensitivity(uint8_t sense) {
+uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 
   if( sense < 0 || sense > 100 )
     return INCORR_PARAM; 
@@ -988,7 +988,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setALGOsensitivity(uint8_t sense) {
 // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-uint8_t SparkFun_Bio_Sensor_Hub::setALGOsamples(uint8_t avg) {
+uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 
   if( avg < 0 || avg > 255 )
     return INCORR_PARAM; 
@@ -1006,7 +1006,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setALGOsamples(uint8_t avg) {
 // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
 // This function sets the sample rate for the wrist heart rate monitor
 // (WHRM) algorithm. Compatible with the MAX86141 AFE and KX-122 accelerometer. 
-uint8_t SparkFun_Bio_Sensor_Hub::setWhrmsampRate(uint16_t samp) {
+uint8_t SparkFun_Bio_Sensor_Hub::setWhrmSampRate(uint16_t samp) {
 
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_SAMPLE_WHRM, WHRM_SAMP_RATE_ID, samp); 
   if( statusByte != SUCCESS)
@@ -1155,7 +1155,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setWhrmDefAge(uint8_t defAge) {
 // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
 // This function sets the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_Sensor_Hub::setWhrmBPM(uint8_t bpm) {
+uint8_t SparkFun_Bio_Sensor_Hub::setWhrmBpm(uint8_t bpm) {
 
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_WHRM_BPM,\
                                  WHRM_BPM_INIT, bpm); 
@@ -1239,7 +1239,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::adjustPhotoDet(uint16_t per) {
 // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
 // This function sets the skin contract detect debounce window. It's not clear
 // if this is in seconds or not in the datasheet.
-uint8_t SparkFun_Bio_Sensor_Hub::setSCDWindow(uint16_t time) {
+uint8_t SparkFun_Bio_Sensor_Hub::setScdWindow(uint16_t time) {
   
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_SCD_DEBOUNCE, WHRM_SCD_DEBOUNCE_ID, time);
 
@@ -1285,7 +1285,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::changePDCurrent(uint16_t curr) {
 // This function changes the source of the photoplethysmography (PPG) signal for 
 // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
 // one - PD2, and three - PD1 and PD2.
-uint8_t SparkFun_Bio_Sensor_Hub::changePPGSource(uint8_t pd) {
+uint8_t SparkFun_Bio_Sensor_Hub::changePpgSource(uint8_t pd) {
 
   if( pd < 0 || pd > 3)
     return false; 
@@ -1371,7 +1371,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setSystolicVal(uint8_t val1, uint8_t val2, uint
 // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
 // (0x04), Write Byte: BPT_DATE_ID (0x04)
 // This function sets the estimation date with the given month/day integer. 
-uint8_t SparkFun_Bio_Sensor_Hub::setBPTEstimationDate(uint16_t monthDay) {
+uint8_t SparkFun_Bio_Sensor_Hub::setBptEstimationDate(uint16_t monthDay) {
 
   uint16_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_BPT_EST_DATE, BPT_DATE_ID, monthDay);
   if (statusByte == SUCCESS)
@@ -1402,7 +1402,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setUserResting(uint8_t resting) {
 // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
 // This function sets the given Sp02 coefficients for the blood pressure trending
 // algorithm. 
-uint8_t SparkFun_Bio_Sensor_Hub::adjustBPTcoef(int32_t spCoef1, int32_t spCoef2, int32_t spCoef3 ) {
+uint8_t SparkFun_Bio_Sensor_Hub::adjustBptCoef(int32_t spCoef1, int32_t spCoef2, int32_t spCoef3 ) {
   
   uint32_t coefArr[3] = { spCoef1, spCoef2, spCoef3 };
 
@@ -1547,7 +1547,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setWSP02MotThresh(uint32_t threshVal) {
 // (0x05), Write Byte: WSP02_AGC_TO_ID (0x07)
 // This function changes the timeout period of the wrist Sp02 AGC algorithm. The
 // paramter should be given in seconds. 
-uint8_t SparkFun_Bio_Sensor_Hub::setWSP02AGCTimeout(uint8_t toVal) { 
+uint8_t SparkFun_Bio_Sensor_Hub::setWSP02AgcTimeout(uint8_t toVal) { 
 
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_AGC_TOUT, WSP02_AGC_TO_ID, toVal );
   if (statusByte != SUCCESS)
@@ -1561,7 +1561,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setWSP02AGCTimeout(uint8_t toVal) {
 // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
 // This function changes the timeout period of the wrist Sp02 algorithm. The
 // paramter should be given in seconds. 
-uint8_t SparkFun_Bio_Sensor_Hub::setWSP02ALGOTimeout(uint8_t toVal) {
+uint8_t SparkFun_Bio_Sensor_Hub::setWSP02AlgoTimeout(uint8_t toVal) {
 
   uint8_t statusByte = writeByte( CHANGE_ALGORITHM_CONFIG, SET_WSP02_ALG_TOUT, WSP02_ALGO_TO_ID, toVal );
   if (statusByte != SUCCESS)
@@ -1574,7 +1574,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setWSP02ALGOTimeout(uint8_t toVal) {
 // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
 // This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
 // The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-uint8_t SparkFun_Bio_Sensor_Hub::setWSP02PPGSource(uint8_t pd) {
+uint8_t SparkFun_Bio_Sensor_Hub::setWSP02PpgSource(uint8_t pd) {
   
   if( pd != 1 || pd != 2 )
     return false; 
@@ -1591,7 +1591,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setWSP02PPGSource(uint8_t pd) {
 // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
 // This function reads and returns the currently set target percentage 
 // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALGOrange() {
+uint8_t SparkFun_Bio_Sensor_Hub::readAlgoRange() {
 
   uint8_t range = readByte(READ_ALGORITHM_CONFIG, READ_AGC_PERCENTAGE, READ_AGC_PERC_ID, 1); 
   return range; 
@@ -1602,7 +1602,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOrange() {
 // READ_AGC_STEP_SIZE (0x00), Write Byte: READ_AGC_STEP_SIZE_ID (0x01) 
 // This function returns the step size toward the target for the AGC algorithm. 
 // It returns a value between zero and 100 percent. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALGOStepSize() {
+uint8_t SparkFun_Bio_Sensor_Hub::readAlgoStepSize() {
 
   uint8_t stepSize = readByte(READ_ALGORITHM_CONFIG, READ_AGC_STEP_SIZE, READ_AGC_STEP_SIZE_ID, 1); 
   return stepSize;
@@ -1611,7 +1611,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOStepSize() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
 // READ_AGC_SENSITIVITY_ID (0x00), Write Byte: READ_AGC_SENSITIVITY_ID (0x02)
 // This function returns the sensitivity (percentage) of the automatic gain control. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALGOsensitivity() {
+uint8_t SparkFun_Bio_Sensor_Hub::readAlgoSensitivity() {
 
   uint8_t sensitivity = readByte(READ_ALGORITHM_CONFIG, READ_AGC_SENSITIVITY, READ_AGC_SENSITIVITY_ID, 1); 
   return sensitivity; 
@@ -1622,7 +1622,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readALGOsensitivity() {
 // READ_AGC_NUM_SAMPLES (0x00), Write Byte: READ_AGC_NUM_SAMPLES_ID (0x03)
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
-uint8_t SparkFun_Bio_Sensor_Hub::readALGOsamples() {
+uint8_t SparkFun_Bio_Sensor_Hub::readAlgoSamples() {
 
   uint8_t samples = readByte(READ_ALGORITHM_CONFIG, READ_AGC_NUM_SAMPLES, READ_AGC_NUM_SAMPLES_ID, 1); 
   return samples; 
@@ -1743,7 +1743,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWhrmDefAge() {
 // READ_WHRM_INIT_HR (0x02), Write Byte: READ_WHRM_INIT_HR_ID (0x0A)
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. 
-uint8_t SparkFun_Bio_Sensor_Hub::readWhrmBPM() {
+uint8_t SparkFun_Bio_Sensor_Hub::readWhrmBpm() {
 
   uint8_t bpm = readByte(READ_ALGORITHM_CONFIG, READ_WHRM_INIT_HR, READ_WHRM_INIT_HR_ID, 1); 
   return bpm; 
@@ -1801,7 +1801,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPhotoDetPer() {
 // READ_WHRM_SCD_DEB (0x02), Write Byte: READ_WHRM_SCD_DEB_ID (0x0E)
 // This function reads the skin contract detect debounce window. It's not clear
 // if this is in seconds when reading the datasheet. 
-uint16_t SparkFun_Bio_Sensor_Hub::readSCDWindow() {
+uint16_t SparkFun_Bio_Sensor_Hub::readScdWindow() {
   
   uint16_t seconds = readIntByte( READ_ALGORITHM_CONFIG, READ_WHRM_SCD_DEB, READ_WHRM_SCD_DEB_ID );
   return seconds; 
@@ -1833,7 +1833,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPDCurrent() {
 // This function reads the current source of the photoplethysmography (PPG) signal for 
 // the photodetector (PD). It will return one of three values: zero - PD1, 
 // one - PD2, and three - PD1 and PD2.
-uint8_t SparkFun_Bio_Sensor_Hub::readPPGSource() {
+uint8_t SparkFun_Bio_Sensor_Hub::readPpgSource() {
 
   uint8_t ppgSource = readByte( READ_ALGORITHM_CONFIG, READ_WHRM_PD_PPG, READ_WHRM_PD_PPG_ID, 2 );
   return ppgSource; 
@@ -1881,7 +1881,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWSP02RunMode() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
 // READ_WSP02_AGC_STAT (0x05), Write Byte: READ_WSP02_AGC_STAT_ID (0x03)
 // This function reads whether AGC mode is enabled or disabled. 
-uint8_t SparkFun_Bio_Sensor_Hub::readAGCmode() {
+uint8_t SparkFun_Bio_Sensor_Hub::readAgcMode() {
 
   uint8_t enable = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_STAT, READ_WSP02_AGC_STAT_ID, 2 );
   return enable; 
@@ -1914,7 +1914,8 @@ uint16_t SparkFun_Bio_Sensor_Hub::readMotionDetecPer() {
 // 100,000. 
 uint32_t SparkFun_Bio_Sensor_Hub::readMotThresh() {
   
-  uint32_t motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH, READ_WSP02_MOT_THRESH_ID, 5 );
+  uint32_t motThresh = readLongByte( READ_ALGORITHM_CONFIG, READ_WSP02_MOT_THRESH,\
+                                     READ_WSP02_MOT_THRESH_ID);
   return motThresh; 
 
 }
@@ -1923,7 +1924,7 @@ uint32_t SparkFun_Bio_Sensor_Hub::readMotThresh() {
 // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
 // (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
 // This function reads the time out period of the AGC for the WSp02 Algorithm. 
-uint8_t SparkFun_Bio_Sensor_Hub::readWSP02AGCTimeOut() {
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02AgcTimeOut() {
 
   uint8_t timeOut = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_AGC_TO, READ_WSP02_AGC_TO_ID, 2 );
   return timeOut;
@@ -1944,7 +1945,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readWSP02AlgTimeOut() {
 // (0x05), Write Byte: READ_WSP02_PD_PPG_ID (0x03)
 // This function reads the source of the photoplethysmogorphy: 0x01 = PD1 or
 // 0x02 = PD2.  
-uint8_t SparkFun_Bio_Sensor_Hub::readWSP02PPGSource() {
+uint8_t SparkFun_Bio_Sensor_Hub::readWSP02PpgSource() {
 
   uint8_t ppgSource = readByte( READ_ALGORITHM_CONFIG, READ_WSP02_PD_PPG, READ_WSP02_PD_PPG_ID, 2 );
   return ppgSource;
@@ -2190,7 +2191,7 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 // This function takes the 608 data points acquired by the calibration
 // procedure and feeds them into the blood pressure trending
 // algorithm. 
-bool SparkFun_Bio_Sensor_Hub::calibrateBPTAlm(){
+bool SparkFun_Bio_Sensor_Hub::calibrateBptAlm(){
  
   uint8_t statusByte; 
   _i2cPort->beginTransmission(_address);     
@@ -2453,11 +2454,12 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // and the information is read. This differs from the above read commands in
 // that it returns a 4 byte (uint32_t) integer instead of 8. 
 uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\ 
-                                               uint8_t _writeByte,  uint8_t _numOfReads )
+                                               uint8_t _writeByte)
 {
 
    uint32_t returnByte;
-   uint32_t statusByte; 
+   uint8_t statusByte; 
+
   _i2cPort->beginTransmission(_address);
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
@@ -2465,14 +2467,12 @@ uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _ind
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
-  _numOfReads++; // Status byte.... 
-  _i2cPort->requestFrom(_address, _numOfReads); 
+  _i2cPort->requestFrom(_address, (sizeof(uint32_t) * 3) + 1 ); // + 1 for status byte
   statusByte = _i2cPort->read();
-  _numOfReads--; // One read for status byte.  
   if( statusByte ) // Pass through if SUCCESS (0x00). 
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
-  for(uint8_t i = 0; i < _numOfReads; i++){
+  for(uint8_t i = 0; i < sizeof(uint32_t) * 3; i++){ // Reading three long bytes
     returnByte |= (_i2cPort->read() << 24);
     returnByte |= (_i2cPort->read() << 16);
     returnByte |= (_i2cPort->read() << 8);

@@ -119,8 +119,8 @@ void setup(){
   if(!bioHub.setUserResting(1))
     Serial.println("User Resting Setting Set");
 
-  Serial.println(bioHub.readALGOrange());
-  Serial.println(bioHub.readALGOStepSize());
+  Serial.println(bioHub.readAlgoRange());
+  Serial.println(bioHub.readAlgoStepSize());
   Serial.println(bioHub.readWhrmSampRate());
   // Set the max height in cm of the persons you'll be monitoring. 
   if(!bioHub.setWhrmMaxHeight(177))
@@ -196,7 +196,7 @@ void setup(){
     Serial.print("Error: "); 
     Serial.println(error); 
   }
-
+  
   while(1);
 
 }

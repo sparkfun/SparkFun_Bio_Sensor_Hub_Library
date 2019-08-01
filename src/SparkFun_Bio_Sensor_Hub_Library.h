@@ -596,7 +596,7 @@ class SparkFun_Bio_Sensor_Hub
   // The following function returns a byte that signifies the microcontoller that
   // is in communcation with your host microcontroller. Returns 0x00 for the
   // MAX32625 and 0x01 for the MAX32660/MAX32664. 
-  uint8_t getMCUtype(); 
+  uint8_t getMcuType(); 
 
   // Family Byte: BOOTLOADER_INFO (0x80), Index Byte: BOOTLOADER_VERS (0x00) 
   // This function checks the version number of the bootloader on the chip and
@@ -638,17 +638,17 @@ class SparkFun_Bio_Sensor_Hub
   // This function changes the threshold for the FIFO interrupt bit/pin. The
   // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
   // (begin). 
-  uint8_t setFIFOThreshold(uint8_t);   
+  uint8_t setFifoThreshold(uint8_t);   
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: NUM_SAMPLES (0x00), Write
   // Byte: NONE
   // This function returns the number of samples available in the FIFO. 
-  uint8_t numSamplesOutFIFO();
+  uint8_t numSamplesOutFifo();
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
   // Byte: NONE
   // This function returns the data in the FIFO. 
-  uint8_t* getDataOutFIFO(uint8_t data[]);
+  uint8_t* getDataOutFifo(uint8_t data[]);
 
   // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
   // Byte: NONE
@@ -725,32 +725,32 @@ class SparkFun_Bio_Sensor_Hub
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX8640/1 sensors. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesMAX86140();
+  sensorAttributes getAfeAttributesMAX86140();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30205 (0x01)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30205 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesMAX30205();
+  sensorAttributes getAfeAttributesMAX30205();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30001 (0x02)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30001 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesMAX30001();
+  sensorAttributes getAfeAttributesMAX30001();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAX30101/ (0x03)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // MAX30101 sensor. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesMAX30101();
+  sensorAttributes getAfeAttributesMAX30101();
 
   // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
   // RETRIEVE_AFE_ACCELEROMETER (0x04)
   // This function retrieves the attributes of the AFE (Analog Front End) of the
   // Accelerometer. It returns the number of bytes in a word for the sensor
   // and the number of registers available. 
-  sensorAttributes getAFEAttributesAccelerometer();
+  sensorAttributes getAfeAttributesAccelerometer();
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX86140 (0x00)
   // This function returns all registers and register values sequentially of the
@@ -787,30 +787,30 @@ class SparkFun_Bio_Sensor_Hub
   // This function sets the target percentage of the full-scale ADC range that
   // the automatic gain control algorithm uses. It takes a paramater of zero to 
   // 100 percent. 
-  uint8_t setALGOrange(uint8_t);
+  uint8_t setAlgoRange(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_STEP_SIZE (0x00), Write Byte: AGC_STEP_SIZE_ID (0x01) 
   // This function changes the step size toward the target for the AGC algorithm. 
   // It takes a paramater of zero to 100 percent. 
-  uint8_t setALGOStepSize(uint8_t);
+  uint8_t setAlgoStepSize(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SENSITIVITY (0x00), Write Byte: AGC_SENSITIVITY_ID (0x02)
   // This function changes the sensitivity of the AGC algorithm.
-  uint8_t setALGOsensitivity(uint8_t);
+  uint8_t setAlgoSensitivity(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_AVG_SAMPLES (0x00), Write Byte: AGC_NUM_SAMP_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  uint8_t setALGOsamples(uint8_t);
+  uint8_t setAlgoSamples(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_SAMPLE_WHRM (0x02), Write Byte: WHRM_SAMP_RATE_ID (0x00)
   // This function sets the sample rate for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t setWhrmsampRate(uint16_t);
+  uint8_t setWhrmSampRate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_WHRM_MAX_HEIGHT (0x02), Write Byte: WHRM_MAX_HEIGHT_ID (0x01)
@@ -870,7 +870,7 @@ class SparkFun_Bio_Sensor_Hub
   // SET_WHRM_BPM (0x02), Write Byte: WHRM_BPM_INIT (0x0A)
   // This function sets the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t setWhrmBPM(uint8_t);
+  uint8_t setWhrmBpm(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_PULSE_OX_COEF (0x02), Write Byte: MAXIMFAST_COEF_ID (0x0B)
@@ -898,7 +898,7 @@ class SparkFun_Bio_Sensor_Hub
   // SET_SCD_DEBOUNCE (0x02), Write Byte: WHRM_SCD_DEBOUNCE_ID (0x0E)
   // This function sets the skin contract detect debounce window. It's not clear
   // if this is in seconds or not in the datasheet.
-  uint8_t setSCDWindow(uint16_t);
+  uint8_t setScdWindow(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_WHRM_THRESH (0x02), Write Byte: WHRM_MOTION_ID (0x0F)
@@ -916,7 +916,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function changes the source of the photoplethysmography (PPG) signal for 
   // the photodetector (PD). The paramater "pd" accepts one of three values: zero - PD1, 
   // one - PD2, and three - PD1 and PD2.
-  uint8_t changePPGSource(uint8_t);
+  uint8_t changePpgSource(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: 
   // SET_BPT_MED (0x04), Write Byte: BPT_BLOOD_PRESSURE_ID (0x00)
@@ -940,7 +940,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_EST_DATE
   // (0x04), Write Byte: BPT_DATE_ID (0x04)
   // This function sets the estimation date with the given month/day integer. 
-  uint8_t setBPTEstimationDate(uint16_t);
+  uint8_t setBptEstimationDate(uint16_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_BPT_REST
   // (0x04), Write Byte: BPT_RESTING_ID (0x05)
@@ -952,7 +952,7 @@ class SparkFun_Bio_Sensor_Hub
   // (0x04), Write Byte: BPT_SP02_COEF_ID (0x06)
   // This function sets the given Sp02 coefficients for the blood pressure trending
   // algorithm. 
-  uint8_t adjustBPTcoef(int32_t, int32_t, int32_t);
+  uint8_t adjustBptCoef(int32_t, int32_t, int32_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSPO2_COEF
   // (0x05), Write Byte: WSP02_COEF_ID (0x00)
@@ -999,42 +999,42 @@ class SparkFun_Bio_Sensor_Hub
   // (0x05), Write Byte: WSP02_AGC_TO_ID (0x07)
   // This function changes the timeout period of the wrist Sp02 AGC algorithm. The
   // paramter should be given in seconds. 
-  uint8_t setWSP02AGCTimeout(uint8_t);
+  uint8_t setWSP02AgcTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_ALG_TOUT
   // (0x05), Write Byte: WSP02_ALGO_TO_ID (0x08)
   // This function changes the timeout period of the wrist Sp02 algorithm. The
   // paramter should be given in seconds. 
-  uint8_t setWSP02ALGOTimeout(uint8_t);
+  uint8_t setWSP02AlgoTimeout(uint8_t);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: SET_WSP02_PPG_SIG
   // (0x05), Write Byte: WSP02_PD_CONFIG (0x09)
   // This function changes the source of the photoplethysmographic source for the wrist Sp02 algorithm.
   // The parameter choses the photodetector to use: PD1 (0x01) or PD2 (0x02). 
-  uint8_t setWSP02PPGSource(uint8_t);
+  uint8_t setWSP02PpgSource(uint8_t);
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_PERCENTAGE (0x00), Write Byte: READ_AGC_PERC_ID (0x00) 
   // This function reads and returns the currently set target percentage 
   // of the full-scale ADC range that the Automatic Gain Control algorithm is using. 
-  uint8_t readALGOrange();
+  uint8_t readAlgoRange();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_STEP_SIZE (0x00), Write Byte: READ_AGC_STEP_SIZE_ID (0x01) 
   // This function returns the step size toward the target for the AGC algorithm. 
   // It returns a value between zero and 100 percent. 
-  uint8_t readALGOStepSize();
+  uint8_t readAlgoStepSize();
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_SENSITIVITY_ID (0x00), Write Byte: READ_AGC_SENSITIVITY_ID (0x02)
   // This function returns the sensitivity (percentage) of the automatic gain control. 
-  uint8_t readALGOsensitivity();
+  uint8_t readAlgoSensitivity();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_AGC_NUM_SAMPLES (0x00), Write Byte: READ_AGC_NUM_SAMPlES_ID (0x03)
   // This function changes the number of samples that are averaged. 
   // It takes a paramater of zero to 255. 
-  uint8_t readALGOsamples();
+  uint8_t readAlgoSamples();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_SAMPLE_RATE (0x02), Write Byte: READ_WHRM_SAMPLE_RATE_ID (0x00)
@@ -1100,7 +1100,7 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WHRM_INIT_HR (0x02), Write Byte: READ_WHRM_INIT_HR_ID (0x0A)
   // This function reads the maximum age for the wrist heart rate monitor
   // (WHRM) algorithm. 
-  uint8_t readWhrmBPM();
+  uint8_t readWhrmBpm();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_MAX_FAST_COEF (0x02), Write Byte: READ_MAX_FAST_COEF_ID (0x0B)
@@ -1131,7 +1131,7 @@ class SparkFun_Bio_Sensor_Hub
   // READ_WHRM_SCD_DEB (0x02), Write Byte: READ_WHRM_SCD_DEB_ID (0x0E)
   // This function reads the skin contract detect debounce window. It's not clear
   // if this is in seconds when reading the datasheet. 
-  uint16_t readSCDWindow();
+  uint16_t readScdWindow();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WHRM_MOT_MAG (0x02), Write Byte: READ_WHRM_MOT_MAG_ID (0x0F)
@@ -1148,7 +1148,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function reads the current source of the photoplethysmography (PPG) signal for 
   // the photodetector (PD). It will return one of three values: zero - PD1, 
   // one - PD2, and three - PD1 and PD2.
-  uint8_t readPPGSource();
+  uint8_t readPpgSource();
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_COEF (0x05), Write Byte: READ_WSP02_COEF_ID (0x00)
@@ -1171,7 +1171,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_AGC_STAT (0x05), Write Byte: READ_WSP02_AGC_STAT_ID (0x03)
   // This function reads whether AGC mode is enabled or disabled. 
-  uint8_t readAGCmode();
+  uint8_t readAgcMode();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: 
   // READ_WSP02_MD_STAT (0x05), Write Byte: READ_WSP02_MD_STAT_ID (0x04)
@@ -1192,7 +1192,7 @@ class SparkFun_Bio_Sensor_Hub
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_AGC_TO
   // (0x05), Write Byte: READ_WSP02_AGC_TO_ID (0x07)
   // This function reads the time out period of the AGC for the WSp02 Algorithm. 
-  uint8_t readWSP02AGCTimeOut();
+  uint8_t readWSP02AgcTimeOut();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte: READ_WSP02_ALGTHM_TO 
   // (0x05), Write Byte: READ_WSP02_ALGTHM_TO_ID (0x08)
@@ -1203,7 +1203,7 @@ class SparkFun_Bio_Sensor_Hub
   // (0x05), Write Byte: READ_WSP02_PD_PPG_ID (0x03)
   // This function reads the source of the photoplethysmogorphy: 0x01 = PD1 or
   // 0x02 = PD2.  
-  uint8_t readWSP02PPGSource();
+  uint8_t readWSP02PpgSource();
 
   // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
   // ENABLE_AGC_ALGO (0x00)
@@ -1277,7 +1277,7 @@ class SparkFun_Bio_Sensor_Hub
   // This function takes the 608 data points acquired by the calibration
   // procedure and feeds them into the blood pressure trending
   // algorithm. 
-  bool calibrateBPTAlm();
+  bool calibrateBptAlm();
 
   // This function uses the given family, index, and write byte to communicate
   // with the MAX32664 which in turn communicates with downward sensors. There
@@ -1332,7 +1332,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 4 byte (uint32_t) integer instead of 8. 
-  uint32_t readLongByte( uint8_t, uint8_t, uint8_t, uint8_t);
+  uint32_t readLongByte( uint8_t, uint8_t, uint8_t );
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
