@@ -37,7 +37,7 @@ const int mfioPin = 5;
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioLedData body;  
+bioData body;  
 // ^^^^^^^^^
 // What's this!? This is a type (like int, byte, long) unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
@@ -77,8 +77,7 @@ void setup(){
   // it's being configured this delay will give some time for the data to catch
   // up. 
   delay(4000); 
-  
-  
+
 }
 
 void loop(){
