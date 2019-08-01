@@ -27,7 +27,7 @@
 
 const uint8_t BIO_ADDRESS = 0x55;
 
-struct bioLedData {
+struct bioData {
 
   uint32_t irLed; 
   uint32_t redLed; 
@@ -531,7 +531,7 @@ class SparkFun_Bio_Sensor_Hub
   // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
   // "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  bioLedData readBpm();
+  bioData readBpm();
 
   // This function takes 9 bytes of LED values from the MAX30101 associated with 
   // the RED, IR, and GREEN LEDs. In addition it gets the 8 bytes from the FIFO buffer 
@@ -539,12 +539,12 @@ class SparkFun_Bio_Sensor_Hub
   // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
   // is stated as "wrist" though the sensor only works with the finger. The data is loaded
   // into the whrmFifo and returned.  
-  bioLedData readSensor();
+  bioData readSensor();
 
   // This function takes the information of both the LED value and the biometric
   // data from the MAX32664's FIFO. In essence it combines the two functions
   // above into a single function call. 
-  bioLedData readSensorBpm();
+  bioData readSensorBpm();
 
   // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
   // are modified to the same width. This will affect the number of samples that

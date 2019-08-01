@@ -50,12 +50,12 @@ int sampleVal;
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioLedData body; 
+bioData body; 
 // ^^^^^^^^^
 // What's this!? This is a type (like "int", "byte", "long") unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
 // specific information on the LED count values of the sensor and ALSO the
-// biometric data: heart rate, oxygen levels, and confidence. "bioLedData" is 
+// biometric data: heart rate, oxygen levels, and confidence. "bioData" is 
 // actually a specific kind of type, known as a "struct". I chose the name
 // "body" but you could use another variable name like "blood", "readings",
 // "ledBody" or whatever. Using the variable in the following way gives the
@@ -119,9 +119,6 @@ void setup(){
   if(!bioHub.setUserResting(1))
     Serial.println("User Resting Setting Set");
 
-  Serial.println(bioHub.readAlgoRange());
-  Serial.println(bioHub.readAlgoStepSize());
-  Serial.println(bioHub.readWhrmSampRate());
   // Set the max height in cm of the persons you'll be monitoring. 
   if(!bioHub.setWhrmMaxHeight(177))
     Serial.println("Maximum Height Set!");
@@ -191,10 +188,15 @@ void setup(){
   Serial.println(bioHub.readSkinDetect());
   Serial.println(bioHub.readPhotoDetPer());
   Serial.println(bioHub.readScdWindow());
-  Serial.println(bioHub.readMotionMag());
+  Serial.println(bioHub.readPDCurrent());
+  Serial.println(bioHub.readPpgSource());
+  Serial.println(bioHub.readWSP02SampRate());
+  Serial.println(bioHub.readMotionDetect());
+  Serial.println(bioHub.readMotionDetecPer());
+  Serial.println(bioHub.readMotThresh());
   // Now that everything is configured.....
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.configSensorBpm(); // Configure Sensor and BPM mode 
+  int error = bioHub.configBpm(); // Configure Sensor and BPM mode 
   if(!error){
     Serial.println("Sensor configured.");
   }
@@ -204,6 +206,7 @@ void setup(){
     Serial.println(error); 
   }
  
+  Serial.println(bioHub.readAgcMode());
   while(1);
 
 }

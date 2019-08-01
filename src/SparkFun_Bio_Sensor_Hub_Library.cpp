@@ -188,9 +188,9 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
 // and the finger detected status (uint8_t). Note that the the algorithm is stated as 
 // "wrist" though the sensor only works with the finger. The data is loaded
 // into the whrmFifo and returned.  
-bioLedData SparkFun_Bio_Sensor_Hub::readBpm(){
+bioData SparkFun_Bio_Sensor_Hub::readBpm(){
 
-  bioLedData libBpm; 
+  bioData libBpm; 
   uint8_t statusChauf; // The status chauffeur captures return values. 
 
   statusChauf = readSensorHubStatus();
@@ -231,9 +231,9 @@ bioLedData SparkFun_Bio_Sensor_Hub::readBpm(){
 // SpO2 (uint16_t), and the finger detected status (uint8_t). Note that the the algorithm 
 // is stated as "wrist" though the sensor only works with the finger. The data is loaded
 // into the whrmFifo and returned.  
-bioLedData SparkFun_Bio_Sensor_Hub::readSensor(){ 
+bioData SparkFun_Bio_Sensor_Hub::readSensor(){ 
 
-  bioLedData libLedFifo; 
+  bioData libLedFifo; 
   readFillArray(READ_DATA_OUTPUT, READ_DATA, MAX30101_LED_ARRAY, senArr); 
 
   // Value of LED one....
@@ -264,9 +264,9 @@ bioLedData SparkFun_Bio_Sensor_Hub::readSensor(){
 // This function takes the information of both the LED value and the biometric
 // data from the MAX32664's FIFO. In essence it combines the two functions
 // above into a single function call. 
-bioLedData SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
+bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
 
-  bioLedData libLedBpm; 
+  bioData libLedBpm; 
   readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE + MAX30101_LED_ARRAY, bpmSenArr); 
 
   // Value of LED one....
@@ -2393,7 +2393,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
   _i2cPort->requestFrom(_address, arraySize + sizeof(statusByte)); 
   statusByte = _i2cPort->read(); // Got it
   if( statusByte ){// SUCCESS (0x00)
-    for(uint8_t i = 0; i < sizeof(array); i++){
+    for(uint8_t i = 0; i < arraySize; i++){
       array[i] = 0; 
     }
     return array; 
