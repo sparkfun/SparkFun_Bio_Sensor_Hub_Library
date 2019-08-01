@@ -184,7 +184,14 @@ void setup(){
   ageVal = bioHub.readWhrmDefAge();
   Serial.print("Default Age set to: ");    
   Serial.println(ageVal);
-  
+  Serial.println(bioHub.readAlgoRange());
+  Serial.println(bioHub.readAlgoStepSize());
+  Serial.println(bioHub.readAlgoSensitivity());
+  Serial.println(bioHub.readAlgoSamples());
+  Serial.println(bioHub.readSkinDetect());
+  Serial.println(bioHub.readPhotoDetPer());
+  Serial.println(bioHub.readScdWindow());
+  Serial.println(bioHub.readMotionMag());
   // Now that everything is configured.....
   Serial.println("Configuring Sensor...."); 
   int error = bioHub.configSensorBpm(); // Configure Sensor and BPM mode 
@@ -196,7 +203,7 @@ void setup(){
     Serial.print("Error: "); 
     Serial.println(error); 
   }
-  
+ 
   while(1);
 
 }

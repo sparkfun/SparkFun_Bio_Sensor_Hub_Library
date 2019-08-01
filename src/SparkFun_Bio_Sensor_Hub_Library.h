@@ -756,31 +756,31 @@ class SparkFun_Bio_Sensor_Hub
   // This function returns all registers and register values sequentially of the
   // MAX86140/1 Sensors: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX86140(uint8_t*, uint8_t);
+  uint8_t* dumpRegisterMAX86140(uint8_t, uint8_t regArray[]);
   
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30205 (0x01)
   // This function returns all registers and register values sequentially of the
   // MAX30205 sensor: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX30205(uint8_t regArray[8]);
+  uint8_t* dumpRegisterMAX30205(uint8_t, uint8_t regArray[]);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30001 (0x02)
   // This function returns all registers and register values sequentially of the
   // MAX30001 sensor: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX30001(uint8_t*, uint8_t);
+  uint8_t* dumpRegisterMAX30001(uint8_t, uint8_t regArray[]);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
   // This function returns all registers and register values sequentially of the
   // MAX30101 sensor: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterMAX30101(uint8_t regArray[255]);
+  uint8_t* dumpRegisterMAX30101(uint8_t, uint8_t regArray[255]);
 
   // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
   // This function returns all registers and register values sequentially of the
   // Accelerometer: register zero and register value zero to register n and 
   // register value n.
-  uint8_t* dumpRegisterAccelerometer(uint8_t*, uint8_t);
+  uint8_t* dumpRegisterAccelerometer(uint8_t, uint8_t regArray[]);
 
   // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
   // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
@@ -1098,8 +1098,8 @@ class SparkFun_Bio_Sensor_Hub
   
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
   // READ_WHRM_INIT_HR (0x02), Write Byte: READ_WHRM_INIT_HR_ID (0x0A)
-  // This function reads the maximum age for the wrist heart rate monitor
-  // (WHRM) algorithm. 
+  // This function reads the initial heart rate value in bpm which can speed up
+  // the (WHRM) algorithm. 
   uint8_t readWhrmBpm();
 
   // Family Byte: READ_ALGORITHM_CONFIG (0x51), Index Byte:
@@ -1309,14 +1309,14 @@ class SparkFun_Bio_Sensor_Hub
   // requests. It starts a request by writing the family byte, index byte, and
   // delays 60 microseconds, during which the MAX32664 retrieves the requested 
   // information. An I-squared-C request is then issued, and the information is read and returned.
-  uint8_t readByte( uint8_t, uint8_t, uint8_t); 
+  uint8_t readByte(uint8_t, uint8_t); 
 
   // This function is exactly as the one above except it accepts a Write Byte as
   // a paramter. It starts a request by writing the family byte, index byte, and
   // write byte to the MAX32664, delays 60 microseconds, during which
   // the MAX32664 retrieves the requested information. A I-squared-C request is
   // then issued, and the information is read and returned. 
-  uint8_t readByte( uint8_t, uint8_t, uint8_t, uint8_t); 
+  uint8_t readByte(uint8_t, uint8_t, uint8_t); 
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1324,7 +1324,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 16 bit integer instead of 8. 
-  uint16_t readIntByte( uint8_t, uint8_t, uint8_t );
+  uint16_t readIntByte(uint8_t, uint8_t, uint8_t);
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
@@ -1332,7 +1332,7 @@ class SparkFun_Bio_Sensor_Hub
   // retrieves the requested information. An I-squared-C request is then issued, 
   // and the information is read. This differs from the above read commands in
   // that it returns a 4 byte (uint32_t) integer instead of 8. 
-  uint32_t readLongByte( uint8_t, uint8_t, uint8_t );
+  uint32_t readLongByte(uint8_t, uint8_t, uint8_t);
 
   // This function handles all read commands or stated another way, all information
   // requests. It starts a request by writing the family byte, an index byte, and
