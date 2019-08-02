@@ -428,7 +428,7 @@ class SparkFun_Bio_Sensor_Hub
     // This function enables the MAX30101. 
     uint8_t max30101Control(uint8_t);
 
-    // Family Byte: READ_SENSOR_MODE (0x44), Index Byte: READ_ENABLE_MAX30101 (0x03)
+    // Family Byte: READ_SENSOR_MODE (0x45), Index Byte: READ_ENABLE_MAX30101 (0x03)
     // This function checks if the MAX30101 is enabled or not. 
     uint8_t readMAX30101State();
 
