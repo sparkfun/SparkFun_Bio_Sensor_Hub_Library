@@ -127,7 +127,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
 // This function sets very basic settings to get LED count values from the MAX30101.
 // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
 // and Green. 
-uint8_t SparkFun_Bio_Sensor_Hub::configMaxSensor(){
+uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
 
   uint8_t statusChauf; // Our status chauffeur
   readRegisterMAX30101(0x07); // Recommended 
@@ -246,17 +246,6 @@ bioData SparkFun_Bio_Sensor_Hub::readSensor(){
   libLedFifo.redLed |= uint32_t(senArr[4]) << 8; 
   libLedFifo.redLed |= senArr[5]; 
 
-  // While it's not used in the MAX30101, but it may be used in other sensors,
-  // in which case this will still be useful.
-  libLedFifo.ledThree = uint32_t(senArr[6]) << 16; 
-  libLedFifo.ledThree |= uint32_t(senArr[7]) << 8; 
-  libLedFifo.ledThree |= senArr[8]; 
-
-  // Value of LED three....
-  libLedFifo.greenLed = uint32_t(senArr[9]) << 16; 
-  libLedFifo.greenLed |= uint32_t(senArr[10]) << 8; 
-  libLedFifo.greenLed |= senArr[11]; 
-
   return libLedFifo;
 
 }
@@ -279,32 +268,21 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
   libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
   libLedBpm.redLed |= bpmSenArr[5]; 
 
-  // While it's not used in the MAX30101, but it may be used in other sensors,
-  // in which case this will still be useful.
-  libLedBpm.ledThree = uint32_t(bpmSenArr[6]) << 16; 
-  libLedBpm.ledThree |= uint32_t(bpmSenArr[7]) << 8; 
-  libLedBpm.ledThree |= bpmSenArr[8]; 
-
-  // Value of LED three....
-  libLedBpm.greenLed = uint32_t(bpmSenArr[9]) << 16; 
-  libLedBpm.greenLed |= uint32_t(bpmSenArr[10]) << 8; 
-  libLedBpm.greenLed |= bpmSenArr[11]; 
-
   // Heart rate formatting
-  libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
-  libLedBpm.heartRate |= (bpmSenArr[13]); 
+  libLedBpm.heartRate = (uint16_t(bpmSenArr[6]) << 8); 
+  libLedBpm.heartRate |= (bpmSenArr[7]); 
   libLedBpm.heartRate = libLedBpm.heartRate/10; 
 
   // Confidence formatting
-  libLedBpm.confidence = bpmSenArr[14]; 
+  libLedBpm.confidence = bpmSenArr[8]; 
 
   //Blood oxygen level formatting
-  libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
-  libLedBpm.oxygen |= bpmSenArr[16]; 
+  libLedBpm.oxygen = uint16_t(bpmSenArr[9]) << 8;
+  libLedBpm.oxygen |= bpmSenArr[10]; 
   libLedBpm.oxygen = libLedBpm.oxygen/10;
 
   //"Machine State" - has a finger been detected?
-  libLedBpm.status = bpmSenArr[17];
+  libLedBpm.status = bpmSenArr[11];
   return libLedBpm;
 
 }

@@ -23,7 +23,7 @@
 #define ENABLE_CMD_DELAY       40 // Milliseconds
 #define CMD_DELAY              5  // Milliseconds
 #define WHRM_ARRAY_SIZE        6  // Number of bytes....
-#define MAX30101_LED_ARRAY     12 // 4 values of 24 bit LED values
+#define MAX30101_LED_ARRAY     6 // 4 values of 24 bit LED values
 
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
@@ -36,8 +36,6 @@ struct bioData {
 
   uint32_t irLed; 
   uint32_t redLed; 
-  uint32_t ledThree; 
-  uint32_t greenLed; // MAX30101 multiLED mode
   uint16_t heartRate; // LSB = 0.1bpm
   uint8_t  confidence; // 0-100% LSB = 1%
   uint16_t oxygen; // 0-100% LSB = 1%
@@ -336,7 +334,7 @@ class SparkFun_Bio_Sensor_Hub
     // This function sets very basic settings to get LED count values from the MAX30101.
     // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
     // and Green. 
-    uint8_t configMaxSensor();
+    uint8_t configSensor();
     
     // This function sets very basic settings to get sensor and biometric data.
     // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
