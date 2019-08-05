@@ -41,7 +41,7 @@ int sampleVal;
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
 
-bioLedData body; 
+bioData body; 
 // ^^^^^^^^^
 // What's this!? This is a type (like "int", "byte", "long") unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
