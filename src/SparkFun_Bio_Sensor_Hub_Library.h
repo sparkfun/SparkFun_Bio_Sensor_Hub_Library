@@ -23,11 +23,11 @@
 #define ENABLE_CMD_DELAY       40 // Milliseconds
 #define CMD_DELAY              6  // Milliseconds
 #define WHRM_ARRAY_SIZE        6  // Number of bytes....
-#define MAX30101_LED_ARRAY     6 // 2 values of 24 bit (3 byte) LED values
+#define MAX30101_LED_ARRAY     6 // 4 values of 24 bit (3 byte) LED values
 
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
-#define WRITE_SET_THRESHOLD    0x00 //Index Byte for WRITE_INPUT(0x14)
+#define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
 #define WRITE_EXTERNAL_TO_FIFO 0x00
 
 const uint8_t BIO_ADDRESS = 0x55;
@@ -608,7 +608,6 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t _resetPin;
     uint8_t _mfioPin;
     uint8_t _address; 
-    uint8_t _calibData[608];
     uint32_t _writeCoefArr[3];
     
     // I-squared-C Class----
@@ -616,17 +615,21 @@ class SparkFun_Bio_Sensor_Hub
 
     // Functions------------
     
+    // This function uses the given family, index, and write byte to enable
+    // the given sensor. 
+    uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
+    
     // This function uses the given family, index, and write byte to communicate
     // with the MAX32664 which in turn communicates with downward sensors. There
     // are two steps demonstrated in this function. First a write to the MCU
     // indicating what you want to do, a delay, and then a read to confirm positive
     // transmission. 
-    uint8_t writeByte( uint8_t, uint8_t, uint8_t);
+    uint8_t writeByte(uint8_t, uint8_t, uint8_t);
 
     // This function sends is simliar to the one above and sends info to the MAX32664 
     // but takes an additional uint8_t as a paramter. Again there is the write
     // of the specific bytes followed by a read to confirm positive transmission. 
-    uint8_t writeByte( uint8_t, uint8_t, uint8_t, uint8_t);
+    uint8_t writeByte(uint8_t, uint8_t, uint8_t, uint8_t);
 
     // This function is the same as the function above and uses the given family, 
     // index, and write byte, but also takes a 16 bit integer as a paramter to communicate

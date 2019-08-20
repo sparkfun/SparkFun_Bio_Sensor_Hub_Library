@@ -101,7 +101,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired.
+  statusChauf = setFifoThreshold(0x0F); // One sample before interrupt is fired.
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
@@ -268,7 +268,7 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
   // Heart rate formatting
   libLedBpm.heartRate = (uint16_t(bpmSenArr[6]) << 8); 
   libLedBpm.heartRate |= (bpmSenArr[7]); 
-  libLedBpm.heartRate = libLedBpm.heartRate/10; 
+  libLedBpm.heartRate /= 10; 
 
   // Confidence formatting
   libLedBpm.confidence = bpmSenArr[8]; 
@@ -276,7 +276,7 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
   //Blood oxygen level formatting
   libLedBpm.oxygen = uint16_t(bpmSenArr[9]) << 8;
   libLedBpm.oxygen |= bpmSenArr[10]; 
-  libLedBpm.oxygen = libLedBpm.oxygen/10;
+  libLedBpm.oxygen /= 10;
 
   //"Machine State" - has a finger been detected?
   libLedBpm.status = bpmSenArr[11];
@@ -501,7 +501,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
     return INCORR_PARAM; 
 
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_MAX30101, senSwitch);
+  uint8_t statusByte = enableWrite(ENABLE_SENSOR, ENABLE_MAX30101, senSwitch);
   if( statusByte != SUCCESS ) 
     return statusByte; 
   else
@@ -528,7 +528,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
     return INCORR_PARAM; 
   
   // Check that communication was successful, not that the sensor is enabled.
-  uint8_t statusByte = writeByte(ENABLE_SENSOR, ENABLE_ACCELEROMETER, accelSwitch);
+  uint8_t statusByte = enableWrite(ENABLE_SENSOR, ENABLE_ACCELEROMETER, accelSwitch);
   if( statusByte != SUCCESS ) 
     return statusByte; 
   else
@@ -553,7 +553,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 
 }
 
-// Family Byte: OUTPUT_MODE, Index Byte: WRITE_SET_THRESHOLD, Write byte: intThres
+// Family Byte: OUTPUT_MODE(0x10), Index Byte: WRITE_SET_THRESHOLD (0x01), Write byte: intThres
 // (parameter - value betwen 0 and 0xFF).
 // This function changes the threshold for the FIFO interrupt bit/pin. The
 // interrupt pin is the MFIO pin which is set to INPUT after IC initialization
@@ -862,7 +862,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::agcAlgoControl(uint8_t enable) {
   else
     return INCORR_PARAM; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable);
+  uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable);
   if (statusByte != SUCCESS)
     return statusByte;
   else
@@ -880,7 +880,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::maximFastAlgoControl(uint8_t algSwitch) {
   else
     return INCORR_PARAM; 
   
-  uint8_t statusByte = writeByte(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, algSwitch);
+  uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, algSwitch);
   if (statusByte != SUCCESS)
     return statusByte;
   else
@@ -1007,6 +1007,25 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
 //-------------------Private Functions-----------------------
 
+// This function uses the given family, index, and write byte to enable
+// the given sensor. 
+uint8_t SparkFun_Bio_Sensor_Hub::enableWrite(uint8_t _familyByte, uint8_t _indexByte,\
+                                                                uint8_t _writeByte)
+{
+
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte); 
+  _i2cPort->endTransmission(); 
+  delay(ENABLE_CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, static_cast<uint8_t>(1)); // Status Byte, success or no? 0x00 is a successful transmit
+  uint8_t statusByte = _i2cPort->read(); 
+  return statusByte; 
+
+}
+
 // This function uses the given family, index, and write byte to communicate
 // with the MAX32664 which in turn communicates with downward sensors. There
 // are two steps demonstrated in this function. First a write to the MCU
@@ -1021,7 +1040,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte); 
   _i2cPort->endTransmission(); 
-  delay(ENABLE_CMD_DELAY); 
+  delay(CMD_DELAY); 
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(1)); // Status Byte, success or no? 0x00 is a successful transmit
   uint8_t statusByte = _i2cPort->read(); 
