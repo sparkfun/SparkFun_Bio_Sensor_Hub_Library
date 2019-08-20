@@ -617,7 +617,7 @@ class SparkFun_Bio_Sensor_Hub
     
     // This function uses the given family, index, and write byte to enable
     // the given sensor. 
-    uint8_t enableWrite(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte)
+    uint8_t enableWrite(uint8_t,  uint8_t, uint8_t);
     
     // This function uses the given family, index, and write byte to communicate
     // with the MAX32664 which in turn communicates with downward sensors. There
