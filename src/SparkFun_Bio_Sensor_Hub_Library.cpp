@@ -96,8 +96,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
 uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
 
   uint8_t statusChauf = 0;
-  
-  readRegisterMAX30101(0x07); // Recommended 
 
   statusChauf = setOutputMode(ALGO_DATA); // Just the data
   if( statusChauf != SUCCESS )
@@ -130,7 +128,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
 uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
 
   uint8_t statusChauf; // Our status chauffeur
-  readRegisterMAX30101(0x07); // Recommended 
 
   statusChauf = setOutputMode(SENSOR_DATA); // Just the sensor data (LED)
   if( statusChauf != SUCCESS )
@@ -160,7 +157,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
 uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
 
   uint8_t statusChauf; // Our status chauffeur
-  readRegisterMAX30101(0x07); // Recommended 
 
   statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
   if( statusChauf != SUCCESS )
@@ -194,7 +190,8 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   uint8_t statusChauf; // The status chauffeur captures return values. 
 
   statusChauf = readSensorHubStatus();
-  if(statusChauf == 1){ // Communication Error
+
+  if (statusChauf == 1){ // Communication Error
     libBpm.heartRate = 0; 
     libBpm.confidence = 0; 
     libBpm.oxygen = 0; 
@@ -208,7 +205,7 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   // Heart Rate formatting
   libBpm.heartRate = (uint16_t(bpmArr[0]) << 8); 
   libBpm.heartRate |= (bpmArr[1]); 
-  libBpm.heartRate = libBpm.heartRate/10; 
+  libBpm.heartRate /= 10; 
 
   // Confidence formatting
   libBpm.confidence = bpmArr[2]; 
@@ -216,7 +213,7 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   //Blood oxygen level formatting
   libBpm.oxygen = uint16_t(bpmArr[3]) << 8;
   libBpm.oxygen |= bpmArr[4]; 
-  libBpm.oxygen = libBpm.oxygen/10;
+  libBpm.oxygen /= 10;
 
   //"Machine State" - has a finger been detected?
   libBpm.status = bpmArr[5];
