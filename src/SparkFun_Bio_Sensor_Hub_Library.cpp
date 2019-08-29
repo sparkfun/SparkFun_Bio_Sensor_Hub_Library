@@ -113,7 +113,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = maximFastAlgoControl(ENABLE); 
+  statusChauf = maximFastAlgoControl(MODE_ONE); 
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
@@ -141,7 +141,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = maximFastAlgoControl(ENABLE); //Enable algorithm
+  statusChauf = maximFastAlgoControl(MODE_ONE); //Enable algorithm
   if( statusChauf != SUCCESS )
     return statusChauf; 
   
@@ -149,9 +149,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
   return SUCCESS; 
 
 }
+
 // This function sets very basic settings to get sensor and biometric data.
-// Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
-// and Green. The biometric data includes data about heartrate, the confidence
+// Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
+// The biometric data includes data about heartrate, the confidence
 // level, SpO2 levels, and whether the sensor has detected a finger or not. 
 // Of note, the number of samples is set to one. 
 uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
@@ -170,7 +171,39 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = maximFastAlgoControl(ENABLE); //Enable algorithm
+  statusChauf = maximFastAlgoControl(MODE_ONE); //Enable algorithm
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+  
+  delay(1000);
+  return SUCCESS; 
+
+}
+
+// This function sets very basic settings to get sensor and biometric data.
+// Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
+// The biometric data includes data about heartrate, the confidence
+// level, SpO2 levels, and whether the sensor has detected a finger or not. 
+// In addition mode two also gives data on the R value of the SPO2
+// measurements, and and extended finger status value.
+// Of note, the number of samples is set to one. 
+uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpmTwo(){
+
+  uint8_t statusChauf; // Our status chauffeur
+
+  statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
+  if( statusChauf != SUCCESS )
+    return statusChauf; 
+
+  statusChauf = maximFastAlgoControl(MODE_TWO); //Enable algorithm
   if( statusChauf != SUCCESS )
     return statusChauf; 
   
@@ -874,13 +907,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::agcAlgoControl(uint8_t enable) {
 // ENABLE_WHRM_ALGO (0x02)
 // This function enables (one) or disables (zero) the wrist heart rate monitor
 // algorithm.
-uint8_t SparkFun_Bio_Sensor_Hub::maximFastAlgoControl(uint8_t algSwitch) {
+uint8_t SparkFun_Bio_Sensor_Hub::maximFastAlgoControl(uint8_t mode) {
 
-  if( algSwitch == 0 || algSwitch == 1) {}
+  if( mode == 0 || mode == 1 || mode == 2) {}
   else
     return INCORR_PARAM; 
 
-  uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, algSwitch);
+  uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, mode);
   if (statusByte != SUCCESS)
     return statusByte;
   else

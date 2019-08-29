@@ -7,6 +7,8 @@
 #define WRITE_FIFO_INPUT_BYTE  0x04
 #define DISABLE                0x00
 #define ENABLE                 0x01
+#define MODE_ONE               0x01
+#define MODE_TWO               0x02
 #define APP_MODE               0x00
 #define BOOTLOADER_MODE        0x08
 #define NO_WRITE               0x00 
@@ -40,7 +42,10 @@ struct bioData {
   uint8_t  confidence; // 0-100% LSB = 1%
   uint16_t oxygen; // 0-100% LSB = 1%
   uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
-  uint8_t  counter;
+  uint16_t rValue;      // -- Algorithm Mode 2 vv
+  uint8_t  extStatus;   // --
+  uint8_t  reserveOne;  // --
+  uint8_t  resserveTwo; // -- Algorithm Mode 2 ^^
 
 };
 
@@ -337,11 +342,20 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t configSensor();
     
     // This function sets very basic settings to get sensor and biometric data.
-    // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
-    // and Green. The biometric data includes data about heartrate, the confidence
+    // Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
+    // The biometric data includes data about heartrate, the confidence
     // level, SpO2 levels, and whether the sensor has detected a finger or not. 
     // Of note, the number of samples is set to one. 
     uint8_t configSensorBpm();
+
+    // This function sets very basic settings to get sensor and biometric data.
+    // Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
+    // The biometric data includes data about heartrate, the confidence
+    // level, SpO2 levels, and whether the sensor has detected a finger or not. 
+    // In addition mode two also gives data on the R value of the SPO2
+    // measurements, and and extended finger status value.
+    // Of note, the number of samples is set to one. 
+    uint8_t configSensorBpmTwo();
 
     // This function takes the 8 bytes from the FIFO buffer related to the wrist
     // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
