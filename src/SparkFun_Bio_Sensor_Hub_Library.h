@@ -22,10 +22,10 @@
 #define ADC_MASK               0x3F
 #define READ_ADC_MASK          0xC0
 
-#define ENABLE_CMD_DELAY       40 // Milliseconds
+#define ENABLE_CMD_DELAY       45 // Milliseconds
 #define CMD_DELAY              6  // Milliseconds
 #define WHRM_ARRAY_SIZE        6  // Number of bytes....
-#define MAX30101_LED_ARRAY     6 // 4 values of 24 bit (3 byte) LED values
+#define MAX30101_LED_ARRAY     12 // 4 values of 24 bit (3 byte) LED values
 
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)

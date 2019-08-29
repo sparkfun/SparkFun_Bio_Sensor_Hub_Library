@@ -105,14 +105,14 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = agcAlgoControl(1); // One sample before interrupt is fired.
+  statusChauf = agcAlgoControl(ENABLE); // One sample before interrupt is fired.
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
   statusChauf = max30101Control(ENABLE); 
   if( statusChauf != SUCCESS )
     return statusChauf; 
-
+ 
   statusChauf = maximFastAlgoControl(MODE_ONE); 
   if( statusChauf != SUCCESS )
     return statusChauf; 
@@ -298,21 +298,26 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
   libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
   libLedBpm.redLed |= bpmSenArr[5]; 
 
+  // -- What happened here? -- There are two uint32_t values that are given by
+  // the sensor for LEDs that do not exists on the MAX30101. So we have to
+  // request those empty values because they occupy the buffer:
+  // bpmSenArr[6-11]. 
+  
   // Heart rate formatting
-  libLedBpm.heartRate = (uint16_t(bpmSenArr[6]) << 8); 
-  libLedBpm.heartRate |= (bpmSenArr[7]); 
+  libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
+  libLedBpm.heartRate |= (bpmSenArr[13]); 
   libLedBpm.heartRate /= 10; 
 
   // Confidence formatting
-  libLedBpm.confidence = bpmSenArr[8]; 
+  libLedBpm.confidence = bpmSenArr[14]; 
 
   //Blood oxygen level formatting
-  libLedBpm.oxygen = uint16_t(bpmSenArr[9]) << 8;
-  libLedBpm.oxygen |= bpmSenArr[10]; 
+  libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
+  libLedBpm.oxygen |= bpmSenArr[16]; 
   libLedBpm.oxygen /= 10;
 
   //"Machine State" - has a finger been detected?
-  libLedBpm.status = bpmSenArr[11];
+  libLedBpm.status = bpmSenArr[17];
   return libLedBpm;
 
 }
