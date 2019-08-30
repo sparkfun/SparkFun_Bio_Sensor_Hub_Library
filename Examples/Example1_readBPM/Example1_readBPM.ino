@@ -64,7 +64,7 @@ void setup(){
     Serial.println("Could not communicate with the sensor!!!");
  
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.configBpm(); // Configuring just the BPM settings. 
+  int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings. 
   if(!error){
     Serial.println("Sensor configured.");
   }

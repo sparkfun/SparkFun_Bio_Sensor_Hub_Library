@@ -52,3 +52,8 @@ eraseFlash	KEYWORD2
 readBootloaderVers	KEYWORD2
 readSensorHubVersion	KEYWORD2
 readAlgorithmVersion	KEYWORD2
+Literals =================================
+MODE_ONE	LITERAL1
+MODE_TWO	LITERAL1 
+ENABLE	LITERAL1
+DISABLE	LITERAL1

@@ -22,10 +22,11 @@
 #define ADC_MASK               0x3F
 #define READ_ADC_MASK          0xC0
 
-#define ENABLE_CMD_DELAY       45 // Milliseconds
-#define CMD_DELAY              6  // Milliseconds
-#define WHRM_ARRAY_SIZE        6  // Number of bytes....
-#define MAX30101_LED_ARRAY     12 // 4 values of 24 bit (3 byte) LED values
+#define ENABLE_CMD_DELAY          45 // Milliseconds
+#define CMD_DELAY                 6  // Milliseconds
+#define MAXFAST_ARRAY_SIZE        6  // Number of bytes....
+#define MAXFAST_EXTENDED_DATA     5
+#define MAX30101_LED_ARRAY        12 // 4 values of 24 bit (3 byte) LED values
 
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
@@ -293,9 +294,11 @@ class SparkFun_Bio_Sensor_Hub
   public:  
 
     // Variables ------------
-    uint8_t bpmArr[WHRM_ARRAY_SIZE]; 
+    uint8_t bpmArr[MAXFAST_ARRAY_SIZE]; 
+    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA]; 
     uint8_t senArr[MAX30101_LED_ARRAY];
-    uint8_t bpmSenArr[WHRM_ARRAY_SIZE + MAX30101_LED_ARRAY];
+    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
+    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
 
     // Constructor ----------
     SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
@@ -329,12 +332,12 @@ class SparkFun_Bio_Sensor_Hub
     // MAX32664. It can take three parameters: Enter and Exit Bootloader Mode, as
     // well as reset. 
     // INCOMPLETE
-    uint8_t setOperatingMode(uint8_t selection); 
+    uint8_t setOperatingMode(uint8_t); 
     
     // This function sets very basic settings to get sensor and biometric data.
     // The biometric data includes data about heartrate, the confidence
     // level, SpO2 levels, and whether the sensor has detected a finger or not. 
-    uint8_t configBpm();
+    uint8_t configBpm(uint8_t);
     
     // This function sets very basic settings to get LED count values from the MAX30101.
     // Sensor data includes 24 bit LED values for the three LED channels: Red, IR,
@@ -346,16 +349,7 @@ class SparkFun_Bio_Sensor_Hub
     // The biometric data includes data about heartrate, the confidence
     // level, SpO2 levels, and whether the sensor has detected a finger or not. 
     // Of note, the number of samples is set to one. 
-    uint8_t configSensorBpm();
-
-    // This function sets very basic settings to get sensor and biometric data.
-    // Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
-    // The biometric data includes data about heartrate, the confidence
-    // level, SpO2 levels, and whether the sensor has detected a finger or not. 
-    // In addition mode two also gives data on the R value of the SPO2
-    // measurements, and and extended finger status value.
-    // Of note, the number of samples is set to one. 
-    uint8_t configSensorBpmTwo();
+    uint8_t configSensorBpm(uint8_t);
 
     // This function takes the 8 bytes from the FIFO buffer related to the wrist
     // heart rate algortihm: heart rate (uint16_t), confidence (uint8_t) , SpO2 (uint16_t), 
@@ -623,6 +617,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t _mfioPin;
     uint8_t _address; 
     uint32_t _writeCoefArr[3];
+    uint8_t _userSelectedMode;
     
     // I-squared-C Class----
     TwoWire *_i2cPort;

@@ -105,7 +105,7 @@ void setup(){
   Serial.println(sampVal);
 
   Serial.println("Configuing Sensor.");
-  error = configBpm();
+  error = configBpm(MODE_ONE);
   if (error){
     Serial.println("Could not configure the sensor.");
   }

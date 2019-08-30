@@ -1,4 +1,10 @@
 /*
+ This example displays a more manual method of adjusting the way in which the
+ MAX30101 gathers data. Specifically we'll look at how to modify the pulse
+ length of the LEDs within the MAX30101 which impacts the number of samples 
+ that can be gathered, so we'll adjust this value as well. In addition we 
+ gather additional data from the bioData type: LED samples. This data gives 
+ the number of samples gathered by the MAX30101 for both the red and IR LEDs. 
  A summary of the hardware connections are as follows: 
  SDA -> SDA
  SCL -> SCL
@@ -112,7 +118,7 @@ void setup(){
   Serial.println(sampleVal); 
   
   // Some time to read your settings.
-  delay(2000);
+  delay(4000);
 
 }
 

@@ -93,9 +93,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::readSensorHubStatus(){
 // This function sets very basic settings to get sensor and biometric data.
 // The biometric data includes data about heartrate, the confidence
 // level, SpO2 levels, and whether the sensor has detected a finger or not. 
-uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
+uint8_t SparkFun_Bio_Sensor_Hub::configBpm(uint8_t mode){
 
   uint8_t statusChauf = 0;
+  if (mode == MODE_ONE || mode == MODE_TWO){}
+  else return INCORR_PARAM;
 
   statusChauf = setOutputMode(ALGO_DATA); // Just the data
   if( statusChauf != SUCCESS )
@@ -112,10 +114,12 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(){
   statusChauf = max30101Control(ENABLE); 
   if( statusChauf != SUCCESS )
     return statusChauf; 
- 
-  statusChauf = maximFastAlgoControl(MODE_ONE); 
+   
+  statusChauf = maximFastAlgoControl(mode); 
   if( statusChauf != SUCCESS )
     return statusChauf; 
+  
+  _userSelectedMode = mode;
 
   delay(1000);
   return SUCCESS; 
@@ -144,7 +148,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
   statusChauf = maximFastAlgoControl(MODE_ONE); //Enable algorithm
   if( statusChauf != SUCCESS )
     return statusChauf; 
-  
+
   delay(1000);
   return SUCCESS; 
 
@@ -155,9 +159,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
 // The biometric data includes data about heartrate, the confidence
 // level, SpO2 levels, and whether the sensor has detected a finger or not. 
 // Of note, the number of samples is set to one. 
-uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
+uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(uint8_t mode){
 
   uint8_t statusChauf; // Our status chauffeur
+  if (mode == MODE_ONE || mode == MODE_TWO){}
+  else return INCORR_PARAM;
 
   statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
   if( statusChauf != SUCCESS )
@@ -171,42 +177,12 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(){
   if( statusChauf != SUCCESS )
     return statusChauf; 
 
-  statusChauf = maximFastAlgoControl(MODE_ONE); //Enable algorithm
+  statusChauf = maximFastAlgoControl(mode); //Enable algorithm
   if( statusChauf != SUCCESS )
     return statusChauf; 
   
-  delay(1000);
-  return SUCCESS; 
+  _userSelectedMode = mode;
 
-}
-
-// This function sets very basic settings to get sensor and biometric data.
-// Sensor data includes 24 bit LED values for the two LED channels: Red and IR.
-// The biometric data includes data about heartrate, the confidence
-// level, SpO2 levels, and whether the sensor has detected a finger or not. 
-// In addition mode two also gives data on the R value of the SPO2
-// measurements, and and extended finger status value.
-// Of note, the number of samples is set to one. 
-uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpmTwo(){
-
-  uint8_t statusChauf; // Our status chauffeur
-
-  statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data 
-  if( statusChauf != SUCCESS )
-    return statusChauf; 
-
-  statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
-  if( statusChauf != SUCCESS )
-    return statusChauf; 
-
-  statusChauf = max30101Control(ENABLE); //Enable Sensor. 
-  if( statusChauf != SUCCESS )
-    return statusChauf; 
-
-  statusChauf = maximFastAlgoControl(MODE_TWO); //Enable algorithm
-  if( statusChauf != SUCCESS )
-    return statusChauf; 
-  
   delay(1000);
   return SUCCESS; 
 
@@ -232,26 +208,64 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
   }
 
   numSamplesOutFifo(); 
+  
+  if (_userSelectedMode = MODE_ONE) {
 
-  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE, bpmArr); 
+    readFillArray(READ_DATA_OUTPUT, READ_DATA, MAXFAST_ARRAY_SIZE, bpmArr); 
 
-  // Heart Rate formatting
-  libBpm.heartRate = (uint16_t(bpmArr[0]) << 8); 
-  libBpm.heartRate |= (bpmArr[1]); 
-  libBpm.heartRate /= 10; 
+    // Heart Rate formatting
+    libBpm.heartRate = (uint16_t(bpmArr[0]) << 8); 
+    libBpm.heartRate |= (bpmArr[1]); 
+    libBpm.heartRate /= 10; 
 
-  // Confidence formatting
-  libBpm.confidence = bpmArr[2]; 
+    // Confidence formatting
+    libBpm.confidence = bpmArr[2]; 
 
-  //Blood oxygen level formatting
-  libBpm.oxygen = uint16_t(bpmArr[3]) << 8;
-  libBpm.oxygen |= bpmArr[4]; 
-  libBpm.oxygen /= 10;
+    //Blood oxygen level formatting
+    libBpm.oxygen = uint16_t(bpmArr[3]) << 8;
+    libBpm.oxygen |= bpmArr[4]; 
+    libBpm.oxygen /= 10;
 
-  //"Machine State" - has a finger been detected?
-  libBpm.status = bpmArr[5];
+    //"Machine State" - has a finger been detected?
+    libBpm.status = bpmArr[5];
 
-  return libBpm;
+    return libBpm;
+  }
+
+  else if (_userSelectedMode = MODE_TWO) {
+
+    readFillArray(READ_DATA_OUTPUT, READ_DATA,\
+        MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA, bpmArrTwo); 
+
+    // Heart Rate formatting
+    libBpm.heartRate = (uint16_t(bpmArrTwo[0]) << 8); 
+    libBpm.heartRate |= (bpmArrTwo[1]); 
+    libBpm.heartRate /= 10; 
+
+    // Confidence formatting
+    libBpm.confidence = bpmArrTwo[2]; 
+
+    //Blood oxygen level formatting
+    libBpm.oxygen = uint16_t(bpmArrTwo[3]) << 8;
+    libBpm.oxygen |= bpmArrTwo[4]; 
+    libBpm.oxygen /= 10;
+
+    //"Machine State" - has a finger been detected?
+    libBpm.status = bpmArrTwo[5];
+
+    //Sp02 r Value formatting
+    libBpm.rValue = uint16_t(bpmArrTwo[6]) << 8;
+    libBpm.rValue |= bpmArrTwo[7]; 
+    libBpm.rValue /= 10;
+
+    //Extended Machine State formatting
+    libBpm.extStatus = bpmArrTwo[8];
+
+    // There are two additional bytes of data that were requested but that
+    // have not been implemented in firmware 10.1 so will not be saved to
+    // user's data.  
+    return libBpm;
+  }
 
 }
 
@@ -286,39 +300,96 @@ bioData SparkFun_Bio_Sensor_Hub::readSensor(){
 bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){ 
 
   bioData libLedBpm; 
-  readFillArray(READ_DATA_OUTPUT, READ_DATA, WHRM_ARRAY_SIZE + MAX30101_LED_ARRAY, bpmSenArr); 
 
-  // Value of LED one....
-  libLedBpm.irLed = uint32_t(bpmSenArr[0]) << 16; 
-  libLedBpm.irLed |= uint32_t(bpmSenArr[1]) << 8; 
-  libLedBpm.irLed |= bpmSenArr[2]; 
+  if (_userSelectedMode == MODE_ONE){
 
-  // Value of LED two...
-  libLedBpm.redLed = uint32_t(bpmSenArr[3]) << 16; 
-  libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
-  libLedBpm.redLed |= bpmSenArr[5]; 
+    readFillArray(READ_DATA_OUTPUT, READ_DATA, MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY, bpmSenArr); 
 
-  // -- What happened here? -- There are two uint32_t values that are given by
-  // the sensor for LEDs that do not exists on the MAX30101. So we have to
-  // request those empty values because they occupy the buffer:
-  // bpmSenArr[6-11]. 
-  
-  // Heart rate formatting
-  libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
-  libLedBpm.heartRate |= (bpmSenArr[13]); 
-  libLedBpm.heartRate /= 10; 
+    // Value of LED one....
+    libLedBpm.irLed = uint32_t(bpmSenArr[0]) << 16; 
+    libLedBpm.irLed |= uint32_t(bpmSenArr[1]) << 8; 
+    libLedBpm.irLed |= bpmSenArr[2]; 
 
-  // Confidence formatting
-  libLedBpm.confidence = bpmSenArr[14]; 
+    // Value of LED two...
+    libLedBpm.redLed = uint32_t(bpmSenArr[3]) << 16; 
+    libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
+    libLedBpm.redLed |= bpmSenArr[5]; 
 
-  //Blood oxygen level formatting
-  libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
-  libLedBpm.oxygen |= bpmSenArr[16]; 
-  libLedBpm.oxygen /= 10;
+    // -- What happened here? -- There are two uint32_t values that are given by
+    // the sensor for LEDs that do not exists on the MAX30101. So we have to
+    // request those empty values because they occupy the buffer:
+    // bpmSenArr[6-11]. 
+    
+    // Heart rate formatting
+    libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
+    libLedBpm.heartRate |= (bpmSenArr[13]); 
+    libLedBpm.heartRate /= 10; 
 
-  //"Machine State" - has a finger been detected?
-  libLedBpm.status = bpmSenArr[17];
-  return libLedBpm;
+    // Confidence formatting
+    libLedBpm.confidence = bpmSenArr[14]; 
+
+    //Blood oxygen level formatting
+    libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
+    libLedBpm.oxygen |= bpmSenArr[16]; 
+    libLedBpm.oxygen /= 10;
+
+    //"Machine State" - has a finger been detected?
+    libLedBpm.status = bpmSenArr[17];
+    return libLedBpm;
+  }
+
+  else if (_userSelectedMode == MODE_TWO){
+
+    readFillArray(READ_DATA_OUTPUT, READ_DATA,\
+        MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY + MAXFAST_EXTENDED_DATA, bpmSenArrTwo); 
+
+    // Value of LED one....
+    libLedBpm.irLed = uint32_t(bpmSenArr[0]) << 16; 
+    libLedBpm.irLed |= uint32_t(bpmSenArr[1]) << 8; 
+    libLedBpm.irLed |= bpmSenArr[2]; 
+
+    // Value of LED two...
+    libLedBpm.redLed = uint32_t(bpmSenArr[3]) << 16; 
+    libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
+    libLedBpm.redLed |= bpmSenArr[5]; 
+
+    // -- What happened here? -- There are two uint32_t values that are given by
+    // the sensor for LEDs that do not exists on the MAX30101. So we have to
+    // request those empty values because they occupy the buffer:
+    // bpmSenArr[6-11]. 
+    
+    // Heart rate formatting
+    libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
+    libLedBpm.heartRate |= (bpmSenArr[13]); 
+    libLedBpm.heartRate /= 10; 
+
+    // Confidence formatting
+    libLedBpm.confidence = bpmSenArr[14]; 
+
+    //Blood oxygen level formatting
+    libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
+    libLedBpm.oxygen |= bpmSenArr[16]; 
+    libLedBpm.oxygen /= 10;
+
+    //"Machine State" - has a finger been detected?
+    libLedBpm.status = bpmSenArr[17];
+
+    //Sp02 r Value formatting
+    libLedBpm.rValue = uint16_t(bpmArrTwo[18]) << 8;
+    libLedBpm.rValue |= bpmArrTwo[19]; 
+    libLedBpm.rValue /= 10;
+
+    //Extended Machine State formatting
+    libLedBpm.extStatus = bpmArrTwo[20];
+
+    // There are two additional bytes of data that were requested but that
+    // have not been implemented in firmware 10.1 so will not be saved to
+    // user's data.  
+    //
+    return libLedBpm;
+
+  }
+
 
 }
 // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
