@@ -5,6 +5,8 @@
  that can be gathered, so we'll adjust this value as well. In addition we 
  gather additional data from the bioData type: LED samples. This data gives 
  the number of samples gathered by the MAX30101 for both the red and IR LEDs. 
+ As a side note you can also choose MODE_ONE and MODE_TWO for configSensorBpm
+ as well.
  A summary of the hardware connections are as follows: 
  SDA -> SDA
  SCL -> SCL
@@ -74,7 +76,7 @@ void setup(){
     Serial.println("Sensor started!");
 
   Serial.println("Configuring Sensor...."); 
-  int error = bioHub.configSensorBpm(); // Configure Sensor and BPM mode 
+  int error = bioHub.configSensorBpm(MODE_ONE); // Configure Sensor and BPM mode , MODE_TWO also available
   if(!error){
     Serial.println("Sensor configured.");
   }

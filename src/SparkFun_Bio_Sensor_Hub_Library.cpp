@@ -209,7 +209,7 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
 
   numSamplesOutFifo(); 
   
-  if (_userSelectedMode = MODE_ONE) {
+  if (_userSelectedMode == MODE_ONE) {
 
     readFillArray(READ_DATA_OUTPUT, READ_DATA, MAXFAST_ARRAY_SIZE, bpmArr); 
 
@@ -232,8 +232,7 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
     return libBpm;
   }
 
-  else if (_userSelectedMode = MODE_TWO) {
-
+  else if (_userSelectedMode == MODE_TWO) {
     readFillArray(READ_DATA_OUTPUT, READ_DATA,\
         MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA, bpmArrTwo); 
 
@@ -248,15 +247,16 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
     //Blood oxygen level formatting
     libBpm.oxygen = uint16_t(bpmArrTwo[3]) << 8;
     libBpm.oxygen |= bpmArrTwo[4]; 
-    libBpm.oxygen /= 10;
+    libBpm.oxygen /= 10.0;
 
     //"Machine State" - has a finger been detected?
     libBpm.status = bpmArrTwo[5];
 
     //Sp02 r Value formatting
-    libBpm.rValue = uint16_t(bpmArrTwo[6]) << 8;
-    libBpm.rValue |= bpmArrTwo[7]; 
-    libBpm.rValue /= 10;
+    uint16_t tempVal = uint16_t(bpmArrTwo[6]) << 8;
+    tempVal |= bpmArrTwo[7]; 
+    libBpm.rValue = tempVal;
+    libBpm.rValue /= 10.0;
 
     //Extended Machine State formatting
     libBpm.extStatus = bpmArrTwo[8];
@@ -375,8 +375,9 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
     libLedBpm.status = bpmSenArr[17];
 
     //Sp02 r Value formatting
-    libLedBpm.rValue = uint16_t(bpmArrTwo[18]) << 8;
-    libLedBpm.rValue |= bpmArrTwo[19]; 
+    uint16_t tempVal = uint16_t(bpmArrTwo[6]) << 8;
+    tempVal |= bpmArrTwo[7]; 
+    libLedBpm.rValue = tempVal;  
     libLedBpm.rValue /= 10;
 
     //Extended Machine State formatting
@@ -1031,7 +1032,6 @@ bool SparkFun_Bio_Sensor_Hub::eraseFlash() {
 
 }
 
-// Family Byte: BOOTLOADER_FLASH (0x80), Index Byte: SEND_PAGE_VALUE (0x04)
 // Family Byte: BOOTLOADER_INFO (0x81), Index Byte: BOOTLOADER_VERS (0x00)
 version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
@@ -1044,7 +1044,7 @@ version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4)); 
   uint8_t statusByte = _i2cPort->read();
-  if (!statusByte) { // Pass through if SUCCESS (0x00). 
+  if (statusByte) { // Pass through if SUCCESS (0x00). 
     booVers.major = 0; 
     booVers.minor = 0; 
     booVers.revision = 0; 
@@ -1059,20 +1059,19 @@ version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
 }
 
-// Family Byte: BOOTLOADER_INFO (0x81), Index Byte: PAGE_SIZE (0x01)
 // Family Byte: IDENTITY (0xFF), Index Byte: READ_SENSOR_HUB_VERS (0x03)
 version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 
   version bioHubVers; 
   _i2cPort->beginTransmission(_address);
-  _i2cPort->write(BOOTLOADER_INFO);    
-  _i2cPort->write(BOOTLOADER_VERS);    
+  _i2cPort->write(IDENTITY);    
+  _i2cPort->write(READ_SENSOR_HUB_VERS);    
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4)); 
   uint8_t statusByte = _i2cPort->read();
-  if (!statusByte){ // Pass through if SUCCESS (0x00). 
+  if (statusByte){ // Pass through if SUCCESS (0x00). 
     bioHubVers.major = 0; 
     bioHubVers.minor = 0; 
     bioHubVers.revision = 0; 
@@ -1092,14 +1091,14 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
   version libAlgoVers; 
   _i2cPort->beginTransmission(_address);
-  _i2cPort->write(BOOTLOADER_INFO);    
-  _i2cPort->write(BOOTLOADER_VERS);    
+  _i2cPort->write(IDENTITY);    
+  _i2cPort->write(READ_ALGO_VERS);    
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4)); 
   uint8_t statusByte = _i2cPort->read();
-  if (!statusByte){ // Pass through if SUCCESS (0x00). 
+  if (statusByte){ // Pass through if SUCCESS (0x00). 
     libAlgoVers.major = 0;
     libAlgoVers.minor = 0;
     libAlgoVers.revision = 0;  
