@@ -39,7 +39,6 @@ int algoSamp = 10; // Number of samples to average (0-255)
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
 
-sensorAttr attributes;
 bioData body; 
 // What's this!? This is a type (like int, byte, long) unique to the SparkFun
 // Pulse Oximeter and Heart Rate Monitor. Unlike those other types it holds
@@ -48,10 +47,10 @@ bioData body;
 // You can choose another variable name other than "body", like "blood", or
 // "readings", but I chose "body". Using this "body" varible in the 
 // following way gives us access to the following data: 
-// body.heartrate - Heartrate
+// body.heartrate  - Heartrate
 // body.confidence - Confidence in the heartrate value
-// body.oxygen - Blood oxygen level
-// body.status - Has a finger been sensed?
+// body.oxygen     - Blood oxygen level
+// body.status     - Has a finger been sensed?
 
 void setup(){
 
@@ -59,27 +58,27 @@ void setup(){
 
   Wire.begin();
   int result = bioHub.begin();
-  if (!result)
+  if (result == 0) // Zero errors!
     Serial.println("Sensor started!");
   
   // Adjusting the Automatic Gain Control (AGC) Algorithm
   int error = bioHub.setAlgoRange(algoRange));
-  if (error){
+  if (error > 0){
     Serial.println("Could not set algorithm's Range.");  
   }
 
   error = bioHub.setAlgoStepSize(algoStepSize);
-  if (error){
+  if (error > 0){
     Serial.println("Could not set the step size."); 
   }
 
   error = bioHub.setAlgoSensitivity(algoSens);
-  if (error){
+  if (error > 0){ 
     Serial.println("Could not set the sensitivity.");
   }
 
   error = bioHub.setAlgoSamples(algoSamp);
-  if (error){
+  if (error > 0){ 
     Serial.println("Could not set the sample size.");  
   }
 
@@ -102,10 +101,14 @@ void setup(){
 
   Serial.println("Configuing Sensor.");
   error = configBpm(MODE_ONE);
-  if (error){
+  if (error > 0){ 
     Serial.println("Could not configure the sensor.");
   }
 
+  // Data lags a bit behind the sensor, if you're finger is on the sensor when
+  // it's being configured this delay will give some time for the data to catch
+  // up. 
+  Serial.println("Loading up the buffer with data....");
   delay(4000);
 
 }

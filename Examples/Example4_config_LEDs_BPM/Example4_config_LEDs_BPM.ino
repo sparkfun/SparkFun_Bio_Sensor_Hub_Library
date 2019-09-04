@@ -56,12 +56,12 @@ bioData body;
 // "body" but you could use another variable name like "blood", "readings",
 // "ledBody" or whatever. Using the variable in the following way gives the
 // following data: 
-// body.irLed  - Infrared LED counts. 
-// body.redLed - Red LED counts. 
-// body.heartrate - Heartrate
+// body.irLed      - Infrared LED counts. 
+// body.redLed     - Red LED counts. 
+// body.heartrate  - Heartrate
 // body.confidence - Confidence in the heartrate value
-// body.oxygen - Blood oxygen level
-// body.status - Has a finger been sensed?
+// body.oxygen     - Blood oxygen level
+// body.status     - Has a finger been sensed?
 
 void setup(){
 
@@ -69,12 +69,12 @@ void setup(){
 
   Wire.begin();
   int result = bioHub.begin();
-  if (!result)
+  if (result == 0) // Zero errors!
     Serial.println("Sensor started!");
 
   Serial.println("Configuring Sensor...."); 
   int error = bioHub.configSensorBpm(MODE_ONE); // Configure Sensor and BPM mode , MODE_TWO also available
-  if(!error){
+  if (error == 0){// Zero errors.
     Serial.println("Sensor configured.");
   }
   else {
@@ -85,7 +85,7 @@ void setup(){
 
   // Set pulse width.
   error = bioHub.setPulseWidth(width);
-  if (!error){
+  if (error == 0){// Zero errors.
     Serial.println("Pulse Width Set.");
   }
   else {
@@ -102,7 +102,7 @@ void setup(){
   // Set sample rate per second. Remember that not every sample rate is
   // available with every pulse width. Check hookup guide for more information.  
   error = bioHub.setSampleRate(samples);
-  if (!error){
+  if (error == 0){// Zero errors.
     Serial.println("Sample Rate Set.");
   }
   else {
@@ -116,7 +116,10 @@ void setup(){
   Serial.print("Sample rate is set to: ");
   Serial.println(sampleVal); 
   
-  // Some time to read your settings.
+  // Data lags a bit behind the sensor, if you're finger is on the sensor when
+  // it's being configured this delay will give some time for the data to catch
+  // up. 
+  Serial.println("Loading up the buffer with data....");
   delay(4000);
 
 }

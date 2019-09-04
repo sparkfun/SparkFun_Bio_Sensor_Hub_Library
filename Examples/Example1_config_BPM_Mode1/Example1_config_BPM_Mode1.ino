@@ -43,10 +43,10 @@ bioData body;
 // You can choose another variable name other than "body", like "blood", or
 // "readings", but I chose "body". Using this "body" varible in the 
 // following way gives us access to the following data: 
-// body.heartrate - Heartrate
+// body.heartrate  - Heartrate
 // body.confidence - Confidence in the heartrate value
-// body.oxygen - Blood oxygen level
-// body.status - Has a finger been sensed?
+// body.oxygen     - Blood oxygen level
+// body.status     - Has a finger been sensed?
 
 
 void setup(){
@@ -55,14 +55,14 @@ void setup(){
 
   Wire.begin();
   int result = bioHub.begin();
-  if (!result)
+  if (result == 0) // Zero errors!
     Serial.println("Sensor started!");
   else
     Serial.println("Could not communicate with the sensor!!!");
  
   Serial.println("Configuring Sensor...."); 
   int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings. 
-  if(!error){
+  if(error == 0){ // Zero errors!
     Serial.println("Sensor configured.");
   }
   else {
@@ -74,6 +74,7 @@ void setup(){
   // Data lags a bit behind the sensor, if you're finger is on the sensor when
   // it's being configured this delay will give some time for the data to catch
   // up. 
+  Serial.println("Loading up the buffer with data....");
   delay(4000); 
   
 }
