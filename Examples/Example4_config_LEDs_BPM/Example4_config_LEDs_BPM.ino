@@ -141,5 +141,7 @@ void loop(){
     Serial.println(body.oxygen); 
     Serial.print("Status: ");
     Serial.println(body.status); 
-    delay(500); // Slowing it down, we don't need to break our necks here.
+    // Slow it down or your heart rate will go up trying to keep up
+    // with the flow of numbers
+    delay(250); 
 }

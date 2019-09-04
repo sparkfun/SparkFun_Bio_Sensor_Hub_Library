@@ -199,8 +199,6 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
 
   bioData libBpm; 
   uint8_t statusChauf; // The status chauffeur captures return values. 
- // float delayRate = (60/_sampleRate) // Time the 
- // uint32_t timeBetweenReads = millis()
 
   statusChauf = readSensorHubStatus();
 
@@ -985,7 +983,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readAlgoSamples() {
 // multiplied by 100,000.
 int32_t*  SparkFun_Bio_Sensor_Hub::readMaximFastCoef(int32_t coefArr[3]) {
  
-  uint8_t numOfReads = sizeof(coefArr); // 3 coefficients * 4 bytes  
+  uint8_t numOfReads = 3; 
   readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, numOfReads, coefArr ); 
   coefArr[0] = coefArr[0] * 100000; 
   coefArr[1] = coefArr[1] * 100000; 
