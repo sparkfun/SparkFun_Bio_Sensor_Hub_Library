@@ -4,7 +4,6 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-#define DEF_ADDR               0x55
 
 #define WRITE_FIFO_INPUT_BYTE  0x04
 #define DISABLE                0x00
@@ -303,7 +302,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
 
     // Constructor ----------
-    SparkFun_Bio_Sensor_Hub(uint16_t, uint16_t); 
+    SparkFun_Bio_Sensor_Hub(uint16_t, uint16_t, uint8_t address = 0x55); 
 
     // Functions ------------
     
