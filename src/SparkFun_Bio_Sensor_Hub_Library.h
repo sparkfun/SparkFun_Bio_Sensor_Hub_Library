@@ -301,7 +301,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
 
     // Constructor ----------
-    SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ); 
+    SparkFun_Bio_Sensor_Hub(uint8_t, uint8_t, uint8_t address = 0x55); 
 
     // Functions ------------
     

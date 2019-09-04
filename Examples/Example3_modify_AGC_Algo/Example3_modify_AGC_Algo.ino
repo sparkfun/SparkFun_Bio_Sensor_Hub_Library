@@ -27,9 +27,6 @@
 #include <SparkFun_Bio_Sensor_Hub_Library.h>
 #include <Wire.h>
 
-// No other Address options.
-#define DEF_ADDR 0x55
-
 // Reset pin, MFIO pin
 const int resPin = 4;
 const int mfioPin = 5;
@@ -40,7 +37,7 @@ int algoSens = 20; // Sensitivity (0-100%)
 int algoSamp = 10; // Number of samples to average (0-255)
 
 // Takes address, reset pin, and MFIO pin.
-SparkFun_Bio_Sensor_Hub bioHub(DEF_ADDR, resPin, mfioPin); 
+SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
 
 sensorAttr attributes;
 bioData body; 

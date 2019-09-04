@@ -20,7 +20,7 @@ kk
 
 #include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint8_t address, uint8_t resetPin, uint8_t mfioPin ) { 
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint8_t resetPin, uint8_t mfioPin, uint8_t address = 0x55 ) { 
   
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
