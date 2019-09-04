@@ -28,8 +28,8 @@
 #include <Wire.h>
 
 // Reset pin, MFIO pin
-const int resPin = 4;
-const int mfioPin = 5;
+int resPin = 4;
+int mfioPin = 5;
 
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
@@ -92,5 +92,4 @@ void loop(){
     Serial.println(body.oxygen); 
     Serial.print("Status: ");
     Serial.println(body.status); 
-    delay(250); // Slowing it down, we don't need to break our necks here.
 }

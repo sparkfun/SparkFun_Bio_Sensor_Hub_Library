@@ -30,8 +30,8 @@
 #include <Wire.h>
 
 // Reset pin, MFIO pin
-const int resPin = 4;
-const int mfioPin = 5;
+int resPin = 4;
+int mfioPin = 5;
 
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 

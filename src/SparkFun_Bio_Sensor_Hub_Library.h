@@ -4,6 +4,8 @@
 #include <Wire.h>
 #include <Arduino.h>
 
+#define DEF_ADDR               0x55
+
 #define WRITE_FIFO_INPUT_BYTE  0x04
 #define DISABLE                0x00
 #define ENABLE                 0x01
@@ -301,7 +303,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
 
     // Constructor ----------
-    SparkFun_Bio_Sensor_Hub(uint8_t, uint8_t, uint8_t address = 0x55); 
+    SparkFun_Bio_Sensor_Hub(uint16_t, uint16_t); 
 
     // Functions ------------
     
@@ -618,6 +620,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t _address; 
     uint32_t _writeCoefArr[3];
     uint8_t _userSelectedMode;
+    uint8_t _sampleRate = 100;
     
     // I-squared-C Class----
     TwoWire *_i2cPort;
@@ -652,7 +655,7 @@ class SparkFun_Bio_Sensor_Hub
     // to the registers of downward sensors and so also requires a
     // register address and register value as parameters. Again there is the write
     // of the specific bytes followed by a read to confirm positive transmission. 
-    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, uint32_t _writeVal[3]);
+    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, int32_t _writeVal[3]);
 
     // This function handles all read commands or stated another way, all information
     // requests. It starts a request by writing the family byte, index byte, and

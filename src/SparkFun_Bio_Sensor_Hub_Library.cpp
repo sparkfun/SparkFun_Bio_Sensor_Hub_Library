@@ -20,11 +20,11 @@ kk
 
 #include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint8_t resetPin, uint8_t mfioPin, uint8_t address = 0x55 ) { 
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint16_t resetPin, uint16_t mfioPin) { 
   
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
-  _address = address; 
+  _address = DEF_ADDR; 
   pinMode(_mfioPin, OUTPUT); 
   pinMode(_resetPin, OUTPUT); // Set these pins as output
   
@@ -120,6 +120,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(uint8_t mode){
     return statusChauf; 
   
   _userSelectedMode = mode;
+  _sampleRate = readAlgoSamples();
 
   delay(1000);
   return SUCCESS; 
@@ -182,6 +183,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(uint8_t mode){
     return statusChauf; 
   
   _userSelectedMode = mode;
+  _sampleRate = readAlgoSamples();
 
   delay(1000);
   return SUCCESS; 
@@ -197,6 +199,8 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
 
   bioData libBpm; 
   uint8_t statusChauf; // The status chauffeur captures return values. 
+ // float delayRate = (60/_sampleRate) // Time the 
+ // uint32_t timeBetweenReads = millis()
 
   statusChauf = readSensorHubStatus();
 
@@ -265,6 +269,13 @@ bioData SparkFun_Bio_Sensor_Hub::readBpm(){
     // have not been implemented in firmware 10.1 so will not be saved to
     // user's data.  
     return libBpm;
+  }
+
+  else {
+    libBpm.heartRate  = 0; 
+    libBpm.confidence = 0; 
+    libBpm.oxygen     = 0; 
+    return libBpm; 
   }
 
 }
@@ -391,6 +402,18 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
 
   }
 
+  else {
+    libLedBpm.irLed = 0;
+    libLedBpm.redLed = 0; 
+    libLedBpm.heartRate = 0; 
+    libLedBpm.confidence = 0;
+    libLedBpm.oxygen = 0; 
+    libLedBpm.status = 0; 
+    libLedBpm.rValue = 0;  
+    libLedBpm.extStatus = 0;
+    return libLedBpm;
+  }
+
 
 }
 // This function modifies the pulse width of the MAX30101 LEDs. All of the LEDs
@@ -421,6 +444,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setPulseWidth(uint16_t width){
   regVal &= PULSE_MASK; // Mask bits to change. 
   regVal |= bits; // Add bits
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
+
+  return SUCCESS;
 
 }
 
@@ -472,7 +497,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint16_t sampRate){
   regVal &= SAMP_MASK; // Mask bits to change. 
   regVal |= (bits << 2); // Add bits but shift them first to correct position.
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
-
+  
+  return SUCCESS;
 }
 
 // This function reads the CONFIGURATION_REGISTER (0x0A), bits [4:2] from the
@@ -523,7 +549,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
   regVal |= adcVal; 
   
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
-
+  
+  return SUCCESS;
 }
 
 // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
@@ -767,10 +794,12 @@ sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30101() {
   
   sensorAttr maxAttr; 
   uint8_t tempArray[2]; 
+
   readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, tempArray);
+  
   maxAttr.byteWord = tempArray[0];
   maxAttr.availRegisters = tempArray[1];
-  delete[] tempArray; 
+
   return maxAttr;
 
     
@@ -785,10 +814,12 @@ sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesAccelerometer() {
 
   sensorAttr maxAttr; 
   uint8_t tempArray[2]; 
+
   readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 2, tempArray);
+
   maxAttr.byteWord = tempArray[0];
   maxAttr.availRegisters = tempArray[1];
-  delete[] tempArray; 
+
   return maxAttr;
     
 }
@@ -894,11 +925,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 // default values are in order: 159584, -3465966, and 11268987.   
 uint8_t SparkFun_Bio_Sensor_Hub::setMaximFastCoef(int32_t coef1, int32_t coef2, int32_t coef3) {
 
-  uint32_t coefArr[3] = {coef1, coef2, coef3};
+  int32_t coefArr[3] = {coef1, coef2, coef3};
 
   uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF,\
                                       MAXIMFAST_COEF_ID, coefArr); 
-  delete[] coefArr;
   if( statusByte != SUCCESS)
     return statusByte; 
   else 
@@ -1212,19 +1242,21 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
-                                                uint8_t _writeByte, uint32_t _writeVal[3])
+                                                uint8_t _writeByte, int32_t _writeVal[3])
 {
 
   _i2cPort->beginTransmission(_address);     
   _i2cPort->write(_familyByte);    
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte);    
+
   for( byte i = 0; i < 3; i++){
     _i2cPort->write(_writeVal[i] >> 24); 
     _i2cPort->write(_writeVal[i] >> 16); 
     _i2cPort->write(_writeVal[i] >> 8); 
     _i2cPort->write(_writeVal[i]); 
   }
+
   _i2cPort->endTransmission(); 
   delay(CMD_DELAY); 
   
@@ -1357,7 +1389,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
 // that it returns a 4 byte (uint32_t) integer instead of 8. 
-uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\ 
+uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\
                                                uint8_t _writeByte)
 {
 

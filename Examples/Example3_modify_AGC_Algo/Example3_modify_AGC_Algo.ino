@@ -28,8 +28,8 @@
 #include <Wire.h>
 
 // Reset pin, MFIO pin
-const int resPin = 4;
-const int mfioPin = 5;
+int resPin = 4;
+int mfioPin = 5;
 
 int algoRange = 80; // ADC Range (0-100%)
 int algoStepSize = 20; // Step Size (0-100%)

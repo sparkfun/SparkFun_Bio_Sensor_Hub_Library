@@ -31,8 +31,8 @@
 #include <Wire.h>
 
 // Reset pin, MFIO pin
-const int resPin = 4;
-const int mfioPin = 5;
+int resPin = 4;
+int mfioPin = 5;
 
 // Possible widths: 69, 118, 215, 411us
 int width = 411; 
