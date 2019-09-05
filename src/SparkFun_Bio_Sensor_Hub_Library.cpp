@@ -24,7 +24,7 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint16_t resetPin, uint16_t mfi
   
   _resetPin = resetPin; 
   _mfioPin = mfioPin;
-  _address = DEF_ADDR; 
+  _address = address; 
   pinMode(_mfioPin, OUTPUT); 
   pinMode(_resetPin, OUTPUT); // Set these pins as output
   
