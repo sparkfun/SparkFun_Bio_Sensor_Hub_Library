@@ -19,6 +19,7 @@ Documentation
 --------------
 
 * **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - Basic information on how to install an Arduino library.
+* **[Hookup Guide](https://learn.sparkfun.com/tutorials/sparkfun-pulse-oximeter-and-heart-rate-monitor-hookup-guide)** - Basic hookup guide for the SparkFun Pulse Oximeter and Heart Rate Sensor.
 
 Products that use this library
 --------------
