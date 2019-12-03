@@ -83,24 +83,24 @@ void setup(){
   }
 
   // Let's read back what we set....
-  int algoVal = bioHub.readAlgoRange());
+  int algoVal = bioHub.readAlgoRange();
   Serial.print("Algorithm set to: ");
   Serial.println(algoVal);
 
-  int stepVal = bioHub.readAlgoStepSize());
+  int stepVal = bioHub.readAlgoStepSize();
   Serial.print("Algorithm set to: ");
   Serial.println(stepVal);
 
-  int senVal = bioHub.readAlgoSensitivity());
+  int senVal = bioHub.readAlgoSensitivity();
   Serial.print("Algorithm set to: ");
   Serial.println(senVal);
 
-  int sampVal = bioHub.readAlgoSamples());
+  int sampVal = bioHub.readAlgoSamples();
   Serial.print("Algorithm set to: ");
   Serial.println(sampVal);
 
   Serial.println("Configuing Sensor.");
-  error = configBpm(MODE_ONE);
+  error = bioHub.configBpm(MODE_ONE);
   if (error > 0){ 
     Serial.println("Could not configure the sensor.");
   }
