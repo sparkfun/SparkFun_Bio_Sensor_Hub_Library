@@ -544,7 +544,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= ADC_MASK; 
-  regVal |= adcVal; 
+  regVal |= (adcVal << 5); 
   
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
   
