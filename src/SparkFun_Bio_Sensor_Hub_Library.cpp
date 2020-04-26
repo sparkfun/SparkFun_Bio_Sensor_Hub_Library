@@ -353,44 +353,44 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
         MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY + MAXFAST_EXTENDED_DATA, bpmSenArrTwo); 
 
     // Value of LED one....
-    libLedBpm.irLed = uint32_t(bpmSenArr[0]) << 16; 
-    libLedBpm.irLed |= uint32_t(bpmSenArr[1]) << 8; 
-    libLedBpm.irLed |= bpmSenArr[2]; 
+    libLedBpm.irLed = uint32_t(bpmSenArrTwo[0]) << 16; 
+    libLedBpm.irLed |= uint32_t(bpmSenArrTwo[1]) << 8; 
+    libLedBpm.irLed |= bpmSenArrTwo[2]; 
 
     // Value of LED two...
-    libLedBpm.redLed = uint32_t(bpmSenArr[3]) << 16; 
-    libLedBpm.redLed |= uint32_t(bpmSenArr[4]) << 8; 
-    libLedBpm.redLed |= bpmSenArr[5]; 
+    libLedBpm.redLed = uint32_t(bpmSenArrTwo[3]) << 16; 
+    libLedBpm.redLed |= uint32_t(bpmSenArrTwo[4]) << 8; 
+    libLedBpm.redLed |= bpmSenArrTwo[5]; 
 
     // -- What happened here? -- There are two uint32_t values that are given by
     // the sensor for LEDs that do not exists on the MAX30101. So we have to
     // request those empty values because they occupy the buffer:
-    // bpmSenArr[6-11]. 
+    // bpmSenArrTwo[6-11]. 
     
     // Heart rate formatting
-    libLedBpm.heartRate = (uint16_t(bpmSenArr[12]) << 8); 
-    libLedBpm.heartRate |= (bpmSenArr[13]); 
+    libLedBpm.heartRate = (uint16_t(bpmSenArrTwo[12]) << 8); 
+    libLedBpm.heartRate |= (bpmSenArrTwo[13]); 
     libLedBpm.heartRate /= 10; 
 
     // Confidence formatting
-    libLedBpm.confidence = bpmSenArr[14]; 
+    libLedBpm.confidence = bpmSenArrTwo[14]; 
 
     //Blood oxygen level formatting
-    libLedBpm.oxygen = uint16_t(bpmSenArr[15]) << 8;
-    libLedBpm.oxygen |= bpmSenArr[16]; 
+    libLedBpm.oxygen = uint16_t(bpmSenArrTwo[15]) << 8;
+    libLedBpm.oxygen |= bpmSenArrTwo[16]; 
     libLedBpm.oxygen /= 10;
 
     //"Machine State" - has a finger been detected?
-    libLedBpm.status = bpmSenArr[17];
+    libLedBpm.status = bpmSenArrTwo[17];
 
     //Sp02 r Value formatting
-    uint16_t tempVal = uint16_t(bpmArrTwo[6]) << 8;
-    tempVal |= bpmArrTwo[7]; 
+    uint16_t tempVal = uint16_t(bpmSenArrTwo[18]) << 8;
+    tempVal |= bpmSenArrTwo[19]; 
     libLedBpm.rValue = tempVal;  
-    libLedBpm.rValue /= 10;
+    libLedBpm.rValue /= 10.0;
 
     //Extended Machine State formatting
-    libLedBpm.extStatus = bpmArrTwo[20];
+    libLedBpm.extStatus = bpmSenArrTwo[20];
 
     // There are two additional bytes of data that were requested but that
     // have not been implemented in firmware 10.1 so will not be saved to
@@ -427,7 +427,6 @@ bioData SparkFun_Bio_Sensor_Hub::readSensorBpm(){
 uint8_t SparkFun_Bio_Sensor_Hub::setPulseWidth(uint16_t width){
 
   uint8_t bits; 
-  uint8_t statusByte;
   uint8_t regVal;
 
   // Make sure the correct pulse width is selected. 
@@ -476,7 +475,6 @@ uint16_t SparkFun_Bio_Sensor_Hub::readPulseWidth(){
 uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint16_t sampRate){
 
   uint8_t bits; 
-  uint8_t statusByte;
   uint8_t regVal; 
 
   // Make sure the correct sample rate was picked
@@ -532,7 +530,6 @@ uint16_t SparkFun_Bio_Sensor_Hub::readSampleRate(){
 // 62.5pA  - 16384nA
 uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
 
-  uint8_t statusByte;
   uint8_t regVal; 
   uint8_t bits;
 
@@ -544,7 +541,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
 
   regVal = readRegisterMAX30101(CONFIGURATION_REGISTER); 
   regVal &= ADC_MASK; 
-  regVal |= (adcVal << 5); 
+  regVal |= bits << 5; 
   
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); 
   
@@ -611,7 +608,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::getMcuType() {
 int32_t SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 
   int32_t bootVers = 0;
-  int32_t* revNum;
+  int32_t revNum[4] = {0};
   readMultipleBytes(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4, revNum);   
 
   if( revNum[1] != SUCCESS )
@@ -675,7 +672,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
 uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 
-  if (outputType < PAUSE || outputType > SENSOR_ALGO_COUNTER) // Bytes between 0x00 and 0x07
+  // if (outputType < PAUSE || outputType > SENSOR_ALGO_COUNTER) // Bytes between 0x00 and 0x07
+  if ( outputType > SENSOR_ALGO_COUNTER ) // Bytes between 0x00 and 0x07
     return INCORR_PARAM; 
 
   // Check that communication was successful, not that the IC is outputting
@@ -695,8 +693,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 // (begin). 
 uint8_t SparkFun_Bio_Sensor_Hub::setFifoThreshold(uint8_t intThresh) {
 
-  if( intThresh < 0 || intThresh > 255)
-    return INCORR_PARAM; 
+  // if(( intThresh < 0 )||( intThresh > 255 ))
+  //   return INCORR_PARAM; 
  
   // Checks that there was succesful communcation, not that the threshold was
   // set correctly. 
@@ -851,7 +849,8 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t numReg, uint
 // 100 percent. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 
-  if( perc < 0 || perc > 100)
+  // if( perc < 0 || perc > 100)
+  if( perc > 100)
     return INCORR_PARAM; 
 
   // Successful communication or no?
@@ -869,7 +868,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 // It takes a paramater of zero to 100 percent. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 
-  if( step < 0 || step > 100)
+  // if( step < 0 || step > 100)
+  if( step > 100 )
     return  INCORR_PARAM; 
 
   // Successful communication or no?
@@ -886,7 +886,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 // This function changes the sensitivity of the AGC algorithm.
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 
-  if( sense < 0 || sense > 100 )
+  // if( sense < 0 || sense > 100 )
+  if( sense > 100 )
     return INCORR_PARAM; 
 
   // Successful communication or no?
@@ -904,8 +905,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 // It takes a paramater of zero to 255. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 
-  if( avg < 0 || avg > 255 )
-    return INCORR_PARAM; 
+  // if( avg < 0 || avg > 255 )
+  //   return INCORR_PARAM; 
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
@@ -1391,7 +1392,7 @@ uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _ind
                                                uint8_t _writeByte)
 {
 
-   uint32_t returnByte;
+   uint32_t returnByte = 0;
    uint8_t statusByte; 
 
   _i2cPort->beginTransmission(_address);
@@ -1404,7 +1405,7 @@ uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _ind
   _i2cPort->requestFrom(_address, (sizeof(returnByte) * 3) + sizeof(statusByte) ); 
   statusByte = _i2cPort->read();
   if( statusByte ) // Pass through if SUCCESS (0x00). 
-    return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
+    return (uint32_t)statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE 
 
   for(uint8_t i = 0; i < (sizeof(returnByte) * 3); i++){ // Reading three long bytes
     returnByte |= (_i2cPort->read() << 24);
