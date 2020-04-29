@@ -20,7 +20,7 @@
 #define READ_PULSE_MASK        0x03
 #define SAMP_MASK              0xE3
 #define READ_SAMP_MASK         0x1C
-#define ADC_MASK               0x1F
+#define ADC_MASK               0x9F
 #define READ_ADC_MASK          0x60
 
 #define ENABLE_CMD_DELAY          45 // Milliseconds
