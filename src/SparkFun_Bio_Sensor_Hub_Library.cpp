@@ -672,7 +672,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 // Write Byte : outputType (Parameter values in OUTPUT_MODE_WRITE_BYTE)
 uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 
-  // if (outputType < PAUSE || outputType > SENSOR_ALGO_COUNTER) // Bytes between 0x00 and 0x07
   if ( outputType > SENSOR_ALGO_COUNTER ) // Bytes between 0x00 and 0x07
     return INCORR_PARAM; 
 
@@ -693,9 +692,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
 // (begin). 
 uint8_t SparkFun_Bio_Sensor_Hub::setFifoThreshold(uint8_t intThresh) {
 
-  // if(( intThresh < 0 )||( intThresh > 255 ))
-  //   return INCORR_PARAM; 
- 
   // Checks that there was succesful communcation, not that the threshold was
   // set correctly. 
   uint8_t statusByte = writeByte(OUTPUT_MODE, WRITE_SET_THRESHOLD, intThresh); 
@@ -849,7 +845,6 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t numReg, uint
 // 100 percent. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 
-  // if( perc < 0 || perc > 100)
   if( perc > 100)
     return INCORR_PARAM; 
 
@@ -868,7 +863,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 // It takes a paramater of zero to 100 percent. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 
-  // if( step < 0 || step > 100)
   if( step > 100 )
     return  INCORR_PARAM; 
 
@@ -886,7 +880,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 // This function changes the sensitivity of the AGC algorithm.
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 
-  // if( sense < 0 || sense > 100 )
   if( sense > 100 )
     return INCORR_PARAM; 
 
@@ -904,9 +897,6 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 // This function changes the number of samples that are averaged. 
 // It takes a paramater of zero to 255. 
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
-
-  // if( avg < 0 || avg > 255 )
-  //   return INCORR_PARAM; 
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
