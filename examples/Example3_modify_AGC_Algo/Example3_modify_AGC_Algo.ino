@@ -62,7 +62,7 @@ void setup(){
     Serial.println("Sensor started!");
   
   // Adjusting the Automatic Gain Control (AGC) Algorithm
-  int error = bioHub.setAlgoRange(algoRange));
+  int error = bioHub.setAlgoRange(algoRange);
   if (error > 0){
     Serial.println("Could not set algorithm's Range.");  
   }
@@ -99,7 +99,7 @@ void setup(){
   Serial.print("Algorithm set to: ");
   Serial.println(sampVal);
 
-  Serial.println("Configuing Sensor.");
+  Serial.println("Configuring Sensor.");
   error = bioHub.configBpm(MODE_ONE);
   if (error > 0){ 
     Serial.println("Could not configure the sensor.");

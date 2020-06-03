@@ -899,7 +899,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 
   // Successful communication or no?
-  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_SENSITIVITY_ID, avg); 
+  uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_NUM_SAMP_ID, avg); 
   if( statusByte != SUCCESS )
     return statusByte; 
   else 
