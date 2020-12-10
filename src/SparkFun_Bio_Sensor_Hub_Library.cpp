@@ -42,10 +42,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch 
   //  to avoid multiple begins with other sketches.
+  
+  digitalWrite(_resetPin, HIGH);   
+  delay(30);
 
   digitalWrite(_mfioPin, HIGH); 
   digitalWrite(_resetPin, LOW); 
-  delay(10); 
+  delay(30); 
   digitalWrite(_resetPin, HIGH); 
   delay(1000); 
   pinMode(_mfioPin, INPUT_PULLUP); // To be used as an interrupt later
@@ -1327,7 +1330,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(arraySize + sizeof(statusByte))); 
   statusByte = _i2cPort->read(); // Got it
-  if( statusByte ){// SUCCESS (0x00)
+  if( (statusByte!=0) && (statusByte!=255) ){// SUCCESS (0x00)
     for(uint8_t i = 0; i < arraySize; i++){
       array[i] = 0; 
     }
