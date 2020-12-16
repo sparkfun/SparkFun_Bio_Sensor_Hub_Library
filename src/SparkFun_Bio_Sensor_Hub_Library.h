@@ -661,6 +661,9 @@ class SparkFun_Bio_Sensor_Hub
     // delays 60 microseconds, during which the MAX32664 retrieves the requested 
     // information. An I-squared-C request is then issued, and the information is read and returned.
     uint8_t readByte(uint8_t, uint8_t); 
+	
+	uint8_t readByte_fast(uint8_t _familyByte, uint8_t _indexByte);
+	uint8_t readByte_fast(uint8_t _familyByte, uint8_t _indexByte, uint8_t _writeByte);
 
     // This function is exactly as the one above except it accepts a Write Byte as
     // a paramter. It starts a request by writing the family byte, index byte, and
