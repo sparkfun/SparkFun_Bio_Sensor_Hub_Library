@@ -914,10 +914,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 // default values are in order: 159584, -3465966, and 11268987.   
 uint8_t SparkFun_Bio_Sensor_Hub::setMaximFastCoef(int32_t coef1, int32_t coef2, int32_t coef3) {
 
-  int32_t coefArr[3] = {coef1, coef2, coef3};
+  const size_t numCoefVals = 3;
+  int32_t coefArr[numCoefVals] = {coef1, coef2, coef3};
 
   uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF,\
-                                      MAXIMFAST_COEF_ID, coefArr); 
+                                      MAXIMFAST_COEF_ID, coefArr, numCoefVals); 
   if( statusByte != SUCCESS)
     return statusByte; 
   else 
@@ -1131,6 +1132,92 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
   return libAlgoVers; 
 
 }
+// ------------------Function Below for MAX32664 Version D (Blood Pressure) ----
+uint8_t SparkFun_Bio_Sensor_Hub::isPatientBPMedication(uint8_t medication){
+
+  if (medication != 0x01 || medication != 0x00)
+    return INCORR_PARAM;
+ 
+  uint8_t status = _writeByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION, medication);
+  return status;
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::isPatientBPMedication(){
+
+  uint8_t medication = _readByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION);
+  return medication;
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::writeSystolicVals(uint8_t sysVal1, uint8_t sysVal2, uint8_t sysVal3){
+
+  const size_t numSysVals = 3; 
+  uint8_t sysVals[numSysVals] = {sysVal1, sysVal2, sysVal3}; 
+  uint8_t status = writeBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, SYSTOLIC_VALUE, sysVals, numSysVals);
+  
+  return status;
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::readSystolicVals(){
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::writeDiastolicVals(uint8_t diasVal1, uint8_t diasVal2, uint8_t diasVal3){
+
+  const size_t numDiasVals = 3; 
+  uint8_t diasVals[numDiasVals] = {diasVal1, diasVal2, diasVal3};
+  uint8_t status = writeBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, DIASTOLIC_VALUE, diasVals, numDiasVals);
+  
+  return status;
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::readDiastolicVals(uint8_t ){
+
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::writeBPTAlgoData(uint8_t bptCalibData[]){
+
+  const size_t numCalibVals = 824; 
+  uint8_t status = writeBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_CALIB_DATA, bptCalibData, numCalibVals) 
+  return status; 
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::readBPTAlgoData(){
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::isPatientResting(uint8_t resting){ //
+  
+  if (resting != 0x00 || resting != 0x01)
+    return INCORR_PARAM; 
+
+  uint8_t status = writeByte(CHANGE_ALGORITHM_CONFIG, BPT_CALIB_DATA, PATIENT_RESTING, resting); 
+  return status; 
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::isPatientResting(){ 
+
+  uint8_t resting = writeByte(CHANGE_ALGORITHM_CONFIG, BPT_CALIB_DATA, PATIENT_RESTING); 
+  return resting; 
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::writeSP02AlgoCoef(int32_t intA, int32_t intB, int32_t intC){ 
+
+
+  const size_t numCoefVals = 3; 
+  int32_t coefVals[numCoefVals] = {intA, intB, intC}; 
+  uint8_t status = writeLongBytes(CHANGE_ALGORITHM_CONFIG, BPT_CALIB_DATA, AGC_SP02_COEFS, coefVals, numCoefVals); 
+  return status;
+
+}
+
+uint8_t SparkFun_Bio_Sensor_Hub::readBPTAlgoCoef(){ //overload for read and write
+}
 
 //-------------------Private Functions-----------------------
 
@@ -1231,7 +1318,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
-                                                uint8_t _writeByte, int32_t _writeVal[3])
+                                                uint8_t _writeByte, const int32_t _writeVal[], const size_t _size)
 {
 
   _i2cPort->beginTransmission(_address);     
@@ -1239,7 +1326,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
   _i2cPort->write(_indexByte);    
   _i2cPort->write(_writeByte);    
 
-  for( byte i = 0; i < 3; i++){
+  for( size_t i = 0; i < _size; i++){
     _i2cPort->write(_writeVal[i] >> 24); 
     _i2cPort->write(_writeVal[i] >> 16); 
     _i2cPort->write(_writeVal[i] >> 8); 
@@ -1256,6 +1343,32 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 
 }
 
+// This function sends information to the MAX32664 to specifically write values
+// to the registers of downward sensors and so also requires a
+// register address and register value as parameters. Again there is the write
+// of the specific bytes followed by a read to confirm positive transmission. 
+uint8_t SparkFun_Bio_Sensor_Hub::writeBytes(uint8_t _familyByte, uint8_t _indexByte,\
+                                                uint8_t _writeByte, const uint8_t _writeVal[], size_t _size)
+{
+
+  _i2cPort->beginTransmission(_address);     
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+
+  for( size_t i = 0; i < _size; i++){
+    _i2cPort->write(_writeVal[i]); 
+  }
+
+  _i2cPort->endTransmission(); 
+  delay(CMD_DELAY); 
+  
+  // Status Byte, 0x00 is a successful transmit.
+  _i2cPort->requestFrom(_address, static_cast<uint8_t>(1)); 
+  uint8_t statusByte = _i2cPort->read(); 
+  return statusByte; 
+
+}
 // This function handles all read commands or stated another way, all information
 // requests. It starts a request by writing the family byte an index byte, and
 // then delays 60 microseconds, during which the MAX32664 retrieves the requested 
@@ -1285,7 +1398,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 }
 
 // This function is exactly as the one above except it accepts also receives a 
-// Write Byte as a paramter. It starts a request by writing the family byte, index byte, and
+// Write Byte as a parameter. It starts a request by writing the family byte, index byte, and
 // write byte to the MAX32664 and then delays 60 microseconds, during which
 // the MAX32664 retrieves the requested information. A I-squared-C request is
 // then issued, and the information is read.
