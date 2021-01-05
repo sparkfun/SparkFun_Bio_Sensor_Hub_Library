@@ -608,10 +608,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::getMcuType() {
 int32_t SparkFun_Bio_Sensor_Hub::getBootloaderInf() {
 
   int32_t bootVers = 0;
-  int32_t revNum[4] = {0};
-  readMultipleBytes(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4, revNum);   
+  const size_t sizeOfRev = 4;
+  int32_t revNum[sizeOfRev] = {};
+  uint8_t status = readMultipleBytes(BOOTLOADER_INFO, BOOTLOADER_VERS, 0x00, 4, revNum);   
 
-  if( revNum[1] != SUCCESS )
+  if(!status)
     return ERR_UNKNOWN; 
   else {
     bootVers |= (int32_t(revNum[1]) << 16);
@@ -785,7 +786,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readRegisterAccel(uint8_t regAddr) {
 sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30101() {
   
   sensorAttr maxAttr; 
-  uint8_t tempArray[2]; 
+  uint8_t tempArray[2] {}; 
 
   readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_MAX30101, 2, tempArray);
   
@@ -805,7 +806,7 @@ sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesMAX30101() {
 sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesAccelerometer() {
 
   sensorAttr maxAttr; 
-  uint8_t tempArray[2]; 
+  uint8_t tempArray[2] {}; 
 
   readFillArray(READ_ATTRIBUTES_AFE, RETRIEVE_AFE_ACCELEROMETER, 2, tempArray);
 
@@ -819,11 +820,12 @@ sensorAttr SparkFun_Bio_Sensor_Hub::getAfeAttributesAccelerometer() {
 // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
 // This function returns all registers and register values sequentially of the
 // MAX30101 sensor: register zero and register value zero to register n and 
-// register value n.
-uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101(uint8_t numReg, uint8_t regArray[255]) {
+// register value n. There are 36 registers in this case. 
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101(uint8_t regArray[]) {
  
-  readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, numReg, regArray); 
-  return regArray;  
+  uint8_t numOfBytes = 36;  
+  uint8_t status = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_MAX30101, numOfBytes, regArray); 
+  return status;  
 
 }
 
@@ -831,10 +833,10 @@ uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterMAX30101(uint8_t numReg, uint8_t r
 // This function returns all registers and register values sequentially of the
 // Accelerometer: register zero and register value zero to register n and 
 // register value n.
-uint8_t* SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t numReg, uint8_t regArray[]) {
+uint8_t SparkFun_Bio_Sensor_Hub::dumpRegisterAccelerometer(uint8_t numReg, uint8_t regArray[]) {
  
-  readFillArray(DUMP_REGISTERS, DUMP_REGISTER_ACCELEROMETER, numReg, regArray); //Fake read amount
-  return regArray; 
+  uint8_t status = readFillArray(DUMP_REGISTERS, DUMP_REGISTER_ACCELEROMETER, numReg, regArray); //Fake read amount
+  return status; 
 
 }
 
@@ -973,14 +975,14 @@ uint8_t SparkFun_Bio_Sensor_Hub::readAlgoSamples() {
 // This function reads the maximum age for the wrist heart rate monitor
 // (WHRM) algorithm. It returns three uint32_t integers that are 
 // multiplied by 100,000.
-int32_t*  SparkFun_Bio_Sensor_Hub::readMaximFastCoef(int32_t coefArr[3]) {
+uint8_t SparkFun_Bio_Sensor_Hub::readMaximFastCoef(int32_t coefArr[3]) {
  
-  uint8_t numOfReads = 3; 
-  readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, numOfReads, coefArr ); 
+  const size_t numOfReads = 3; 
+  uint8_t status = readMultipleBytes( READ_ALGORITHM_CONFIG, READ_MAX_FAST_COEF, READ_MAX_FAST_COEF_ID, numOfReads, coefArr ); 
   coefArr[0] = coefArr[0] * 100000; 
   coefArr[1] = coefArr[1] * 100000; 
   coefArr[2] = coefArr[2] * 100000; 
-  return coefArr; 
+  return status; 
 }
 
 // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
@@ -1138,14 +1140,14 @@ uint8_t SparkFun_Bio_Sensor_Hub::isPatientBPMedication(uint8_t medication){
   if (medication != 0x01 || medication != 0x00)
     return INCORR_PARAM;
  
-  uint8_t status = _writeByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION, medication);
+  uint8_t status = writeByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION, medication);
   return status;
 
 }
 
 uint8_t SparkFun_Bio_Sensor_Hub::isPatientBPMedication(){
 
-  uint8_t medication = _readByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION);
+  uint8_t medication = readByte(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_MEDICATION);
   return medication;
 
 }
@@ -1173,15 +1175,18 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeDiastolicVals(uint8_t diasVal1, uint8_t di
 
 }
 
-uint8_t SparkFun_Bio_Sensor_Hub::readDiastolicVals(uint8_t ){
+uint8_t SparkFun_Bio_Sensor_Hub::readDiastolicVals(uint8_t userProvidedArray[]){
 
+  const size_t numDiasVals = 3; 
+  uint8_t status = readMultipleBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, DIASTOLIC_VALUE, numDiasVals, userProvidedArray);
+  return status;
 
 }
 
 uint8_t SparkFun_Bio_Sensor_Hub::writeBPTAlgoData(uint8_t bptCalibData[]){
 
   const size_t numCalibVals = 824; 
-  uint8_t status = writeBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_CALIB_DATA, bptCalibData, numCalibVals) 
+  uint8_t status = writeBytes(CHANGE_ALGORITHM_CONFIG, BPT_CONFIG, BPT_CALIB_DATA, bptCalibData, numCalibVals);
   return status; 
 
 }
@@ -1216,7 +1221,11 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeSP02AlgoCoef(int32_t intA, int32_t intB, i
 
 }
 
-uint8_t SparkFun_Bio_Sensor_Hub::readBPTAlgoCoef(){ //overload for read and write
+uint8_t SparkFun_Bio_Sensor_Hub::readSP02AlgoCoef(){ // Have the user provide their own array here and pass the pointer to it
+
+  uint8_t status = readLongByte(CHANGE_ALGORITHM_CONFIG, BPT_CALIB_DATA, AGC_SP02_COEFS); 
+  return status;
+
 }
 
 //-------------------Private Functions-----------------------
@@ -1318,7 +1327,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeByte(uint8_t _familyByte, uint8_t _indexBy
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _indexByte,\
-                                                uint8_t _writeByte, const int32_t _writeVal[], const size_t _size)
+                                                uint8_t _writeByte, int32_t _writeVal[], const size_t _size)
 {
 
   _i2cPort->beginTransmission(_address);     
@@ -1348,7 +1357,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::writeLongBytes(uint8_t _familyByte, uint8_t _in
 // register address and register value as parameters. Again there is the write
 // of the specific bytes followed by a read to confirm positive transmission. 
 uint8_t SparkFun_Bio_Sensor_Hub::writeBytes(uint8_t _familyByte, uint8_t _indexByte,\
-                                                uint8_t _writeByte, const uint8_t _writeVal[], size_t _size)
+                                                uint8_t _writeByte, uint8_t _writeVal[], size_t _size)
 {
 
   _i2cPort->beginTransmission(_address);     
@@ -1426,8 +1435,8 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
 }
 
-uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte,\
-                                                uint8_t arraySize, uint8_t array[] )
+uint8_t SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _indexByte,\
+                                                uint8_t _numOfReads, uint8_t array[] )
 {
 
   uint8_t statusByte;
@@ -1438,19 +1447,19 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
   _i2cPort->endTransmission();
   delay(CMD_DELAY); 
 
-  _i2cPort->requestFrom(_address, static_cast<uint8_t>(arraySize + sizeof(statusByte))); 
-  statusByte = _i2cPort->read(); // Got it
-  if( statusByte ){// SUCCESS (0x00)
-    for(uint8_t i = 0; i < arraySize; i++){
+  _i2cPort->requestFrom(_address, static_cast<uint8_t>(_numOfReads + sizeof(statusByte))); 
+  statusByte = _i2cPort->read(); 
+  if( statusByte ){// SUCCESS: 0x00
+    for(size_t i = 0; i < _numOfReads; i++){
       array[i] = 0; 
     }
-    return array; 
+    return statusByte; 
   }
 
-  for(uint8_t i = 0; i < arraySize; i++){
+  for(size_t i = 0; i < _numOfReads; i++){
     array[i] = _i2cPort->read(); 
   }
-  return array; // If good then return the array. 
+  return statusByte; 
 
 }
 // This function handles all read commands or stated another way, all information
@@ -1458,7 +1467,7 @@ uint8_t* SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _in
 // a write byte and then then delays 60 microseconds, during which the MAX32664 
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
-// that it returns a 16 bit integer instead of 8. 
+// that it returns a 16 bit integer instead of a single byte. 
 uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _indexByte,\
                                               uint8_t _writeByte )
 {
@@ -1490,7 +1499,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 // a write byte and then then delays 60 microseconds, during which the MAX32664 
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This differs from the above read commands in
-// that it returns a 4 byte (uint32_t) integer instead of 8. 
+// that it returns three, four byte (uint32_t) integer instead of a single byte. 
 uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _indexByte,\
                                                uint8_t _writeByte)
 {
@@ -1525,9 +1534,9 @@ uint32_t SparkFun_Bio_Sensor_Hub::readLongByte(uint8_t _familyByte, uint8_t _ind
 // retrieves the requested information. An I-squared-C request is then issued, 
 // and the information is read. This function is very similar to the one above
 // except it returns three uint32_t bytes instead of one. 
-int32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
-                                                     uint8_t _writeByte,  uint8_t _numOfReads,\
-                                                     int32_t* array)
+uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
+                                                     uint8_t _writeByte,  const size_t _numOfReads,\
+                                                     int32_t userArray[])
 {
 
    uint8_t statusByte; 
@@ -1542,21 +1551,51 @@ int32_t* SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(int32_t) * _numOfReads + sizeof(statusByte))); 
   statusByte = _i2cPort->read();
   if( statusByte ){ // Pass through if SUCCESS (0x00). 
-    for(uint8_t i = 0; i < (sizeof(int32_t) * _numOfReads); i++){
-      array[i] = 0;  
-      array[i] = 0;
-      array[i] = 0;
-      array[i] = 0;
+    for(size_t i = 0; i < (sizeof(int32_t) * _numOfReads); i++){
+      userArray[i] = 0;  
+      userArray[i] = 0;
+      userArray[i] = 0;
+      userArray[i] = 0;
     }
-    return array; 
+    return statusByte; 
   }
+  
+  else
+    return statusByte; 
+}
 
-  for(uint8_t i = 0; i < (sizeof(int32_t) * _numOfReads); i++){
-    array[i] |= (_i2cPort->read() << 24);
-    array[i] |= (_i2cPort->read() << 16);
-    array[i] |= (_i2cPort->read() << 8);
-    array[i] |= _i2cPort->read();
+// This function handles all read commands or stated another way, all information
+// requests. It starts a request by writing the family byte, an index byte, and
+// a write byte and then then delays 60 microseconds, during which the MAX32664 
+// retrieves the requested information. An I-squared-C request is then issued, 
+// and the information is read. This function is very similar to the one above
+// except it returns three uint32_t bytes instead of one. 
+uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t _indexByte,\
+                                                     uint8_t _writeByte,  const size_t _numOfReads,\
+                                                     uint8_t userArray[])
+{
+
+   uint8_t statusByte; 
+
+  _i2cPort->beginTransmission(_address);
+  _i2cPort->write(_familyByte);    
+  _i2cPort->write(_indexByte);    
+  _i2cPort->write(_writeByte);    
+  _i2cPort->endTransmission();
+  delay(CMD_DELAY); 
+
+  _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(int32_t) * _numOfReads + sizeof(statusByte))); 
+  statusByte = _i2cPort->read();
+  if( statusByte ){ // Pass through if SUCCESS (0x00). 
+    for(size_t i = 0; i < (sizeof(uint8_t) * _numOfReads); i++){
+      userArray[i] = 0;  
+      userArray[i] = 0;
+      userArray[i] = 0;
+      userArray[i] = 0;
+    }
+    return statusByte; 
   }
-  return array; 
-
+  
+  else
+    return statusByte; 
 }

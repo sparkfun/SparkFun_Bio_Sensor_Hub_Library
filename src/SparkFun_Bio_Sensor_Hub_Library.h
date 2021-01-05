@@ -68,7 +68,7 @@ struct sensorAttr {
 
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
-const enum READ_STATUS_BYTE_VALUE {
+enum READ_STATUS_BYTE_VALUE {
 
   SUCCESS                  = 0x00,
   ERR_UNAVAIL_CMD,
@@ -87,7 +87,7 @@ const enum READ_STATUS_BYTE_VALUE {
 // The family register bytes are the larger umbrella for all the Index and
 // Write Bytes listed below. You can not reference a nestled byte without first
 // referencing it's larger category: Family Register Byte.
-const enum FAMILY_REGISTER_BYTES {
+enum FAMILY_REGISTER_BYTES {
   
   HUB_STATUS               = 0x00,
   SET_DEVICE_MODE,
@@ -118,7 +118,7 @@ const enum FAMILY_REGISTER_BYTES {
 
 // Write Bytes under Family Byte: SET_DEVICE_MODE (0x01) and Index
 // Byte: 0x00. 
-const enum DEVICE_MODE_WRITE_BYTES {
+enum DEVICE_MODE_WRITE_BYTES {
 
   EXIT_BOOTLOADER          = 0x00,
   RESET                    = 0x02,
@@ -128,7 +128,7 @@ const enum DEVICE_MODE_WRITE_BYTES {
 
 // Write Bytes under Family Byte: OUTPUT_MODE (0x10) and Index byte: SET_FORMAT
 // (0x00)
-const enum OUTPUT_MODE_WRITE_BYTE {
+enum OUTPUT_MODE_WRITE_BYTE {
 
   PAUSE                    = 0x00,
   SENSOR_DATA,
@@ -142,7 +142,7 @@ const enum OUTPUT_MODE_WRITE_BYTE {
 };
 
 // Index Byte under the Family Byte: READ_DATA_OUTPUT (0x12)
-const enum FIFO_OUTPUT_INDEX_BYTE {
+enum FIFO_OUTPUT_INDEX_BYTE {
 
   NUM_SAMPLES,
   READ_DATA
@@ -150,7 +150,7 @@ const enum FIFO_OUTPUT_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: READ_DATA_INPUT (0x13)
-const enum FIFO_EXTERNAL_INDEX_BYTE {
+enum FIFO_EXTERNAL_INDEX_BYTE {
 
   SAMPLE_SIZE,
   READ_INPUT_DATA,
@@ -161,7 +161,7 @@ const enum FIFO_EXTERNAL_INDEX_BYTE {
 };
 
 // Index Byte under the Family Registry Byte: WRITE_REGISTER (0x40)
-const enum WRITE_REGISTER_INDEX_BYTE {
+enum WRITE_REGISTER_INDEX_BYTE {
 
   WRITE_MAX30101 = 0x03,
   WRITE_ACCELEROMETER
@@ -169,7 +169,7 @@ const enum WRITE_REGISTER_INDEX_BYTE {
 };
 
 // Index Byte under the Family Registry Byte: READ_REGISTER (0x41)
-const enum READ_REGISTER_INDEX_BYTE {
+enum READ_REGISTER_INDEX_BYTE {
 
   READ_MAX30101 = 0x03,
   READ_ACCELEROMETER
@@ -177,7 +177,7 @@ const enum READ_REGISTER_INDEX_BYTE {
 };
 
 // Index Byte under the Family Registry Byte: READ_ATTRIBUTES_AFE (0x42)
-const enum GET_AFE_INDEX_BYTE {
+enum GET_AFE_INDEX_BYTE {
   
   RETRIEVE_AFE_MAX30101 = 0x03,
   RETRIEVE_AFE_ACCELEROMETER
@@ -185,7 +185,7 @@ const enum GET_AFE_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: DUMP_REGISTERS (0x43)
-const enum DUMP_REGISTER_INDEX_BYTE {
+enum DUMP_REGISTER_INDEX_BYTE {
   
   DUMP_REGISTER_MAX30101 = 0x03,
   DUMP_REGISTER_ACCELEROMETER
@@ -193,7 +193,7 @@ const enum DUMP_REGISTER_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: ENABLE_SENSOR (0x44)
-const enum SENSOR_ENABLE_INDEX_BYTE {
+enum SENSOR_ENABLE_INDEX_BYTE {
   
   ENABLE_MAX30101 = 0x03,
   ENABLE_ACCELEROMETER
@@ -201,7 +201,7 @@ const enum SENSOR_ENABLE_INDEX_BYTE {
 };
 
 // Index Byte for the Family Byte: READ_SENSOR_MODE (0x45)
-const enum READ_SENSOR_ENABLE_INDEX_BYTE {
+enum READ_SENSOR_ENABLE_INDEX_BYTE {
 
   READ_ENABLE_MAX30101 = 0x03,
   READ_ENABLE_ACCELEROMETER
@@ -209,7 +209,7 @@ const enum READ_SENSOR_ENABLE_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: CHANGE_ALGORITHM_CONFIG (0x50)
-const enum ALGORITHM_CONFIG_INDEX_BYTE {
+enum ALGORITHM_CONFIG_INDEX_BYTE {
 
   SET_TARG_PERC            = 0x00,
   SET_STEP_SIZE            = 0x00,
@@ -222,7 +222,7 @@ const enum ALGORITHM_CONFIG_INDEX_BYTE {
 
 // Write Bytes under the Family Byte: CHANGE_ALGORITHM_CONFIG (0x50) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - SET_TARG_PERC
-const enum ALGO_AGC_WRITE_BYTE {
+enum ALGO_AGC_WRITE_BYTE {
   
   AGC_GAIN_ID              = 0x00, 
   AGC_STEP_SIZE_ID,
@@ -232,7 +232,7 @@ const enum ALGO_AGC_WRITE_BYTE {
 
 };
 
-const enum ALGO_BPT_WRITE_BYTE {
+enum ALGO_BPT_WRITE_BYTE {
   
   BPT_MEDICATION            = 0x00,
   SYSTOLIC_VALUE,            
@@ -244,7 +244,7 @@ const enum ALGO_BPT_WRITE_BYTE {
 };
 
 // Index Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51)
-const enum READ_ALGORITHM_INDEX_BYTE {
+enum READ_ALGORITHM_INDEX_BYTE {
 
   READ_AGC_PERCENTAGE      = 0x00,
   READ_AGC_STEP_SIZE       = 0x00,
@@ -256,7 +256,7 @@ const enum READ_ALGORITHM_INDEX_BYTE {
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and Index Byte: 
 // READ_ALGORITHM_INDEX_BYTE - AGC
-const enum READ_AGC_ALGO_WRITE_BYTE {
+enum READ_AGC_ALGO_WRITE_BYTE {
   
   READ_AGC_PERC_ID           = 0x00,
   READ_AGC_STEP_SIZE_ID,
@@ -267,7 +267,7 @@ const enum READ_AGC_ALGO_WRITE_BYTE {
 };
 
 // Index Byte under the Family Byte: ENABLE_ALGORITHM (0x52).
-const enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
+enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 
   ENABLE_AGC_ALGO  = 0x00,
   ENABLE_WHRM_ALGO = 0x02
@@ -275,7 +275,7 @@ const enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: BOOTLOADER_FLASH (0x80).
-const enum BOOTLOADER_FLASH_INDEX_BYTE {
+enum BOOTLOADER_FLASH_INDEX_BYTE {
 
   SET_INIT_VECTOR_BYTES    = 0x00,
   SET_AUTH_BYTES,
@@ -286,7 +286,7 @@ const enum BOOTLOADER_FLASH_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: BOOTLOADER_INFO (0x81).
-const enum BOOTLOADER_INFO_INDEX_BYTE {
+enum BOOTLOADER_INFO_INDEX_BYTE {
 
   BOOTLOADER_VERS          = 0x00,
   PAGE_SIZE
@@ -294,7 +294,7 @@ const enum BOOTLOADER_INFO_INDEX_BYTE {
 };
 
 // Index Byte under the Family Byte: IDENTITY (0xFF).
-const enum IDENTITY_INDEX_BYTES {
+enum IDENTITY_INDEX_BYTES {
 
   READ_MCU_TYPE            = 0x00,
   READ_SENSOR_HUB_VERS     = 0x03,
@@ -307,8 +307,8 @@ class SparkFun_Bio_Sensor_Hub
   public:  
 
     // Variables ------------
-    uint8_t bpmArr[MAXFAST_ARRAY_SIZE]; 
-    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA]; 
+    uint8_t bpmArr[MAXFAST_ARRAY_SIZE] {}; 
+    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA] {}; 
     uint8_t senArr[MAX30101_LED_ARRAY];
     uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
     uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
@@ -525,14 +525,14 @@ class SparkFun_Bio_Sensor_Hub
     // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
     // This function returns all registers and register values sequentially of the
     // MAX30101 sensor: register zero and register value zero to register n and 
-    // register value n.
-    uint8_t* dumpRegisterMAX30101(uint8_t, uint8_t regArray[255]);
+    // register value n. There are 36 registers in this case. 
+    uint8_t dumpRegisterMAX30101(uint8_t regArray[]);
 
     // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
     // This function returns all registers and register values sequentially of the
     // Accelerometer: register zero and register value zero to register n and 
     // register value n.
-    uint8_t* dumpRegisterAccelerometer(uint8_t, uint8_t regArray[]);
+    uint8_t dumpRegisterAccelerometer(uint8_t, uint8_t regArray[]);
 
     // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
     // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
@@ -592,7 +592,7 @@ class SparkFun_Bio_Sensor_Hub
     // (WHRM) algorithm. It returns three uint32_t integers that are 
     // multiplied by 100,000.
     // INCOMPLETE
-    int32_t* readMaximFastCoef(int32_t coefArr[3]);
+    uint8_t readMaximFastCoef(int32_t coefArr[3]);
 
     // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
     // ENABLE_AGC_ALGO (0x00)
@@ -627,13 +627,25 @@ class SparkFun_Bio_Sensor_Hub
 
     uint8_t isPatientBPMedication();
 
+    uint8_t writeDiastolicVals(uint8_t, uint8_t, uint8_t);
+
     uint8_t writeSystolicVals(uint8_t, uint8_t, uint8_t);
 
-    uint8_t writeBPTAlgoData(uint8_t* );
+    uint8_t readSystolicVals();
 
-    uint8_t isPatientResting(uint8_t );
+    uint8_t readDiastolicVals(uint8_t userProvideArray[]);
+
+    uint8_t writeBPTAlgoData(uint8_t*);
+
+    uint8_t readBPTAlgoData();
+
+    uint8_t isPatientResting(uint8_t);
 
     uint8_t isPatientResting();
+
+    uint8_t writeSP02AlgoCoef(int32_t, int32_t, int32_t);
+
+    uint8_t readSP02AlgoCoef();
 
   private:   
 
@@ -678,13 +690,13 @@ class SparkFun_Bio_Sensor_Hub
     // to the registers of downward sensors and so also requires a
     // register address and register value as parameters. Again there is the write
     // of the specific bytes followed by a read to confirm positive transmission. 
-    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, int32_t _writeVal[algoCoefs]);
+    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, int32_t _writeVal[], const size_t);
 
     // This function sends information to the MAX32664 to specifically write values
     // to the registers of downward sensors and so also requires a
     // register address and register value as parameters. Again there is the write
     // of the specific bytes followed by a read to confirm positive transmission. 
-    uint8_t writeBytes(uint8_t, uint8_t, uint8_t, uint8_t _writeVal[bpt]);
+    uint8_t writeBytes(uint8_t, uint8_t, uint8_t, uint8_t _writeVal[], const size_t);
 
     // This function handles all read commands or stated another way, all information
     // requests. It starts a request by writing the family byte, index byte, and
@@ -721,9 +733,17 @@ class SparkFun_Bio_Sensor_Hub
     // retrieves the requested information. An I-squared-C request is then issued, 
     // and the information is read. This function is very similar to the one above
     // except it returns three uint32_t bytes instead of one. 
-    int32_t* readMultipleBytes(uint8_t, uint8_t, uint8_t, uint8_t, int32_t*);
+    uint8_t readMultipleBytes(uint8_t, uint8_t, uint8_t, const size_t, int32_t userArray[]);
+
+    // This function handles all read commands or stated another way, all information
+    // requests. It starts a request by writing the family byte, an index byte, and
+    // a write byte and then then delays 60 microseconds, during which the MAX32664 
+    // retrieves the requested information. An I-squared-C request is then issued, 
+    // and the information is read. This function is very similar to the one above
+    // except it returns multiple requested bytes.
+    uint8_t readMultipleBytes(uint8_t, uint8_t, uint8_t, const size_t, uint8_t userArray[]);
 
     // Needs comment - INCOMPLETE
-    uint8_t* readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);
+    uint8_t readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);
 };
 #endif
