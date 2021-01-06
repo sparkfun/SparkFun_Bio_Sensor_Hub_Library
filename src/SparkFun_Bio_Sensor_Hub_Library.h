@@ -216,6 +216,7 @@ enum ALGORITHM_CONFIG_INDEX_BYTE {
   SET_SENSITIVITY          = 0x00,
   SET_AVG_SAMPLES          = 0x00,
   SET_PULSE_OX_COEF        = 0x02,
+  BPT_CONFIG               = 0x04
 
 };
 
@@ -228,6 +229,17 @@ enum ALGO_AGC_WRITE_BYTE {
   AGC_SENSITIVITY_ID,
   AGC_NUM_SAMP_ID,
   MAXIMFAST_COEF_ID        = 0x0B
+
+};
+
+enum ALGO_BPT_WRITE_BYTE {
+  
+  BPT_MEDICATION            = 0x00,
+  SYSTOLIC_VALUE,            
+  DIASTOLIC_VALUE,           
+  BPT_CALIB_DATA,           //Index + 824 bytes of calibration data
+  PATIENT_RESTING           = 0x05,
+  AGC_SP02_COEFS           = 0x0B
 
 };
 
@@ -295,11 +307,11 @@ class SparkFun_Bio_Sensor_Hub
   public:  
 
     // Variables ------------
-    uint8_t bpmArr[MAXFAST_ARRAY_SIZE]; 
-    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA]; 
-    uint8_t senArr[MAX30101_LED_ARRAY];
-    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
-    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
+    uint8_t bpmArr[MAXFAST_ARRAY_SIZE] {}; 
+    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA] {}; 
+    uint8_t senArr[MAX30101_LED_ARRAY] {};
+    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY] {};
+    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY] {};
 
     // Constructor ----------
     SparkFun_Bio_Sensor_Hub(uint16_t, uint16_t, uint8_t address = 0x55); 
@@ -513,14 +525,14 @@ class SparkFun_Bio_Sensor_Hub
     // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAX30101 (0x03)
     // This function returns all registers and register values sequentially of the
     // MAX30101 sensor: register zero and register value zero to register n and 
-    // register value n.
-    uint8_t* dumpRegisterMAX30101(uint8_t, uint8_t regArray[255]);
+    // register value n. There are 36 registers in this case. 
+    uint8_t dumpRegisterMAX30101(uint8_t regArray[]);
 
     // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
     // This function returns all registers and register values sequentially of the
     // Accelerometer: register zero and register value zero to register n and 
     // register value n.
-    uint8_t* dumpRegisterAccelerometer(uint8_t, uint8_t regArray[]);
+    uint8_t dumpRegisterAccelerometer(uint8_t, uint8_t regArray[]);
 
     // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte:
     // SET_TARG_PERC (0x00), Write Byte: AGC_GAIN_ID (0x00) 
@@ -580,7 +592,7 @@ class SparkFun_Bio_Sensor_Hub
     // (WHRM) algorithm. It returns three uint32_t integers that are 
     // multiplied by 100,000.
     // INCOMPLETE
-    int32_t* readMaximFastCoef(int32_t coefArr[3]);
+    uint8_t readMaximFastCoef(int32_t coefArr[3]);
 
     // Family Byte: ENABLE_ALGORITHM (0x52), Index Byte:
     // ENABLE_AGC_ALGO (0x00)
@@ -611,13 +623,61 @@ class SparkFun_Bio_Sensor_Hub
     // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALGO_VERS (0x07)
     version readAlgorithmVersion();
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_MEDICATION (0x00)
+    uint8_t isPatientBPMedication(uint8_t);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_MEDICATION (0x00)
+    uint8_t isPatientBPMedication();
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: DIASTOLIC_VALUE (0x02)
+    uint8_t writeDiastolicVals(uint8_t, uint8_t, uint8_t);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: DIASTOLIC_VALUE (0x02)
+    uint8_t readDiastolicVals(uint8_t userArray[]);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: SYSTOLIC_VALUE (0x01)
+    uint8_t writeSystolicVals(uint8_t, uint8_t, uint8_t);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: SYSTOLIC_VALUE (0x01)
+    uint8_t readSystolicVals(uint8_t userArray[]);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_CALIB_DATA (0x03)
+    uint8_t writeBPTAlgoData(uint8_t bptCalibData[]);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_CALIB_DATA (0x03)
+    uint8_t readBPTAlgoData(uint8_t userArray[]);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: PATIENT_RESTING (0x05)
+    uint8_t isPatientResting(uint8_t);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: PATIENT_RESTING (0x05)
+    uint8_t isPatientResting(); 
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: AGC_SP02_COEFS (0x0B)
+    uint8_t writeSP02AlgoCoef(int32_t, int32_t, int32_t);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: AGC_SP02_COEFS (0x0B)
+    uint8_t readSP02AlgoCoef(int32_t userArray[]);
+
   private:   
 
     // Variables -----------
     uint8_t _resetPin;
     uint8_t _mfioPin;
     uint8_t _address; 
-    uint32_t _writeCoefArr[3];
+    uint32_t _writeCoefArr[3] {};
     uint8_t _userSelectedMode;
     uint8_t _sampleRate = 100;
     
@@ -654,7 +714,13 @@ class SparkFun_Bio_Sensor_Hub
     // to the registers of downward sensors and so also requires a
     // register address and register value as parameters. Again there is the write
     // of the specific bytes followed by a read to confirm positive transmission. 
-    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, int32_t _writeVal[3]);
+    uint8_t writeLongBytes(uint8_t, uint8_t, uint8_t, int32_t _writeVal[], const size_t);
+
+    // This function sends information to the MAX32664 to specifically write values
+    // to the registers of downward sensors and so also requires a
+    // register address and register value as parameters. Again there is the write
+    // of the specific bytes followed by a read to confirm positive transmission. 
+    uint8_t writeBytes(uint8_t, uint8_t, uint8_t, uint8_t _writeVal[], const size_t);
 
     // This function handles all read commands or stated another way, all information
     // requests. It starts a request by writing the family byte, index byte, and
@@ -681,19 +747,19 @@ class SparkFun_Bio_Sensor_Hub
     // requests. It starts a request by writing the family byte, an index byte, and
     // a write byte and then then delays 60 microseconds, during which the MAX32664 
     // retrieves the requested information. An I-squared-C request is then issued, 
-    // and the information is read. This differs from the above read commands in
-    // that it returns a 4 byte (uint32_t) integer instead of 8. 
-    uint32_t readLongByte(uint8_t, uint8_t, uint8_t);
+    // and the information is read. This function is very similar to the one above
+    // except it returns three uint32_t bytes instead of one. 
+    uint8_t readMultipleBytes(uint8_t, uint8_t, uint8_t, const size_t, int32_t userArray[]);
 
     // This function handles all read commands or stated another way, all information
     // requests. It starts a request by writing the family byte, an index byte, and
     // a write byte and then then delays 60 microseconds, during which the MAX32664 
     // retrieves the requested information. An I-squared-C request is then issued, 
     // and the information is read. This function is very similar to the one above
-    // except it returns three uint32_t bytes instead of one. 
-    int32_t* readMultipleBytes(uint8_t, uint8_t, uint8_t, uint8_t, int32_t*);
+    // except it returns multiple requested bytes.
+    uint8_t readMultipleBytes(uint8_t, uint8_t, uint8_t, const size_t, uint8_t userArray[]);
 
     // Needs comment - INCOMPLETE
-    uint8_t* readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);
+    uint8_t readFillArray(uint8_t, uint8_t, uint8_t, uint8_t array[]);
 };
 #endif
