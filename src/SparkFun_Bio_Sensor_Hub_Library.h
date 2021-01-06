@@ -309,9 +309,9 @@ class SparkFun_Bio_Sensor_Hub
     // Variables ------------
     uint8_t bpmArr[MAXFAST_ARRAY_SIZE] {}; 
     uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA] {}; 
-    uint8_t senArr[MAX30101_LED_ARRAY];
-    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY];
-    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY];
+    uint8_t senArr[MAX30101_LED_ARRAY] {};
+    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY] {};
+    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY] {};
 
     // Constructor ----------
     SparkFun_Bio_Sensor_Hub(uint16_t, uint16_t, uint8_t address = 0x55); 
@@ -623,29 +623,53 @@ class SparkFun_Bio_Sensor_Hub
     // Family Byte: IDENTITY (0xFF), Index Byte: READ_ALGO_VERS (0x07)
     version readAlgorithmVersion();
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_MEDICATION (0x00)
     uint8_t isPatientBPMedication(uint8_t);
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_MEDICATION (0x00)
     uint8_t isPatientBPMedication();
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: DIASTOLIC_VALUE (0x02)
     uint8_t writeDiastolicVals(uint8_t, uint8_t, uint8_t);
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: DIASTOLIC_VALUE (0x02)
+    uint8_t readDiastolicVals(uint8_t userArray[]);
+
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: SYSTOLIC_VALUE (0x01)
     uint8_t writeSystolicVals(uint8_t, uint8_t, uint8_t);
 
-    uint8_t readSystolicVals();
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: SYSTOLIC_VALUE (0x01)
+    uint8_t readSystolicVals(uint8_t userArray[]);
 
-    uint8_t readDiastolicVals(uint8_t userProvideArray[]);
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_CALIB_DATA (0x03)
+    uint8_t writeBPTAlgoData(uint8_t bptCalibData[]);
 
-    uint8_t writeBPTAlgoData(uint8_t*);
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: BPT_CALIB_DATA (0x03)
+    uint8_t readBPTAlgoData(uint8_t userArray[]);
 
-    uint8_t readBPTAlgoData();
-
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: PATIENT_RESTING (0x05)
     uint8_t isPatientResting(uint8_t);
 
-    uint8_t isPatientResting();
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: PATIENT_RESTING (0x05)
+    uint8_t isPatientResting(); 
 
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: AGC_SP02_COEFS (0x0B)
     uint8_t writeSP02AlgoCoef(int32_t, int32_t, int32_t);
 
-    uint8_t readSP02AlgoCoef();
+    // Family Byte: CHANGE_ALGORITHM_CONFIG (0x50), Index Byte: BPT_CONFIG (0x04),
+    // Write Byte: AGC_SP02_COEFS (0x0B)
+    uint8_t readSP02AlgoCoef(int32_t userArray[]);
 
   private:   
 
@@ -653,7 +677,7 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t _resetPin;
     uint8_t _mfioPin;
     uint8_t _address; 
-    uint32_t _writeCoefArr[3];
+    uint32_t _writeCoefArr[3] {};
     uint8_t _userSelectedMode;
     uint8_t _sampleRate = 100;
     
@@ -718,14 +742,6 @@ class SparkFun_Bio_Sensor_Hub
     // and the information is read. This differs from the above read commands in
     // that it returns a 16 bit integer instead of 8. 
     uint16_t readIntByte(uint8_t, uint8_t, uint8_t);
-
-    // This function handles all read commands or stated another way, all information
-    // requests. It starts a request by writing the family byte, an index byte, and
-    // a write byte and then then delays 60 microseconds, during which the MAX32664 
-    // retrieves the requested information. An I-squared-C request is then issued, 
-    // and the information is read. This differs from the above read commands in
-    // that it returns a 4 byte (uint32_t) integer instead of 8. 
-    uint32_t readLongByte(uint8_t, uint8_t, uint8_t);
 
     // This function handles all read commands or stated another way, all information
     // requests. It starts a request by writing the family byte, an index byte, and
