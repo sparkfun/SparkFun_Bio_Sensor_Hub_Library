@@ -1,6 +1,11 @@
 /*
  This example sketch gives you exactly what the SparkFun Pulse Oximiter and
  Heart Rate Monitor is designed to do: read heart rate and blood oxygen levels.
+ 
+ Here the reset and mfio pins are defined at begin, instead of when the
+ SparkFun_Bio_Sensor_Hub is instantiated. This makes it much easier to
+ instantiate the class using a factory method.
+ 
  This board requires I-squared-C connections but also connections to the reset
  and mfio pins. When using the device keep LIGHT and CONSISTENT pressure on the
  sensor. Otherwise you may crush the capillaries in your finger which results
@@ -31,8 +36,8 @@
 int resPin = 4;
 int mfioPin = 5;
 
-// Takes address, reset pin, and MFIO pin.
-SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
+// The reset pin and MFIO pin will be defined at begin in this example.
+SparkFun_Bio_Sensor_Hub bioHub; 
 
 bioData body;  
 // ^^^^^^^^^
@@ -54,7 +59,7 @@ void setup(){
   Serial.begin(115200);
 
   Wire.begin();
-  int result = bioHub.begin();
+  int result = bioHub.begin(Wire, resPin, mfioPin); // Define the pins here
   if (result == 0) // Zero errors!
     Serial.println("Sensor started!");
   else
