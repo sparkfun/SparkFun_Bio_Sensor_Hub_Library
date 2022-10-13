@@ -20,13 +20,17 @@ kk
 
 #include "SparkFun_Bio_Sensor_Hub_Library.h"
 
-SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint16_t resetPin, uint16_t mfioPin, uint8_t address) {
+SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(int resetPin, int mfioPin, uint8_t address) {
 
   _resetPin = resetPin;
+  if (resetPin >= 0)
+    pinMode(_resetPin, OUTPUT); // Set the pin as output
+
   _mfioPin = mfioPin;
+  if (mfioPin >= 0)
+    pinMode(_mfioPin, OUTPUT); // Set the pin as output
+
   _address = address;
-  pinMode(_mfioPin, OUTPUT);
-  pinMode(_resetPin, OUTPUT); // Set these pins as output
 
 }
 
@@ -37,11 +41,26 @@ SparkFun_Bio_Sensor_Hub::SparkFun_Bio_Sensor_Hub(uint16_t resetPin, uint16_t mfi
 // in application mode and will return two bytes, the first 0x00 is a
 // successful communcation byte, followed by 0x00 which is the byte indicating
 // which mode the IC is in.
-uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
+uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort, int resetPin, int mfioPin ) {
 
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch
   //  to avoid multiple begins with other sketches.
+
+  if (resetPin >= 0)
+  {
+    _resetPin = resetPin;
+    pinMode(_resetPin, OUTPUT); // Set the pin as output
+  }
+
+  if (mfioPin >= 0)
+  {
+    _mfioPin = mfioPin;
+    pinMode(_mfioPin, OUTPUT); // Set the pin as output
+  }
+
+  if ((_resetPin < 0) || (_mfioPin < 0)) // Bail if the pins have still not been defined
+    return 0xFF; // Return ERR_UNKNOWN
 
   digitalWrite(_mfioPin, HIGH);
   digitalWrite(_resetPin, LOW);
@@ -61,11 +80,26 @@ uint8_t SparkFun_Bio_Sensor_Hub::begin( TwoWire &wirePort ) {
 // in bootloader mode and will return two bytes, the first 0x00 is a
 // successful communcation byte, followed by 0x08 which is the byte indicating
 // that the board is in bootloader mode.
-uint8_t SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort ) {
+uint8_t SparkFun_Bio_Sensor_Hub::beginBootloader( TwoWire &wirePort, int resetPin, int mfioPin ) {
 
   _i2cPort = &wirePort;
   //  _i2cPort->begin(); A call to Wire.begin should occur in sketch
   //  to avoid multiple begins with other sketches.
+
+  if (resetPin >= 0)
+  {
+    _resetPin = resetPin;
+    pinMode(_resetPin, OUTPUT); // Set the pin as output
+  }
+
+  if (mfioPin >= 0)
+  {
+    _mfioPin = mfioPin;
+    pinMode(_mfioPin, OUTPUT); // Set the pin as output
+  }
+
+  if ((_resetPin < 0) || (_mfioPin < 0)) // Bail if the pins have still not been defined
+    return 0xFF; // Return ERR_UNKNOWN
 
   digitalWrite(_mfioPin, LOW);
   digitalWrite(_resetPin, LOW);
