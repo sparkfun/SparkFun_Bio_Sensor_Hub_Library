@@ -23,9 +23,9 @@
 #define ADC_MASK               0x9F
 #define READ_ADC_MASK          0x60
 
-#define ENABLE_CMD_DELAY          40 // Milliseconds
-#define ALGO_CMD_DELAY_SHORT      20 // Milliseconds
-#define ALGO_CMD_DELAY_LONG       40 // Milliseconds
+#define ENABLE_CMD_DELAY          45 // Milliseconds
+#define ALGO_CMD_DELAY_SHORT      45 // Milliseconds
+#define ALGO_CMD_DELAY_LONG       45 // Milliseconds
 #define CMD_DELAY                 2 // Milliseconds
 #define MAXFAST_ARRAY_SIZE        6  // Number of bytes....
 #define MAXFAST_EXTENDED_DATA     5
@@ -72,7 +72,7 @@ struct sensorAttr {
 // are indicators of success or failure of the previous transmission.
 enum READ_STATUS_BYTE_VALUE {
 
-  SUCCESS                  = 0x00,
+  SFE_BIO_SUCCESS          = 0x00,
   ERR_UNAVAIL_CMD,
   ERR_UNAVAIL_FUNC,
   ERR_DATA_FORMAT,
@@ -123,7 +123,7 @@ enum FAMILY_REGISTER_BYTES {
 enum DEVICE_MODE_WRITE_BYTES {
 
   EXIT_BOOTLOADER          = 0x00,
-  RESET                    = 0x02,
+  SFE_BIO_RESET            = 0x02,
   ENTER_BOOTLOADER         = 0x08
 
 };
