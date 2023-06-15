@@ -134,30 +134,30 @@ uint8_t SparkFun_Bio_Sensor_Hub::configBpm(uint8_t mode){
   else return INCORR_PARAM;
 
   statusChauf = setOutputMode(ALGO_DATA); // Just the data
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired.
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = agcAlgoControl(ENABLE); // One sample before interrupt is fired.
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = max30101Control(ENABLE);
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = maximFastAlgoControl(mode);
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   _userSelectedMode = mode;
   _sampleRate = readAlgoSamples();
 
   delay(1000);
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 
 }
 
@@ -169,23 +169,23 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensor(){
   uint8_t statusChauf; // Our status chauffeur
 
   statusChauf = setOutputMode(SENSOR_DATA); // Just the sensor data (LED)
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = max30101Control(ENABLE); //Enable Sensor.
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = maximFastAlgoControl(MODE_ONE); //Enable algorithm
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   delay(1000);
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 
 }
 
@@ -201,26 +201,26 @@ uint8_t SparkFun_Bio_Sensor_Hub::configSensorBpm(uint8_t mode){
   else return INCORR_PARAM;
 
   statusChauf = setOutputMode(SENSOR_AND_ALGORITHM); // Data and sensor data
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = setFifoThreshold(0x01); // One sample before interrupt is fired to the MAX32664
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = max30101Control(ENABLE); //Enable Sensor.
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   statusChauf = maximFastAlgoControl(mode); //Enable algorithm
-  if( statusChauf != SUCCESS )
+  if( statusChauf != SFE_BIO_SUCCESS )
     return statusChauf;
 
   _userSelectedMode = mode;
   _sampleRate = readAlgoSamples();
 
   delay(1000);
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 
 }
 
@@ -476,7 +476,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setPulseWidth(uint16_t width){
   regVal |= bits; // Add bits
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
 
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 
 }
 
@@ -528,7 +528,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setSampleRate(uint16_t sampRate){
   regVal |= (bits << 2); // Add bits but shift them first to correct position.
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal); // Write Register
 
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 }
 
 // This function reads the CONFIGURATION_REGISTER (0x0A), bits [4:2] from the
@@ -579,7 +579,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAdcRange(uint16_t adcVal){
 
   writeRegisterMAX30101(CONFIGURATION_REGISTER, regVal);
 
-  return SUCCESS;
+  return SFE_BIO_SUCCESS;
 }
 
 // MAX30101 Register: CONFIGURATION_REGISTER (0x0A), bits [6:5]
@@ -606,13 +606,13 @@ uint16_t SparkFun_Bio_Sensor_Hub::readAdcRange(){
 uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
 
     // Must be one of the three....
-    if (selection == EXIT_BOOTLOADER || selection == RESET || selection == ENTER_BOOTLOADER)
+    if (selection == EXIT_BOOTLOADER || selection == SFE_BIO_RESET || selection == ENTER_BOOTLOADER)
       { }
     else
       return INCORR_PARAM;
 
     uint8_t statusByte = writeByte(SET_DEVICE_MODE, 0x00, selection);
-    if (statusByte != SUCCESS )
+    if (statusByte != SFE_BIO_SUCCESS )
       return statusByte;
 
     // Here we'll check if the board made it into Bootloader mode...
@@ -628,7 +628,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOperatingMode(uint8_t selection) {
 uint8_t SparkFun_Bio_Sensor_Hub::getMcuType() {
 
   uint8_t returnByte = readByte(IDENTITY, READ_MCU_TYPE, NO_WRITE);
-  if( returnByte != SUCCESS)
+  if( returnByte != SFE_BIO_SUCCESS)
     return ERR_UNKNOWN;
   else
     return returnByte;
@@ -669,10 +669,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
 
   // Check that communication was successful, not that the sensor is enabled.
   uint8_t statusByte = enableWrite(ENABLE_SENSOR, ENABLE_MAX30101, senSwitch);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -696,10 +696,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::accelControl(uint8_t accelSwitch) {
 
   // Check that communication was successful, not that the sensor is enabled.
   uint8_t statusByte = enableWrite(ENABLE_SENSOR, ENABLE_ACCELEROMETER, accelSwitch);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -713,10 +713,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setOutputMode(uint8_t outputType) {
   // Check that communication was successful, not that the IC is outputting
   // correct format.
   uint8_t statusByte = writeByte(OUTPUT_MODE, SET_FORMAT, outputType);
-  if( statusByte != SUCCESS)
+  if( statusByte != SFE_BIO_SUCCESS)
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -730,10 +730,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setFifoThreshold(uint8_t intThresh) {
   // Checks that there was succesful communcation, not that the threshold was
   // set correctly.
   uint8_t statusByte = writeByte(OUTPUT_MODE, WRITE_SET_THRESHOLD, intThresh);
-  if( statusByte != SUCCESS)
+  if( statusByte != SFE_BIO_SUCCESS)
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -886,10 +886,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoRange(uint8_t perc) {
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_TARG_PERC, AGC_GAIN_ID, perc);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -904,10 +904,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoStepSize(uint8_t step) {
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_STEP_SIZE, AGC_STEP_SIZE_ID, step);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -921,10 +921,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSensitivity(uint8_t sense) {
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_SENSITIVITY, AGC_SENSITIVITY_ID, sense);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -936,10 +936,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setAlgoSamples(uint8_t avg) {
 
   // Successful communication or no?
   uint8_t statusByte = writeByte(CHANGE_ALGORITHM_CONFIG, SET_AVG_SAMPLES, AGC_NUM_SAMP_ID, avg);
-  if( statusByte != SUCCESS )
+  if( statusByte != SFE_BIO_SUCCESS )
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -955,10 +955,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::setMaximFastCoef(int32_t coef1, int32_t coef2, 
 
   uint8_t statusByte = writeLongBytes(CHANGE_ALGORITHM_CONFIG, SET_PULSE_OX_COEF,\
                                       MAXIMFAST_COEF_ID, coefArr, numCoefVals);
-  if( statusByte != SUCCESS)
+  if( statusByte != SFE_BIO_SUCCESS)
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -1029,10 +1029,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::agcAlgoControl(uint8_t enable) {
     return INCORR_PARAM;
 
   uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_AGC_ALGO, enable);
-  if (statusByte != SUCCESS)
+  if (statusByte != SFE_BIO_SUCCESS)
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -1047,10 +1047,10 @@ uint8_t SparkFun_Bio_Sensor_Hub::maximFastAlgoControl(uint8_t mode) {
     return INCORR_PARAM;
 
   uint8_t statusByte = enableWrite(ENABLE_ALGORITHM, ENABLE_WHRM_ALGO, mode);
-  if (statusByte != SUCCESS)
+  if (statusByte != SFE_BIO_SUCCESS)
     return statusByte;
   else
-    return SUCCESS;
+    return SFE_BIO_SUCCESS;
 
 }
 
@@ -1100,7 +1100,7 @@ version SparkFun_Bio_Sensor_Hub::readBootloaderVers(){
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4));
   uint8_t statusByte = _i2cPort->read();
-  if (statusByte) { // Pass through if SUCCESS (0x00).
+  if (statusByte) { // Pass through if SFE_BIO_SUCCESS (0x00).
     booVers.major = 0;
     booVers.minor = 0;
     booVers.revision = 0;
@@ -1127,7 +1127,7 @@ version SparkFun_Bio_Sensor_Hub::readSensorHubVersion(){
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4));
   uint8_t statusByte = _i2cPort->read();
-  if (statusByte){ // Pass through if SUCCESS (0x00).
+  if (statusByte){ // Pass through if SFE_BIO_SUCCESS (0x00).
     bioHubVers.major = 0;
     bioHubVers.minor = 0;
     bioHubVers.revision = 0;
@@ -1154,7 +1154,7 @@ version SparkFun_Bio_Sensor_Hub::readAlgorithmVersion(){
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(4));
   uint8_t statusByte = _i2cPort->read();
-  if (statusByte){ // Pass through if SUCCESS (0x00).
+  if (statusByte){ // Pass through if SFE_BIO_SUCCESS (0x00).
     libAlgoVers.major = 0;
     libAlgoVers.minor = 0;
     libAlgoVers.revision = 0;
@@ -1312,7 +1312,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::enableWrite(uint8_t _familyByte, uint8_t _index
   _i2cPort->write(_indexByte);
   _i2cPort->write(_enableByte);
   _i2cPort->endTransmission();
-  delay(ENABLE_CMD_DELAY);
+
+  if( _familyByte == ENABLE_SENSOR && _indexByte == ENABLE_MAX30101)
+    delay(ENABLE_CMD_DELAY);
+  if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_AGC_ALGO)
+    delay(ALGO_CMD_DELAY_SHORT);
+  if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_WHRM_ALGO)
+    delay(ALGO_CMD_DELAY_LONG);
 
   // Status Byte, success or no? 0x00 is a successful transmit
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(1));
@@ -1467,7 +1473,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(returnByte) + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte )// SUCCESS (0x00) - how do I know its
+  if( statusByte )// SFE_BIO_SUCCESS (0x00) - how do I know its
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE
 
   returnByte = _i2cPort->read();
@@ -1498,7 +1504,7 @@ uint8_t  SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexBy
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(returnByte) + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte )// SUCCESS (0x00)
+  if( statusByte )// SFE_BIO_SUCCESS (0x00)
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE
 
   returnByte = _i2cPort->read();
@@ -1520,7 +1526,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _ind
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(_numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte ){// SUCCESS: 0x00
+  if( statusByte ){// SFE_BIO_SUCCESS: 0x00
     for(size_t i = 0; i < _numOfReads; i++){
       array[i] = 0;
     }
@@ -1555,7 +1561,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(returnByte) + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte ) // Pass through if SUCCESS (0x00).
+  if( statusByte ) // Pass through if SFE_BIO_SUCCESS (0x00).
     return statusByte; // Return the error, see: READ_STATUS_BYTE_VALUE
 
   returnByte = (_i2cPort->read() << 8);
@@ -1587,7 +1593,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t 
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(int32_t) * _numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte ) // Pass through if SUCCESS (0x00).
+  if( statusByte ) // Pass through if SFE_BIO_SUCCESS (0x00).
     return statusByte;
   else {
     for(size_t i = 0; i < (sizeof(int32_t) * _numOfReads); i++){
@@ -1622,7 +1628,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t 
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(_numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
-  if( statusByte ) // Pass through if SUCCESS (0x00).
+  if( statusByte ) // Pass through if SFE_BIO_SUCCESS (0x00).
     return statusByte;
   else {
     for(size_t i = 0; i < _numOfReads; i++){
