@@ -29,7 +29,7 @@
 
 // Reset pin, MFIO pin
 int resPin = 4;
-int mfioPin = 5;
+int mfioPin = 13;
 
 // Takes address, reset pin, and MFIO pin.
 SparkFun_Bio_Sensor_Hub bioHub(resPin, mfioPin); 
