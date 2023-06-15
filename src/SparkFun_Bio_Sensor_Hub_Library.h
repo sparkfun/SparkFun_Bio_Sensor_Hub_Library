@@ -23,8 +23,10 @@
 #define ADC_MASK               0x9F
 #define READ_ADC_MASK          0x60
 
-#define ENABLE_CMD_DELAY          45 // Milliseconds
-#define CMD_DELAY                 6  // Milliseconds
+#define ENABLE_CMD_DELAY          40 // Milliseconds
+#define ALGO_CMD_DELAY_SHORT      20 // Milliseconds
+#define ALGO_CMD_DELAY_LONG       40 // Milliseconds
+#define CMD_DELAY                 2 // Milliseconds
 #define MAXFAST_ARRAY_SIZE        6  // Number of bytes....
 #define MAXFAST_EXTENDED_DATA     5
 #define MAX30101_LED_ARRAY        12 // 4 values of 24 bit (3 byte) LED values

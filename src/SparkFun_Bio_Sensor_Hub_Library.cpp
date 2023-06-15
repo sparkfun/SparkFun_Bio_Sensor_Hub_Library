@@ -1312,7 +1312,13 @@ uint8_t SparkFun_Bio_Sensor_Hub::enableWrite(uint8_t _familyByte, uint8_t _index
   _i2cPort->write(_indexByte);
   _i2cPort->write(_enableByte);
   _i2cPort->endTransmission();
-  delay(ENABLE_CMD_DELAY);
+
+  if( _familyByte == ENABLE_SENSOR && _indexByte == ENABLE_MAX30101)
+    delay(ENABLE_CMD_DELAY);
+  if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_AGC_ALGO)
+    delay(ALGO_CMD_DELAY_SHORT);
+  if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_WHRM_ALGO)
+    delay(ALGO_CMD_DELAY_LONG);
 
   // Status Byte, success or no? 0x00 is a successful transmit
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(1));
