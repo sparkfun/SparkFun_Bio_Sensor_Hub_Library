@@ -1469,7 +1469,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readByte(uint8_t _familyByte, uint8_t _indexByt
   _i2cPort->write(_familyByte);
   _i2cPort->write(_indexByte);
   _i2cPort->endTransmission();
-  delay(CMD_DELAY);
+  delayMicroseconds(CMD_DELAY*1000);
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(returnByte) + sizeof(statusByte)));
   statusByte = _i2cPort->read();
@@ -1522,7 +1522,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readFillArray(uint8_t _familyByte, uint8_t _ind
   _i2cPort->write(_familyByte);
   _i2cPort->write(_indexByte);
   _i2cPort->endTransmission();
-  delay(CMD_DELAY);
+  delayMicroseconds(CMD_DELAY*1000);
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(_numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
@@ -1557,7 +1557,7 @@ uint16_t SparkFun_Bio_Sensor_Hub::readIntByte(uint8_t _familyByte, uint8_t _inde
   _i2cPort->write(_indexByte);
   _i2cPort->write(_writeByte);
   _i2cPort->endTransmission();
-  delay(CMD_DELAY);
+  delayMicroseconds(CMD_DELAY*1000);
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(returnByte) + sizeof(statusByte)));
   statusByte = _i2cPort->read();
@@ -1589,7 +1589,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t 
   _i2cPort->write(_indexByte);
   _i2cPort->write(_writeByte);
   _i2cPort->endTransmission();
-  delay(CMD_DELAY);
+  delayMicroseconds(CMD_DELAY*1000);
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(sizeof(int32_t) * _numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
@@ -1624,7 +1624,7 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMultipleBytes(uint8_t _familyByte, uint8_t 
   _i2cPort->write(_indexByte);
   _i2cPort->write(_writeByte);
   _i2cPort->endTransmission();
-  delay(CMD_DELAY);
+  delayMicroseconds(CMD_DELAY*1000);
 
   _i2cPort->requestFrom(_address, static_cast<uint8_t>(_numOfReads + sizeof(statusByte)));
   statusByte = _i2cPort->read();
