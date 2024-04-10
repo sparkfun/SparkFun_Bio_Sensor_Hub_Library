@@ -38,6 +38,7 @@ writeRegisterMAX30101	KEYWORD2
 writeRegisterMAXM86161	KEYWORD2
 writeRegisterAccel	KEYWORD2
 readRegisterMAX30101	KEYWORD2
+readRegisterMAXM86161	KEYWORD2
 readRegisterAccel	KEYWORD2
 getAfeAttributesMAX30101	KEYWORD2
 getAfeAttributesAccelerometer	KEYWORD2

@@ -530,6 +530,12 @@ class SparkFun_Bio_Sensor_Hub
     // returns the values at that register.
     uint8_t readRegisterMAX30101(uint8_t);
 
+    // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAXM86161 (0x00), Write Byte:
+    // Register Address
+    // This function reads the given register address for the MAXM86161 Sensor and
+    // returns the values at that register.
+    uint8_t readRegisterMAXM86161(uint8_t);
+
     // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte:
     // Register Address
     // This function reads the given register address for the MAX30101 Sensor and
