@@ -467,6 +467,10 @@ class SparkFun_Bio_Sensor_Hub
     // This function checks if the MAX30101 is enabled or not.
     uint8_t readMAX30101State();
 
+    // Family Byte: READ_SENSOR_MODE (0x45), Index Byte: READ_ENABLE_MAXM86161 (0x00)
+    // This function checks if the MAXM86161 is enabled or not.
+    uint8_t readMAXM86161State();
+
     // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
     // Byte: accelSwitch (parameter - 0x00 or 0x01).
     // This function enables the ACCELEROMETER.

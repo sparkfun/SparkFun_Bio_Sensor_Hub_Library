@@ -703,6 +703,14 @@ uint8_t SparkFun_Bio_Sensor_Hub::readMAX30101State(){
   return state;
 }
 
+// Family Byte: READ_SENSOR_MODE (0x45), Index Byte: READ_ENABLE_MAXM86161 (0x00)
+// This function checks if the MAXM86161 is enabled or not.
+uint8_t SparkFun_Bio_Sensor_Hub::readMAXM86161State(){
+
+  uint8_t state = readByte(READ_SENSOR_MODE, READ_ENABLE_MAXM86161);
+  return state;
+}
+
 // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_ACCELEROMETER (0x04), Write
 // Byte: accepts (parameter - 0x00 or 0x01).
 // This function enables the Accelerometer.
@@ -1334,6 +1342,8 @@ uint8_t SparkFun_Bio_Sensor_Hub::enableWrite(uint8_t _familyByte, uint8_t _index
 
   if( _familyByte == ENABLE_SENSOR && _indexByte == ENABLE_MAX30101)
     delay(ENABLE_CMD_DELAY);
+  if( _familyByte == ENABLE_SENSOR && _indexByte == ENABLE_MAXM86161)
+    delay(ENABLE_CMD_MAXM86161_DELAY);
   if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_AGC_ALGO)
     delay(ALGO_CMD_DELAY_SHORT);
   if( _familyByte == ENABLE_ALGORITHM && _indexByte == ENABLE_WHRM_ALGO)
