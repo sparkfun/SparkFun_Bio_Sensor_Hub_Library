@@ -44,6 +44,7 @@ getAfeAttributesMAX30101	KEYWORD2
 getAfeAttributesMAXM86161	KEYWORD2
 getAfeAttributesAccelerometer	KEYWORD2
 dumpRegisterMAX30101	KEYWORD2
+dumpRegisterMAXM86161	KEYWORD2
 dumpRegisterAccelerometer	KEYWORD2
 setAlgoRange	KEYWORD2
 setAlgoStepSize	KEYWORD2

@@ -567,6 +567,12 @@ class SparkFun_Bio_Sensor_Hub
     // register value n. There are 36 registers in this case.
     uint8_t dumpRegisterMAX30101(uint8_t regArray[]);
 
+    // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_MAXM86161 (0x00)
+    // This function returns all registers and register values sequentially of the
+    // MAXM86161 sensor: register zero and register value zero to register n and
+    // register value n. There are 44 registers in this case.
+    uint8_t dumpRegisterMAXM86161(uint8_t regArray[]);
+
     // Family Byte: DUMP_REGISTERS (0x43), Index Byte: DUMP_REGISTER_ACCELEROMETER (0x04)
     // This function returns all registers and register values sequentially of the
     // Accelerometer: register zero and register value zero to register n and
