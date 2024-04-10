@@ -35,6 +35,7 @@ numSamplesOutFifo	KEYWORD2
 getDataOutFifo	KEYWORD2
 numSamplesExternalSensor	KEYWORD2
 writeRegisterMAX30101	KEYWORD2
+writeRegisterMAXM86161	KEYWORD2
 writeRegisterAccel	KEYWORD2
 readRegisterMAX30101	KEYWORD2
 readRegisterAccel	KEYWORD2

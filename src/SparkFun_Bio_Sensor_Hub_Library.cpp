@@ -807,6 +807,18 @@ void SparkFun_Bio_Sensor_Hub::writeRegisterMAX30101(uint8_t regAddr, uint8_t reg
 
 }
 
+// Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_MAXM86161 (0x00), Write Bytes:
+// Register Address and Register Value
+// This function writes the given register value at the given register address
+// for the MAXM86161 sensor and returns a boolean indicating a successful or
+// non-successful write.
+void SparkFun_Bio_Sensor_Hub::writeRegisterMAXM86161(uint8_t regAddr, uint8_t regVal) {
+
+  writeByte(WRITE_REGISTER, WRITE_MAXM86161, regAddr, regVal);
+
+}
+
+
 // Family Byte: WRITE_REGISTER (0x40), Index Byte: WRITE_ACCELEROMETER (0x04), Write Bytes:
 // Register Address and Register Value
 // This function writes the given register value at the given register address
