@@ -548,6 +548,12 @@ class SparkFun_Bio_Sensor_Hub
     // and the number of registers available.
     sensorAttr getAfeAttributesMAX30101();
 
+    // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte: RETRIEVE_AFE_MAXM86161/ (0x00)
+    // This function retrieves the attributes of the AFE (Analog Front End) of the
+    // MAXM86161 sensor. It returns the number of bytes in a word for the sensor
+    // and the number of registers available.
+    sensorAttr getAfeAttributesMAXM86161();
+
     // Family Byte: READ_ATTRIBUTES_AFE (0x42), Index Byte:
     // RETRIEVE_AFE_ACCELEROMETER (0x04)
     // This function retrieves the attributes of the AFE (Analog Front End) of the
