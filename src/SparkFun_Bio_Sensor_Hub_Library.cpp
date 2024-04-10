@@ -676,6 +676,25 @@ uint8_t SparkFun_Bio_Sensor_Hub::max30101Control(uint8_t senSwitch) {
 
 }
 
+// Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAXM86161 (0x00), Write
+// Byte: senSwitch  (parameter - 0x00 or 0x01).
+// This function enables the MAXM86161.
+uint8_t SparkFun_Bio_Sensor_Hub::maxm86161Control(uint8_t senSwitch) {
+
+  if(senSwitch == 0 || senSwitch == 1)
+    { }
+  else
+    return INCORR_PARAM;
+
+  // Check that communication was successful, not that the sensor is enabled.
+  uint8_t statusByte = enableWrite(ENABLE_SENSOR, ENABLE_MAXM86161, senSwitch);
+  if( statusByte != SFE_BIO_SUCCESS )
+    return statusByte;
+  else
+    return SFE_BIO_SUCCESS;
+
+}
+
 // Family Byte: READ_SENSOR_MODE (0x45), Index Byte: READ_ENABLE_MAX30101 (0x03)
 // This function checks if the MAX30101 is enabled or not.
 uint8_t SparkFun_Bio_Sensor_Hub::readMAX30101State(){

@@ -31,6 +31,8 @@
 #define MAXFAST_EXTENDED_DATA     5
 #define MAX30101_LED_ARRAY        12 // 4 values of 24 bit (3 byte) LED values
 
+#define ENABLE_CMD_MAXM86161_DELAY 250 // Milliseconds
+
 #define SET_FORMAT             0x00
 #define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
 #define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
@@ -455,6 +457,11 @@ class SparkFun_Bio_Sensor_Hub
     // Byte: senSwitch (parameter - 0x00 or 0x01).
     // This function enables the MAX30101.
     uint8_t max30101Control(uint8_t);
+
+    // Family Byte: ENABLE_SENSOR (0x44), Index Byte: ENABLE_MAXM86161 (0x00), Write
+    // Byte: senSwitch (parameter - 0x00 or 0x01).
+    // This function enables the MAXM86161.
+    uint8_t maxm86161Control(uint8_t);
 
     // Family Byte: READ_SENSOR_MODE (0x45), Index Byte: READ_ENABLE_MAX30101 (0x03)
     // This function checks if the MAX30101 is enabled or not.

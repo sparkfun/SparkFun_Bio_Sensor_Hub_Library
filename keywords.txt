@@ -25,6 +25,7 @@ readAdcRange	KEYWORD2
 getMcuType	KEYWORD2
 getBootloaderInf	KEYWORD2
 max30101Control	KEYWORD2
+maxm86161Control	KEYWORD2
 readMAX30101State	KEYWORD2
 accelControl	KEYWORD2
 setOutputMode	KEYWORD2
