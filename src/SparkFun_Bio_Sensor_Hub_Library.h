@@ -1,117 +1,116 @@
 #ifndef _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H_
 #define _SPARKFUN_BIO_SENSOR_HUB_LIBRARY_H_
 
-#include <Wire.h>
 #include <Arduino.h>
+#include <Wire.h>
 
-
-#define WRITE_FIFO_INPUT_BYTE  0x04
-#define DISABLE                0x00
-#define ENABLE                 0x01
-#define MODE_ONE               0x01
-#define MODE_TWO               0x02
-#define APP_MODE               0x00
-#define BOOTLOADER_MODE        0x08
-#define NO_WRITE               0x00
-#define INCORR_PARAM           0xEE
+#define WRITE_FIFO_INPUT_BYTE 0x04
+#define DISABLE 0x00
+#define ENABLE 0x01
+#define MODE_ONE 0x01
+#define MODE_TWO 0x02
+#define APP_MODE 0x00
+#define BOOTLOADER_MODE 0x08
+#define NO_WRITE 0x00
+#define INCORR_PARAM 0xEE
 
 #define CONFIGURATION_REGISTER 0x0A
-#define PULSE_MASK             0xFC
-#define READ_PULSE_MASK        0x03
-#define SAMP_MASK              0xE3
-#define READ_SAMP_MASK         0x1C
-#define ADC_MASK               0x9F
-#define READ_ADC_MASK          0x60
+#define PULSE_MASK 0xFC
+#define READ_PULSE_MASK 0x03
+#define SAMP_MASK 0xE3
+#define READ_SAMP_MASK 0x1C
+#define ADC_MASK 0x9F
+#define READ_ADC_MASK 0x60
 
-#define ENABLE_CMD_DELAY          45 // Milliseconds
-#define ALGO_CMD_DELAY_SHORT      45 // Milliseconds
-#define ALGO_CMD_DELAY_LONG       45 // Milliseconds
-#define CMD_DELAY                 2 // Milliseconds
-#define MAXFAST_ARRAY_SIZE        6  // Number of bytes....
-#define MAXFAST_EXTENDED_DATA     5
-#define MAX30101_LED_ARRAY        12 // 4 values of 24 bit (3 byte) LED values
+#define ENABLE_CMD_DELAY 45     // Milliseconds
+#define ALGO_CMD_DELAY_SHORT 45 // Milliseconds
+#define ALGO_CMD_DELAY_LONG 45  // Milliseconds
+#define CMD_DELAY 2             // Milliseconds
+#define MAXFAST_ARRAY_SIZE 6    // Number of bytes....
+#define MAXFAST_EXTENDED_DATA 5
+#define MAX30101_LED_ARRAY 12 // 4 values of 24 bit (3 byte) LED values
 
-#define SET_FORMAT             0x00
-#define READ_FORMAT            0x01 // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
-#define WRITE_SET_THRESHOLD    0x01 //Index Byte for WRITE_INPUT(0x14)
+#define SET_FORMAT 0x00
+#define READ_FORMAT 0x01         // Index Byte under Family Byte: READ_OUTPUT_MODE (0x11)
+#define WRITE_SET_THRESHOLD 0x01 // Index Byte for WRITE_INPUT(0x14)
 #define WRITE_EXTERNAL_TO_FIFO 0x00
 
 const uint8_t BIO_ADDRESS = 0x55;
 
-struct bioData {
+struct bioData
+{
 
-  uint32_t irLed;
-  uint32_t redLed;
-  uint16_t heartRate; // LSB = 0.1bpm
-  uint8_t  confidence; // 0-100% LSB = 1%
-  uint16_t oxygen; // 0-100% LSB = 1%
-  uint8_t  status; // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
-  float    rValue;      // -- Algorithm Mode 2 vv
-  int8_t   extStatus;   // --
-  uint8_t  reserveOne;  // --
-  uint8_t  resserveTwo; // -- Algorithm Mode 2 ^^
-
+    uint32_t irLed;
+    uint32_t redLed;
+    uint16_t heartRate;  // LSB = 0.1bpm
+    uint8_t confidence;  // 0-100% LSB = 1%
+    uint16_t oxygen;     // 0-100% LSB = 1%
+    uint8_t status;      // 0: Success, 1: Not Ready, 2: Object Detectected, 3: Finger Detected
+    float rValue;        // -- Algorithm Mode 2 vv
+    int8_t extStatus;    // --
+    uint8_t reserveOne;  // --
+    uint8_t resserveTwo; // -- Algorithm Mode 2 ^^
 };
 
-struct version {
-  // 3 bytes total
-  uint8_t major;
-  uint8_t minor;
-  uint8_t revision;
-
+struct version
+{
+    // 3 bytes total
+    uint8_t major;
+    uint8_t minor;
+    uint8_t revision;
 };
 
-struct sensorAttr {
+struct sensorAttr
+{
 
-  uint8_t byteWord;
-  uint8_t availRegisters;
-
+    uint8_t byteWord;
+    uint8_t availRegisters;
 };
 
 // Status Bytes are communicated back after every I-squared-C transmission and
 // are indicators of success or failure of the previous transmission.
-enum READ_STATUS_BYTE_VALUE {
+enum READ_STATUS_BYTE_VALUE
+{
 
-  SFE_BIO_SUCCESS          = 0x00,
-  ERR_UNAVAIL_CMD,
-  ERR_UNAVAIL_FUNC,
-  ERR_DATA_FORMAT,
-  ERR_INPUT_VALUE,
-  ERR_TRY_AGAIN,
-  ERR_BTLDR_GENERAL        = 0x80,
-  ERR_BTLDR_CHECKSUM,
-  ERR_BTLDR_AUTH,
-  ERR_BTLDR_INVALID_APP,
-  ERR_UNKNOWN              = 0xFF
-
+    SFE_BIO_SUCCESS = 0x00,
+    ERR_UNAVAIL_CMD,
+    ERR_UNAVAIL_FUNC,
+    ERR_DATA_FORMAT,
+    ERR_INPUT_VALUE,
+    ERR_TRY_AGAIN,
+    ERR_BTLDR_GENERAL = 0x80,
+    ERR_BTLDR_CHECKSUM,
+    ERR_BTLDR_AUTH,
+    ERR_BTLDR_INVALID_APP,
+    ERR_UNKNOWN = 0xFF
 };
 
 // The family register bytes are the larger umbrella for all the Index and
 // Write Bytes listed below. You can not reference a nestled byte without first
 // referencing it's larger category: Family Register Byte.
-enum FAMILY_REGISTER_BYTES {
+enum FAMILY_REGISTER_BYTES
+{
 
-  HUB_STATUS               = 0x00,
-  SET_DEVICE_MODE,
-  READ_DEVICE_MODE,
-  OUTPUT_MODE            = 0x10,
-  READ_OUTPUT_MODE,
-  READ_DATA_OUTPUT,
-  READ_DATA_INPUT,
-  WRITE_INPUT,
-  WRITE_REGISTER           = 0x40,
-  READ_REGISTER,
-  READ_ATTRIBUTES_AFE,
-  DUMP_REGISTERS,
-  ENABLE_SENSOR,
-  READ_SENSOR_MODE,
-  CHANGE_ALGORITHM_CONFIG  = 0x50,
-  READ_ALGORITHM_CONFIG,
-  ENABLE_ALGORITHM,
-  BOOTLOADER_FLASH         = 0x80,
-  BOOTLOADER_INFO,
-  IDENTITY                 = 0xFF
-
+    HUB_STATUS = 0x00,
+    SET_DEVICE_MODE,
+    READ_DEVICE_MODE,
+    OUTPUT_MODE = 0x10,
+    READ_OUTPUT_MODE,
+    READ_DATA_OUTPUT,
+    READ_DATA_INPUT,
+    WRITE_INPUT,
+    WRITE_REGISTER = 0x40,
+    READ_REGISTER,
+    READ_ATTRIBUTES_AFE,
+    DUMP_REGISTERS,
+    ENABLE_SENSOR,
+    READ_SENSOR_MODE,
+    CHANGE_ALGORITHM_CONFIG = 0x50,
+    READ_ALGORITHM_CONFIG,
+    ENABLE_ALGORITHM,
+    BOOTLOADER_FLASH = 0x80,
+    BOOTLOADER_INFO,
+    IDENTITY = 0xFF
 };
 
 // All the defines below are: 1. Index Bytes nestled in the larger category of the
@@ -120,200 +119,199 @@ enum FAMILY_REGISTER_BYTES {
 
 // Write Bytes under Family Byte: SET_DEVICE_MODE (0x01) and Index
 // Byte: 0x00.
-enum DEVICE_MODE_WRITE_BYTES {
+enum DEVICE_MODE_WRITE_BYTES
+{
 
-  EXIT_BOOTLOADER          = 0x00,
-  SFE_BIO_RESET            = 0x02,
-  ENTER_BOOTLOADER         = 0x08
-
+    EXIT_BOOTLOADER = 0x00,
+    SFE_BIO_RESET = 0x02,
+    ENTER_BOOTLOADER = 0x08
 };
 
 // Write Bytes under Family Byte: OUTPUT_MODE (0x10) and Index byte: SET_FORMAT
 // (0x00)
-enum OUTPUT_MODE_WRITE_BYTE {
+enum OUTPUT_MODE_WRITE_BYTE
+{
 
-  PAUSE                    = 0x00,
-  SENSOR_DATA,
-  ALGO_DATA,
-  SENSOR_AND_ALGORITHM,
-  PAUSE_TWO,
-  SENSOR_COUNTER_BYTE,
-  ALGO_COUNTER_BYTE,
-  SENSOR_ALGO_COUNTER
-
+    PAUSE = 0x00,
+    SENSOR_DATA,
+    ALGO_DATA,
+    SENSOR_AND_ALGORITHM,
+    PAUSE_TWO,
+    SENSOR_COUNTER_BYTE,
+    ALGO_COUNTER_BYTE,
+    SENSOR_ALGO_COUNTER
 };
 
 // Index Byte under the Family Byte: READ_DATA_OUTPUT (0x12)
-enum FIFO_OUTPUT_INDEX_BYTE {
+enum FIFO_OUTPUT_INDEX_BYTE
+{
 
-  NUM_SAMPLES,
-  READ_DATA
-
+    NUM_SAMPLES,
+    READ_DATA
 };
 
 // Index Byte under the Family Byte: READ_DATA_INPUT (0x13)
-enum FIFO_EXTERNAL_INDEX_BYTE {
+enum FIFO_EXTERNAL_INDEX_BYTE
+{
 
-  SAMPLE_SIZE,
-  READ_INPUT_DATA,
-  READ_SENSOR_DATA, // For external accelerometer
-  READ_NUM_SAMPLES_INPUT, // For external accelerometer
-  READ_NUM_SAMPLES_SENSOR
-
+    SAMPLE_SIZE,
+    READ_INPUT_DATA,
+    READ_SENSOR_DATA,       // For external accelerometer
+    READ_NUM_SAMPLES_INPUT, // For external accelerometer
+    READ_NUM_SAMPLES_SENSOR
 };
 
 // Index Byte under the Family Registry Byte: WRITE_REGISTER (0x40)
-enum WRITE_REGISTER_INDEX_BYTE {
+enum WRITE_REGISTER_INDEX_BYTE
+{
 
-  WRITE_MAX30101 = 0x03,
-  WRITE_ACCELEROMETER
-
+    WRITE_MAX30101 = 0x03,
+    WRITE_ACCELEROMETER
 };
 
 // Index Byte under the Family Registry Byte: READ_REGISTER (0x41)
-enum READ_REGISTER_INDEX_BYTE {
+enum READ_REGISTER_INDEX_BYTE
+{
 
-  READ_MAX30101 = 0x03,
-  READ_ACCELEROMETER
-
+    READ_MAX30101 = 0x03,
+    READ_ACCELEROMETER
 };
 
 // Index Byte under the Family Registry Byte: READ_ATTRIBUTES_AFE (0x42)
-enum GET_AFE_INDEX_BYTE {
+enum GET_AFE_INDEX_BYTE
+{
 
-  RETRIEVE_AFE_MAX30101 = 0x03,
-  RETRIEVE_AFE_ACCELEROMETER
-
+    RETRIEVE_AFE_MAX30101 = 0x03,
+    RETRIEVE_AFE_ACCELEROMETER
 };
 
 // Index Byte under the Family Byte: DUMP_REGISTERS (0x43)
-enum DUMP_REGISTER_INDEX_BYTE {
+enum DUMP_REGISTER_INDEX_BYTE
+{
 
-  DUMP_REGISTER_MAX30101 = 0x03,
-  DUMP_REGISTER_ACCELEROMETER
-
+    DUMP_REGISTER_MAX30101 = 0x03,
+    DUMP_REGISTER_ACCELEROMETER
 };
 
 // Index Byte under the Family Byte: ENABLE_SENSOR (0x44)
-enum SENSOR_ENABLE_INDEX_BYTE {
+enum SENSOR_ENABLE_INDEX_BYTE
+{
 
-  ENABLE_MAX30101 = 0x03,
-  ENABLE_ACCELEROMETER
-
+    ENABLE_MAX30101 = 0x03,
+    ENABLE_ACCELEROMETER
 };
 
 // Index Byte for the Family Byte: READ_SENSOR_MODE (0x45)
-enum READ_SENSOR_ENABLE_INDEX_BYTE {
+enum READ_SENSOR_ENABLE_INDEX_BYTE
+{
 
-  READ_ENABLE_MAX30101 = 0x03,
-  READ_ENABLE_ACCELEROMETER
-
+    READ_ENABLE_MAX30101 = 0x03,
+    READ_ENABLE_ACCELEROMETER
 };
 
 // Index Byte under the Family Byte: CHANGE_ALGORITHM_CONFIG (0x50)
-enum ALGORITHM_CONFIG_INDEX_BYTE {
+enum ALGORITHM_CONFIG_INDEX_BYTE
+{
 
-  SET_TARG_PERC            = 0x00,
-  SET_STEP_SIZE            = 0x00,
-  SET_SENSITIVITY          = 0x00,
-  SET_AVG_SAMPLES          = 0x00,
-  SET_PULSE_OX_COEF        = 0x02,
-  BPT_CONFIG               = 0x04
-
+    SET_TARG_PERC = 0x00,
+    SET_STEP_SIZE = 0x00,
+    SET_SENSITIVITY = 0x00,
+    SET_AVG_SAMPLES = 0x00,
+    SET_PULSE_OX_COEF = 0x02,
+    BPT_CONFIG = 0x04
 };
 
 // Write Bytes under the Family Byte: CHANGE_ALGORITHM_CONFIG (0x50) and the
 // Index Byte: ALGORITHM_CONFIG_INDEX_BYTE - SET_TARG_PERC
-enum ALGO_AGC_WRITE_BYTE {
+enum ALGO_AGC_WRITE_BYTE
+{
 
-  AGC_GAIN_ID              = 0x00,
-  AGC_STEP_SIZE_ID,
-  AGC_SENSITIVITY_ID,
-  AGC_NUM_SAMP_ID,
-  MAXIMFAST_COEF_ID        = 0x0B
-
+    AGC_GAIN_ID = 0x00,
+    AGC_STEP_SIZE_ID,
+    AGC_SENSITIVITY_ID,
+    AGC_NUM_SAMP_ID,
+    MAXIMFAST_COEF_ID = 0x0B
 };
 
-enum ALGO_BPT_WRITE_BYTE {
+enum ALGO_BPT_WRITE_BYTE
+{
 
-  BPT_MEDICATION            = 0x00,
-  SYSTOLIC_VALUE,
-  DIASTOLIC_VALUE,
-  BPT_CALIB_DATA,           //Index + 824 bytes of calibration data
-  PATIENT_RESTING           = 0x05,
-  AGC_SP02_COEFS           = 0x0B
-
+    BPT_MEDICATION = 0x00,
+    SYSTOLIC_VALUE,
+    DIASTOLIC_VALUE,
+    BPT_CALIB_DATA, // Index + 824 bytes of calibration data
+    PATIENT_RESTING = 0x05,
+    AGC_SP02_COEFS = 0x0B
 };
 
 // Index Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51)
-enum READ_ALGORITHM_INDEX_BYTE {
+enum READ_ALGORITHM_INDEX_BYTE
+{
 
-  READ_AGC_PERCENTAGE      = 0x00,
-  READ_AGC_STEP_SIZE       = 0x00,
-  READ_AGC_SENSITIVITY     = 0x00,
-  READ_AGC_NUM_SAMPLES     = 0x00,
-  READ_MAX_FAST_COEF       = 0x02
-
+    READ_AGC_PERCENTAGE = 0x00,
+    READ_AGC_STEP_SIZE = 0x00,
+    READ_AGC_SENSITIVITY = 0x00,
+    READ_AGC_NUM_SAMPLES = 0x00,
+    READ_MAX_FAST_COEF = 0x02
 };
 
 // Write Bytes under the Family Byte: READ_ALGORITHM_CONFIG (0x51) and Index Byte:
 // READ_ALGORITHM_INDEX_BYTE - AGC
-enum READ_AGC_ALGO_WRITE_BYTE {
+enum READ_AGC_ALGO_WRITE_BYTE
+{
 
-  READ_AGC_PERC_ID           = 0x00,
-  READ_AGC_STEP_SIZE_ID,
-  READ_AGC_SENSITIVITY_ID,
-  READ_AGC_NUM_SAMPLES_ID,
-  READ_MAX_FAST_COEF_ID      = 0x0B
-
+    READ_AGC_PERC_ID = 0x00,
+    READ_AGC_STEP_SIZE_ID,
+    READ_AGC_SENSITIVITY_ID,
+    READ_AGC_NUM_SAMPLES_ID,
+    READ_MAX_FAST_COEF_ID = 0x0B
 };
 
 // Index Byte under the Family Byte: ENABLE_ALGORITHM (0x52).
-enum ALGORITHM_MODE_ENABLE_INDEX_BYTE {
+enum ALGORITHM_MODE_ENABLE_INDEX_BYTE
+{
 
-  ENABLE_AGC_ALGO  = 0x00,
-  ENABLE_WHRM_ALGO = 0x02
-
+    ENABLE_AGC_ALGO = 0x00,
+    ENABLE_WHRM_ALGO = 0x02
 };
 
 // Index Byte under the Family Byte: BOOTLOADER_FLASH (0x80).
-enum BOOTLOADER_FLASH_INDEX_BYTE {
+enum BOOTLOADER_FLASH_INDEX_BYTE
+{
 
-  SET_INIT_VECTOR_BYTES    = 0x00,
-  SET_AUTH_BYTES,
-  SET_NUM_PAGES,
-  ERASE_FLASH,
-  SEND_PAGE_VALUE
-
+    SET_INIT_VECTOR_BYTES = 0x00,
+    SET_AUTH_BYTES,
+    SET_NUM_PAGES,
+    ERASE_FLASH,
+    SEND_PAGE_VALUE
 };
 
 // Index Byte under the Family Byte: BOOTLOADER_INFO (0x81).
-enum BOOTLOADER_INFO_INDEX_BYTE {
+enum BOOTLOADER_INFO_INDEX_BYTE
+{
 
-  BOOTLOADER_VERS          = 0x00,
-  PAGE_SIZE
-
+    BOOTLOADER_VERS = 0x00,
+    PAGE_SIZE
 };
 
 // Index Byte under the Family Byte: IDENTITY (0xFF).
-enum IDENTITY_INDEX_BYTES {
+enum IDENTITY_INDEX_BYTES
+{
 
-  READ_MCU_TYPE            = 0x00,
-  READ_SENSOR_HUB_VERS     = 0x03,
-  READ_ALGO_VERS           = 0x07
-
+    READ_MCU_TYPE = 0x00,
+    READ_SENSOR_HUB_VERS = 0x03,
+    READ_ALGO_VERS = 0x07
 };
 
 class SparkFun_Bio_Sensor_Hub
 {
   public:
-
     // Variables ------------
-    uint8_t bpmArr[MAXFAST_ARRAY_SIZE] {};
-    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA] {};
-    uint8_t senArr[MAX30101_LED_ARRAY] {};
-    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY] {};
-    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY] {};
+    uint8_t bpmArr[MAXFAST_ARRAY_SIZE]{};
+    uint8_t bpmArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA]{};
+    uint8_t senArr[MAX30101_LED_ARRAY]{};
+    uint8_t bpmSenArr[MAXFAST_ARRAY_SIZE + MAX30101_LED_ARRAY]{};
+    uint8_t bpmSenArrTwo[MAXFAST_ARRAY_SIZE + MAXFAST_EXTENDED_DATA + MAX30101_LED_ARRAY]{};
 
     // Constructor ----------
     SparkFun_Bio_Sensor_Hub(int resetPin = -1, int mfioPin = -1, uint8_t address = 0x55);
@@ -327,7 +325,7 @@ class SparkFun_Bio_Sensor_Hub
     // in application mode and will return two bytes, the first 0x00 is a
     // successful communcation byte, followed by 0x00 which is the byte indicating
     // which mode the IC is in.
-    uint8_t begin( TwoWire &wirePort = Wire, int resetPin = -1, int mfioPin = -1 );
+    uint8_t begin(TwoWire &wirePort = Wire, int resetPin = -1, int mfioPin = -1);
 
     // Family Byte: READ_DEVICE_MODE (0x02) Index Byte: 0x00, Write Byte: 0x00
     // The following function puts the MAX32664 into bootloader mode. To place the MAX32664 into
@@ -336,7 +334,7 @@ class SparkFun_Bio_Sensor_Hub
     // in bootloader mode and will return two bytes, the first 0x00 is a
     // successful communcation byte, followed by 0x08 which is the byte indicating
     // that the board is in bootloader mode.
-    uint8_t beginBootloader( TwoWire &wirePort = Wire, int resetPin = -1, int mfioPin = -1 );
+    uint8_t beginBootloader(TwoWire &wirePort = Wire, int resetPin = -1, int mfioPin = -1);
 
     // Family Byte: HUB_STATUS (0x00), Index Byte: 0x00, No Write Byte.
     // The following function checks the status of the FIFO.
@@ -477,7 +475,7 @@ class SparkFun_Bio_Sensor_Hub
     // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
     // Byte: NONE
     // This function returns the data in the FIFO.
-    uint8_t* getDataOutFifo(uint8_t data[]);
+    uint8_t *getDataOutFifo(uint8_t data[]);
 
     // Family Byte: READ_DATA_OUTPUT (0x12), Index Byte: READ_DATA (0x00), Write
     // Byte: NONE
@@ -497,7 +495,7 @@ class SparkFun_Bio_Sensor_Hub
     // This function writes the given register value at the given register address
     // for the Accelerometer and returns a boolean indicating a successful or
     // non-successful write.
-    void writeRegisterAccel(uint8_t, uint8_t );
+    void writeRegisterAccel(uint8_t, uint8_t);
 
     // Family Byte: READ_REGISTER (0x41), Index Byte: READ_MAX30101 (0x03), Write Byte:
     // Register Address
@@ -674,12 +672,11 @@ class SparkFun_Bio_Sensor_Hub
     uint8_t readSP02AlgoCoef(int32_t userArray[]);
 
   private:
-
     // Variables -----------
     int _resetPin;
     int _mfioPin;
     uint8_t _address;
-    uint32_t _writeCoefArr[3] {};
+    uint32_t _writeCoefArr[3]{};
     uint8_t _userSelectedMode;
     uint8_t _sampleRate = 100;
 
@@ -690,7 +687,7 @@ class SparkFun_Bio_Sensor_Hub
 
     // This function uses the given family, index, and write byte to enable
     // the given sensor.
-    uint8_t enableWrite(uint8_t,  uint8_t, uint8_t);
+    uint8_t enableWrite(uint8_t, uint8_t, uint8_t);
 
     // This function uses the given family, index, and write byte to communicate
     // with the MAX32664 which in turn communicates with downward sensors. There
